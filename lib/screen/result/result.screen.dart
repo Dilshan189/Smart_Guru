@@ -15,6 +15,7 @@ class LevelComplete extends StatefulWidget {
   final int currentLevelIndex;
   final List<Map<String, dynamic>> allLevels;
   final bool isReviewQuiz;
+  final bool isPaperQuiz;
   final String? catrgoryTitle;
   final String? categoryId;
   final String? rootCategoryId;
@@ -26,6 +27,7 @@ class LevelComplete extends StatefulWidget {
     required this.incorrectAnswers,
     required this.timeTaken,
     required this.currentLevelIndex,
+    required this.isPaperQuiz,
     required this.allLevels,
     this.isReviewQuiz = false,
     this.catrgoryTitle,
@@ -210,7 +212,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                 ),
                 SizedBox(height: height * 0.025),
                 SvgPicture.asset(
-                  widget.isReviewQuiz
+                  (widget.isReviewQuiz || widget.catrgoryTitle == 'Paper Quiz')
                       ? 'assets/images/Paper Completed!.svg'
                       : (isFailed
                             ? 'assets/images/Level Failed! copy.svg'
@@ -230,33 +232,70 @@ class _LevelCompleteState extends State<LevelComplete> {
                     ),
                   ),
                 if (!widget.isReviewQuiz)
-                  RichText(
-                    textAlign: TextAlign.center,
-                    text: TextSpan(
-                      style: TextStyle(
-                        fontSize: width * 0.04,
-                        color: Colors.black,
-                        fontWeight: FontWeight.w600,
-                        fontFamily: 'Poppins',
-                      ),
-                      children: [
-                        TextSpan(
-                          text:
-                              "You’ve scored ${scorePercent.toStringAsFixed(0)}% ",
-                        ),
-                        TextSpan(
-                          text: widget.isReviewQuiz
-                              ? "in this Review"
-                              : "in this Level",
-                          style: TextStyle(
-                            fontSize: width * 0.038,
-                            color: Colors.black45,
-                            fontWeight: FontWeight.w400,
+                  widget.catrgoryTitle == 'Paper Quiz'
+                      ? Column(
+                          children: [
+                            const Text(
+                              "Great Job! You completed the past paper.",
+                              textAlign: TextAlign.center,
+                              style: TextStyle(
+                                fontSize: 16,
+                                fontWeight: FontWeight.w600,
+                                fontFamily: 'Poppins',
+                                color: Color(0xFF30373D),
+                              ),
+                            ),
+                            SizedBox(height: height * 0.01),
+                            RichText(
+                              text: TextSpan(
+                                style: const TextStyle(
+                                  fontSize: 42,
+                                  fontWeight: FontWeight.w900,
+                                  fontFamily: 'Poppins',
+                                ),
+                                children: [
+                                  TextSpan(
+                                    text: scorePercent.toStringAsFixed(0),
+                                    style: const TextStyle(
+                                      color: Color(0xFF2D4990),
+                                    ),
+                                  ),
+                                  const TextSpan(
+                                    text: "/100",
+                                    style: TextStyle(color: Color(0xFFCBD5E1)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        )
+                      : RichText(
+                          textAlign: TextAlign.center,
+                          text: TextSpan(
+                            style: TextStyle(
+                              fontSize: width * 0.04,
+                              color: Colors.black,
+                              fontWeight: FontWeight.w600,
+                              fontFamily: 'Poppins',
+                            ),
+                            children: [
+                              TextSpan(
+                                text:
+                                    "You’ve scored ${scorePercent.toStringAsFixed(0)}% ",
+                              ),
+                              TextSpan(
+                                text: widget.isReviewQuiz
+                                    ? "in this Review"
+                                    : "in this Level",
+                                style: TextStyle(
+                                  fontSize: width * 0.038,
+                                  color: Colors.black45,
+                                  fontWeight: FontWeight.w400,
+                                ),
+                              ),
+                            ],
                           ),
                         ),
-                      ],
-                    ),
-                  ),
                 SizedBox(height: height * 0.02),
                 if (widget.isReviewQuiz)
                   RichText(
@@ -281,7 +320,8 @@ class _LevelCompleteState extends State<LevelComplete> {
                       ],
                     ),
                   ),
-                if (!widget.isReviewQuiz)
+                if (!widget.isReviewQuiz &&
+                    widget.catrgoryTitle != 'Paper Quiz')
                   Text(
                     isFailed
                         ? "You’ve Earned 0 Pts"
@@ -372,7 +412,9 @@ class _LevelCompleteState extends State<LevelComplete> {
                         ),
                       ),
                       child: Text(
-                        "Start Over",
+                        widget.catrgoryTitle == 'Paper Quiz'
+                            ? "Review Mistakes"
+                            : "Start Over",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: width * 0.045,
@@ -420,12 +462,14 @@ class _LevelCompleteState extends State<LevelComplete> {
                               ),
                             )
                           : Text(
-                              widget.isReviewQuiz
-                                  ? "Back to Home"
-                                  : ((widget.currentLevelIndex + 1) >=
-                                            widget.allLevels.length
-                                        ? "Back to Levels"
-                                        : "Next Level"),
+                              widget.catrgoryTitle == 'Paper Quiz'
+                                  ? "Back to Papers"
+                                  : (widget.isReviewQuiz
+                                        ? "Back to Home"
+                                        : ((widget.currentLevelIndex + 1) >=
+                                                  widget.allLevels.length
+                                              ? "Back to Levels"
+                                              : "Next Level")),
                               style: TextStyle(
                                 color: Colors.white,
                                 fontSize: width * 0.045,

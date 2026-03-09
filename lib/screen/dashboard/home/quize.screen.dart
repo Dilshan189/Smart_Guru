@@ -1,22 +1,11 @@
 import 'dart:async';
-//import 'dart:convert';
-import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
-//import 'package:fluttertoast/fluttertoast.dart';
-//import 'package:get_storage/get_storage.dart';
-import 'package:provider/provider.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smart_guru/utils/theam.dart';
 import 'package:vibration/vibration.dart';
 import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
-// import 'package:smart_guru/Databasehelper/database.helper.dart';
-import '../../../providers/user.provider.dart';
-//import '../../../services/api.service.dart';
-// import '../../../models/repetition.model.dart';
-// import '../../../models/ReviewQuz.dart';
 import '../../result/result.screen.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -33,6 +22,7 @@ class QuizScreen extends StatefulWidget {
   final List<Map<String, dynamic>>? allLevels;
   final int? currentLevelIndex;
   final bool isReviewQuiz;
+  final bool? isPaperQuiz;
 
   const QuizScreen({
     super.key,
@@ -49,6 +39,7 @@ class QuizScreen extends StatefulWidget {
     this.allLevels,
     this.currentLevelIndex,
     this.isReviewQuiz = false,
+    this.isPaperQuiz,
   });
 
   @override
@@ -85,9 +76,6 @@ class _QuizScreenState extends State<QuizScreen> {
   final AudioPlayer _networkAudioPlayer = AudioPlayer();
   bool isPlayingNetworkAudio = false;
   double networkAudioProgress = 0.0;
-  String? _currentAudioUrl;
-  Duration _audioDuration = Duration.zero;
-  Duration _audioPosition = Duration.zero;
 
   StreamSubscription? _audioDurationSub;
   StreamSubscription? _audioPositionSub;
@@ -104,6 +92,17 @@ class _QuizScreenState extends State<QuizScreen> {
     final String title = widget.categoryTitle?.trim() ?? "";
     return title.isNotEmpty &&
         (title == "Paper Quiz" || title == "පැරණි ප්‍රශ්න පත්‍ර");
+  }
+
+  int _calculatePaperQuizScore() {
+    int s = 0;
+    for (int i = 0; i < _questions.length; i++) {
+      if (i < selectedAnswers.length &&
+          selectedAnswers[i] == _questions[i]['correctAnswerIndex']) {
+        s++;
+      }
+    }
+    return s;
   }
 
   bool _levelHasParagraph() {
@@ -157,68 +156,106 @@ class _QuizScreenState extends State<QuizScreen> {
     });
   }
 
-  Future<void> _onCheckOrNext() async {
-    if (_questions.isEmpty || _isFetching) {
-      _timer?.cancel();
+  Future<void> _handleQuizFinish() async {
+    _timer?.cancel();
+    _stopwatch.stop();
 
-      if (widget.isReviewQuiz) {
-        Navigator.pop(context, widget.data);
-      } else {
-        final levelsList = widget.allLevels ?? [];
-        final currentLvlIdx = widget.currentLevelIndex ?? 0;
+    final levelsList = widget.allLevels ?? [];
+    final currentLvlIdx = widget.currentLevelIndex ?? 0;
 
-        final result = await Navigator.push(
+    final result = await Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => LevelComplete(
+          correctAnswers: _isPaperQuizCategory()
+              ? _calculatePaperQuizScore()
+              : score,
+          incorrectAnswers:
+              _questions.length -
+              (_isPaperQuizCategory() ? _calculatePaperQuizScore() : score),
+          timeTaken: _stopwatch.elapsed,
+          currentLevelIndex: currentLvlIdx,
+          allLevels: levelsList,
+          isReviewQuiz: widget.isReviewQuiz,
+          isPaperQuiz: _isPaperQuizCategory(),
+          catrgoryTitle: widget.categoryTitle,
+          categoryId: widget.categoryId,
+          rootCategoryId: widget.rootCategoryId,
+          levelId: widget.levelId,
+        ),
+      ),
+    );
+
+    if (result == 'restart') {
+      _restartQuiz();
+    } else if (result == 'next_level') {
+      if ((currentLvlIdx + 1) < levelsList.length) {
+        final nextIndex = currentLvlIdx + 1;
+        final nextLevel = levelsList[nextIndex];
+
+        Navigator.pushReplacement(
           context,
           MaterialPageRoute(
-            builder: (context) => LevelComplete(
-              correctAnswers: score,
-              incorrectAnswers: 0,
-              timeTaken: _stopwatch.elapsed,
-              currentLevelIndex: currentLvlIdx,
-              allLevels: levelsList,
-              isReviewQuiz: widget.isReviewQuiz,
-              catrgoryTitle: widget.categoryTitle,
-              categoryId: widget.categoryId,
+            builder: (context) => QuizScreen(
+              levelName: nextLevel["level"] ?? "",
+              categoryTitle: widget.categoryTitle,
+              repetitionTitle: widget.repetitionTitle,
+              questions: nextLevel["questions"] ?? [],
+              data: [],
+              pQuestion: nextLevel["pQuestion"],
+              pParagraph: nextLevel["pParagraph"],
+              categoryId: nextLevel["cat_id"]?.toString() ?? widget.categoryId,
               rootCategoryId: widget.rootCategoryId,
-              levelId: widget.levelId,
+              levelId: nextLevel["level_id"]?.toString(),
+              allLevels: levelsList,
+              currentLevelIndex: nextIndex,
+              isReviewQuiz: false,
             ),
           ),
         );
+      } else {
+        Navigator.pop(context, result);
+      }
+    } else if (result == 'exit' || result == 'review_complete') {
+      Navigator.pop(context, result);
+    }
+  }
 
-        if (result == 'restart') {
-          _restartQuiz();
-        } else if (result == 'next_level') {
-          if ((currentLvlIdx + 1) < levelsList.length) {
-            final nextIndex = currentLvlIdx + 1;
-            final nextLevel = levelsList[nextIndex];
+  Future<void> _onCheckOrNext() async {
+    if (_questions.isEmpty || _isFetching) {
+      if (widget.isReviewQuiz) {
+        Navigator.pop(context, widget.data);
+      } else {
+        Navigator.pop(context);
+      }
+      return;
+    }
 
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QuizScreen(
-                  levelName: nextLevel["level"] ?? "",
-                  categoryTitle: widget.categoryTitle,
-                  repetitionTitle: widget.repetitionTitle,
-                  questions: nextLevel["questions"] ?? [],
-                  data: [],
-                  pQuestion: nextLevel["pQuestion"],
-                  pParagraph: nextLevel["pParagraph"],
-                  categoryId:
-                      nextLevel["cat_id"]?.toString() ?? widget.categoryId,
-                  rootCategoryId: widget.rootCategoryId,
-                  levelId: nextLevel["level_id"]?.toString(),
-                  allLevels: levelsList,
-                  currentLevelIndex: nextIndex,
-                  isReviewQuiz: false,
-                ),
-              ),
-            );
-          } else {
-            Navigator.pop(context, result);
-          }
-        } else if (result == 'exit') {
-          Navigator.pop(context, result);
-        }
+    if (_isPaperQuizCategory()) {
+      // Paper Quiz Logic: Save and move immediately
+      setState(() {
+        selectedAnswers[currentIndex] = selectedAnswer;
+      });
+
+      if (currentIndex < _questions.length - 1) {
+        await _stopAudio();
+        setState(() {
+          currentIndex++;
+          selectedAnswer = selectedAnswers[currentIndex];
+          isAnswered = selectedAnswer != null;
+          showParagraphMode = false;
+        });
+        _startTimer();
+        _scrollToCurrentNumber();
+        WidgetsBinding.instance.addPostFrameCallback((_) {
+          _scrollController.animateTo(
+            0,
+            duration: const Duration(milliseconds: 300),
+            curve: Curves.easeInOut,
+          );
+        });
+      } else {
+        _handleQuizFinish();
       }
       return;
     }
@@ -233,9 +270,6 @@ class _QuizScreenState extends State<QuizScreen> {
         selectedAnswers[currentIndex] = selectedAnswer;
         if (selectedAnswer == correctAnswerIndex) {
           score++;
-          // _insertShowAnswerData();
-        } else {
-          // _removeFromMasteredList();
         }
       });
 
@@ -269,11 +303,10 @@ class _QuizScreenState extends State<QuizScreen> {
         await _stopAudio();
         setState(() {
           currentIndex++;
-          selectedAnswer = null;
-          isAnswered = false;
+          selectedAnswer = selectedAnswers[currentIndex];
+          isAnswered = selectedAnswer != null;
           showParagraphMode = false;
         });
-        // _loadButtonState();
         _startTimer();
         _scrollToCurrentNumber();
         WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -285,63 +318,7 @@ class _QuizScreenState extends State<QuizScreen> {
         });
       } else {
         /// Quiz finished
-        _timer?.cancel();
-
-        final levelsList = widget.allLevels ?? [];
-        final currentLvlIdx = widget.currentLevelIndex ?? 0;
-
-        final result = await Navigator.push(
-          context,
-          MaterialPageRoute(
-            builder: (context) => LevelComplete(
-              correctAnswers: score,
-              incorrectAnswers: _questions.length - score,
-              timeTaken: _stopwatch.elapsed,
-              currentLevelIndex: currentLvlIdx,
-              allLevels: levelsList,
-              isReviewQuiz: widget.isReviewQuiz,
-              catrgoryTitle: widget.categoryTitle,
-              categoryId: widget.categoryId,
-              rootCategoryId: widget.rootCategoryId,
-              levelId: widget.levelId,
-            ),
-          ),
-        );
-
-        if (result == 'restart') {
-          _restartQuiz();
-        } else if (result == 'next_level') {
-          if ((currentLvlIdx + 1) < levelsList.length) {
-            final nextIndex = currentLvlIdx + 1;
-            final nextLevel = levelsList[nextIndex];
-
-            Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(
-                builder: (context) => QuizScreen(
-                  levelName: nextLevel["level"] ?? "",
-                  categoryTitle: widget.categoryTitle,
-                  repetitionTitle: widget.repetitionTitle,
-                  questions: nextLevel["questions"] ?? [],
-                  data: [],
-                  pQuestion: nextLevel["pQuestion"],
-                  pParagraph: nextLevel["pParagraph"],
-                  categoryId:
-                      nextLevel["cat_id"]?.toString() ?? widget.categoryId,
-                  rootCategoryId: widget.rootCategoryId,
-                  levelId: nextLevel["level_id"]?.toString(),
-                  allLevels: levelsList,
-                  currentLevelIndex: nextIndex,
-                  isReviewQuiz: false,
-                ),
-              ),
-            );
-          } else {
-            Navigator.pop(context, result);
-          }
-        } else if (result == 'exit' || result == 'review_complete') {
-          Navigator.pop(context, result);
-        }
+        _handleQuizFinish();
       }
     }
   }
@@ -354,17 +331,11 @@ class _QuizScreenState extends State<QuizScreen> {
         await _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
       }
     } catch (e) {
-      if (kDebugMode) {
-        print('Error playing sound: $e');
-      }
+      // if (kDebugMode) { // kDebugMode is not defined here, assuming it's from foundation.dart or similar
+      //   print('Error playing sound: $e');
+      // }
+      print('Error playing sound: $e'); // Using print for simplicity
     }
-  }
-
-  String _formatDuration(Duration duration) {
-    String twoDigits(int n) => n.toString().padLeft(2, '0');
-    final minutes = twoDigits(duration.inMinutes.remainder(60));
-    final seconds = twoDigits(duration.inSeconds.remainder(60));
-    return "$minutes:$seconds";
   }
 
   Future<void> _stopAudio() async {
@@ -377,97 +348,17 @@ class _QuizScreenState extends State<QuizScreen> {
       setState(() {
         isPlayingNetworkAudio = false;
         networkAudioProgress = 0.0;
-        _audioPosition = Duration.zero;
       });
-    }
-  }
-
-  Future<void> _toggleNetworkAudio(String? audioPath) async {
-    if (audioPath == null || audioPath.trim().isEmpty) return;
-
-    final String a = audioPath.trim();
-    final String url = a.toLowerCase().startsWith('https')
-        ? a
-        : 'https://smartiq.ideacipher.com/upload/audio/${a.startsWith('/') ? a.substring(1) : a}';
-
-    if (isPlayingTTS) {
-      await flutterTts.stop();
-      setState(() {
-        isPlayingTTS = false;
-        ttsProgress = 0.0;
-      });
-    }
-
-    if (_currentAudioUrl == url) {
-      if (isPlayingNetworkAudio) {
-        await _networkAudioPlayer.pause();
-        setState(() {
-          isPlayingNetworkAudio = false;
-        });
-      } else {
-        if ((_audioPosition >= _audioDuration ||
-                _audioPosition == Duration.zero) &&
-            _audioDuration != Duration.zero) {
-          await _networkAudioPlayer.play(UrlSource(url));
-        } else {
-          await _networkAudioPlayer.resume();
-        }
-
-        setState(() {
-          isPlayingNetworkAudio = true;
-        });
-      }
-      return;
-    }
-
-    await _stopAudio();
-    _currentAudioUrl = url;
-
-    try {
-      _audioCompleteSub = _networkAudioPlayer.onPlayerComplete.listen((_) {
-        if (mounted) {
-          setState(() {
-            isPlayingNetworkAudio = false;
-            networkAudioProgress = 0.0;
-            _audioPosition = Duration.zero;
-          });
-        }
-      });
-
-      _audioDurationSub = _networkAudioPlayer.onDurationChanged.listen((d) {
-        if (mounted) {
-          setState(() {
-            _audioDuration = d;
-          });
-        }
-      });
-
-      _audioPositionSub = _networkAudioPlayer.onPositionChanged.listen((p) {
-        if (mounted) {
-          setState(() {
-            _audioPosition = p;
-            networkAudioProgress = (_audioDuration.inMilliseconds > 0)
-                ? p.inMilliseconds / _audioDuration.inMilliseconds
-                : 0.0;
-          });
-        }
-      });
-
-      await _networkAudioPlayer.play(UrlSource(url));
-      setState(() {
-        isPlayingNetworkAudio = true;
-      });
-    } catch (e) {
-      if (kDebugMode) print('Failed to play network audio $url: $e');
-      await _stopAudio();
     }
   }
 
   String _getButtonText() {
-    // final bool isParagraphCategory = _levelHasParagraph();
-
     if (showParagraphMode) {
       return "Go to Question";
+    }
+
+    if (_isPaperQuizCategory()) {
+      return (currentIndex < _questions.length - 1) ? "Next" : "Finish";
     }
 
     if (widget.isReviewQuiz) {
@@ -479,16 +370,6 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     return (currentIndex < _questions.length - 1) ? "Next Question" : "Finish";
-  }
-
-  String _getUserId() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    return userProvider.userId?.toString() ?? '';
-  }
-
-  String _getToken() {
-    final userProvider = Provider.of<UserProvider>(context, listen: false);
-    return userProvider.token ?? '';
   }
 
   // String _getSavedKey(int index) {
@@ -557,17 +438,6 @@ class _QuizScreenState extends State<QuizScreen> {
   //     }
   //   });
   // }
-
-  String _titleKey() {
-    return _repetitionTitleToUse().replaceAll(' ', '_');
-  }
-
-  String _repetitionTitleToUse() {
-    return (widget.repetitionTitle?.isNotEmpty == true
-            ? widget.repetitionTitle!
-            : (widget.categoryTitle ?? widget.levelName ?? ''))
-        .trim();
-  }
 
   int _firstUnansweredIndex() {
     if (selectedAnswers.isEmpty) return 0;
@@ -1143,87 +1013,94 @@ class _QuizScreenState extends State<QuizScreen> {
       appBar: _isPaperQuizCategory()
           ? AppBar(
               backgroundColor: Colors.white,
+              elevation: 0,
               automaticallyImplyLeading: false,
-              title: Padding(
-                padding: const EdgeInsets.symmetric(horizontal: 22),
-                child: Row(
-                  children: [
-                    InkWell(
-                      onTap: () => _modalBottomSheetMenu(context),
-                      child: Container(
-                        width: 45,
-                        height: 45,
-                        decoration: const BoxDecoration(
-                          color: Colors.black,
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.arrow_back_ios_new,
-                          size: 13,
-                          color: Colors.white,
-                        ),
+              toolbarHeight: 90,
+              title: Row(
+                children: [
+                  InkWell(
+                    onTap: () => _modalBottomSheetMenu(context),
+                    child: Container(
+                      width: 44,
+                      height: 44,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFF1E293B),
+                        shape: BoxShape.circle,
+                      ),
+                      child: const Icon(
+                        Icons.arrow_back_ios_new,
+                        size: 16,
+                        color: Colors.white,
                       ),
                     ),
-                    const SizedBox(width: 20),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Row(
+                  ),
+                  const SizedBox(width: 15),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          widget.categoryTitle ?? "",
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1E293B),
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 10,
+                            vertical: 4,
+                          ),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFFF1F5F9),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
-                              Expanded(
-                                child: Text(
-                                  widget.categoryTitle ?? "",
-                                  overflow: TextOverflow.ellipsis,
-                                  style: const TextStyle(
-                                    fontSize: 20,
-                                    color: Colors.black,
-                                  ),
-                                ),
+                              const Icon(
+                                Icons.timer_outlined,
+                                size: 14,
+                                color: Color(0xFF64748B),
                               ),
-                              Container(
-                                width: 85,
-                                height: 32,
-                                decoration: BoxDecoration(
-                                  color: Colors.black,
-                                  borderRadius: BorderRadius.circular(8),
-                                ),
-                                child: Center(
-                                  child: Text(
-                                    formatTime(remainingSeconds),
-                                    style: const TextStyle(
-                                      color: Colors.white,
-                                      fontSize: 13,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(width: 10),
-                              InkWell(
-                                onTap: () => _showReportDialog(),
-                                child: SvgPicture.asset(
-                                  "assets/images/report.svg",
-                                  width: 22,
-                                  colorFilter: const ColorFilter.mode(
-                                    AppColors.primary,
-                                    BlendMode.srcIn,
-                                  ),
+                              const SizedBox(width: 4),
+                              Text(
+                                formatTime(remainingSeconds),
+                                style: const TextStyle(
+                                  color: Color(0xFF64748B),
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
                             ],
                           ),
-                          Text(
-                            widget.levelName,
-                            style: const TextStyle(
-                              fontSize: 14,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+                        ),
+                      ],
+                    ),
+                  ),
+                  ElevatedButton(
+                    onPressed: _handleQuizFinish,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF1E293B),
+                      foregroundColor: Colors.white,
+                      elevation: 0,
+                      minimumSize: const Size(80, 42),
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                  ],
-                ),
+                    child: const Text(
+                      "Submit",
+                      style: TextStyle(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                      ),
+                    ),
+                  ),
+                ],
               ),
             )
           : AppBar(
@@ -1308,6 +1185,8 @@ class _QuizScreenState extends State<QuizScreen> {
                           final idx = num - 1;
                           final bool isCurrent =
                               idx == currentIndex && !showParagraphMode;
+                          final bool isAnsweredQ = selectedAnswers[idx] != null;
+
                           return GestureDetector(
                             onTap: () {
                               setState(() {
@@ -1319,28 +1198,31 @@ class _QuizScreenState extends State<QuizScreen> {
                               _scrollToCurrentNumber();
                             },
                             child: Container(
-                              width: 47,
-                              height: 47,
+                              width: 50,
+                              height: 50,
                               margin: const EdgeInsets.only(left: 10),
                               decoration: BoxDecoration(
                                 color: isCurrent
-                                    ? const Color(0xFF130026)
-                                    : Colors.transparent,
+                                    ? const Color(0xFF2D4990)
+                                    : (isAnsweredQ
+                                          ? const Color(0xFF1E293B)
+                                          : Colors.white),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: isCurrent
-                                      ? Colors.black
-                                      : Colors.grey.withOpacity(0.3),
+                                  color: isCurrent || isAnsweredQ
+                                      ? Colors.transparent
+                                      : const Color(0xFFCBD5E1),
                                 ),
                               ),
                               child: Center(
                                 child: Text(
                                   '$num',
                                   style: TextStyle(
-                                    color: isCurrent
+                                    color: isCurrent || isAnsweredQ
                                         ? Colors.white
-                                        : Colors.black,
-                                    fontWeight: FontWeight.bold,
+                                        : const Color(0xFF64748B),
+                                    fontWeight: FontWeight.w600,
+                                    fontSize: 14,
                                   ),
                                 ),
                               ),
@@ -1351,12 +1233,21 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 15),
-              if (!_isPaperQuizCategory())
-                Text(
-                  '${currentIndex + 1}/${_questions.length}',
-                  style: const TextStyle(fontWeight: FontWeight.bold),
+              const SizedBox(height: 20),
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Align(
+                  alignment: Alignment.centerLeft,
+                  child: Text(
+                    'Question ${currentIndex + 1} of ${_questions.length}',
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.w500,
+                      color: Color(0xFF64748B),
+                    ),
+                  ),
                 ),
+              ),
               const SizedBox(height: 10),
               Container(
                 width: 359,
@@ -1528,65 +1419,126 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         ),
       ),
-      bottomNavigationBar: SafeArea(
-        child: Padding(
-          padding: const EdgeInsets.symmetric(horizontal: 35, vertical: 20),
-          child: Row(
-            children: [
-              if (!showParagraphMode)
-                Column(
-                  mainAxisSize: MainAxisSize.min,
+      bottomNavigationBar: _isPaperQuizCategory()
+          ? SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 25,
+                  vertical: 15,
+                ),
+                child: Row(
                   children: [
-                    InkWell(
-                      onTap: () {
-                        // _toggleSaveForCurrentQuestion();
-                      },
-                      child: SvgPicture.asset(
-                        "assets/images/save.svg",
-                        width: 24,
-                        colorFilter: const ColorFilter.mode(
-                          AppColors.primary,
-                          BlendMode.srcIn,
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: currentIndex > 0
+                            ? _goToPreviousQuestion
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFFE2E8F0),
+                          foregroundColor: const Color(0xFF1E293B),
+                          elevation: 0,
+                          minimumSize: const Size(double.infinity, 56),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: const Text(
+                          "Previous",
+                          style: TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
                         ),
                       ),
                     ),
-                    const SizedBox(height: 4),
-                    const Text(
-                      "Save",
-                      style: TextStyle(
-                        fontSize: 10,
-                        fontWeight: FontWeight.w500,
-                        color: Color(0xFF94A3B8),
+                    const SizedBox(width: 15),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _onCheckOrNext,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2D4990),
+                          foregroundColor: Colors.white,
+                          elevation: 0,
+                          minimumSize: const Size(double.infinity, 56),
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: Text(
+                          _getButtonText(),
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
                       ),
                     ),
                   ],
                 ),
-              const SizedBox(width: 25),
-              Expanded(
-                child: ElevatedButton(
-                  onPressed: _onCheckOrNext,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: AppColors.primary,
-                    minimumSize: const Size(double.infinity, 56),
-                    elevation: 0,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
+              ),
+            )
+          : SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(
+                  horizontal: 35,
+                  vertical: 20,
+                ),
+                child: Row(
+                  children: [
+                    if (!showParagraphMode)
+                      Column(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          InkWell(
+                            onTap: () {
+                              // _toggleSaveForCurrentQuestion();
+                            },
+                            child: SvgPicture.asset(
+                              "assets/images/save.svg",
+                              width: 24,
+                              colorFilter: const ColorFilter.mode(
+                                AppColors.primary,
+                                BlendMode.srcIn,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 4),
+                          const Text(
+                            "Save",
+                            style: TextStyle(
+                              fontSize: 10,
+                              fontWeight: FontWeight.w500,
+                              color: Color(0xFF94A3B8),
+                            ),
+                          ),
+                        ],
+                      ),
+                    const SizedBox(width: 25),
+                    Expanded(
+                      child: ElevatedButton(
+                        onPressed: _onCheckOrNext,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: AppColors.primary,
+                          minimumSize: const Size(double.infinity, 56),
+                          elevation: 0,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(30),
+                          ),
+                        ),
+                        child: Text(
+                          _getButtonText(),
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 18,
+                            fontWeight: FontWeight.w600,
+                          ),
+                        ),
+                      ),
                     ),
-                  ),
-                  child: Text(
-                    _getButtonText(),
-                    style: const TextStyle(
-                      color: Colors.white,
-                      fontSize: 18,
-                      fontWeight: FontWeight.w600,
-                    ),
-                  ),
+                  ],
                 ),
               ),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 }

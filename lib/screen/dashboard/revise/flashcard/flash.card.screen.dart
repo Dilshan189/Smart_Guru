@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smart_guru/screen/dashboard/revise/flashcard/flash.screen.dart';
 
 class FlashCardScreen extends StatefulWidget {
   const FlashCardScreen({super.key});
@@ -13,22 +14,22 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     {
       "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
       "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "bad"
+      "status": "bad",
     },
     {
       "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
       "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "neutral"
+      "status": "neutral",
     },
     {
       "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
       "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "good"
+      "status": "good",
     },
     {
       "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
       "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "neutral"
+      "status": "neutral",
     },
   ];
 
@@ -168,11 +169,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               color: iconBgColor,
               shape: BoxShape.circle,
             ),
-            child: Icon(
-              iconData,
-              color: iconColor,
-              size: 26,
-            ),
+            child: Icon(iconData, color: iconColor, size: 26),
           ),
           const SizedBox(width: 16),
           // Card Text Fields
@@ -211,7 +208,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   Widget _buildBottomButton() {
     return GestureDetector(
       onTap: () {
-        // Handle trigger
+        _showRevisionPopup(context);
       },
       child: Container(
         width: double.infinity,
@@ -236,10 +233,272 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               ),
             ),
             SizedBox(width: 6),
-            Icon(
-              Icons.chevron_right,
-              color: Colors.white,
-              size: 22,
+            Icon(Icons.chevron_right, color: Colors.white, size: 22),
+          ],
+        ),
+      ),
+    );
+  }
+
+  void _showRevisionPopup(BuildContext context) {
+    String selectedCardType = "All";
+    double numberOfCards = 15;
+    const double maxCards = 55;
+
+    showDialog(
+      context: context,
+      barrierDismissible: true,
+      builder: (context) {
+        return StatefulBuilder(
+          builder: (BuildContext context, StateSetter setModalState) {
+            return Center(
+              child: Container(
+                margin: const EdgeInsets.symmetric(horizontal: 20),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  borderRadius: BorderRadius.circular(30),
+                ),
+                child: ClipRRect(
+                  borderRadius: BorderRadius.circular(30),
+                  child: Material(
+                    color: Colors.transparent,
+                    child: Column(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Padding(
+                          padding: const EdgeInsets.symmetric(
+                            horizontal: 24,
+                            vertical: 30,
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                "Card Type",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2D4990),
+                                  fontFamily: "Poppins",
+                                ),
+                              ),
+                              const SizedBox(height: 16),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
+                                  _buildTypeOption(
+                                    label: "All",
+                                    isSelected: selectedCardType == "All",
+                                    onTap: () => setModalState(
+                                      () => selectedCardType = "All",
+                                    ),
+                                  ),
+                                  _buildTypeOption(
+                                    label: "Bad",
+                                    icon: Icons.sentiment_dissatisfied,
+                                    iconColor: const Color(0xFFE63946),
+                                    bgColor: const Color(0xFFFFEBEB),
+                                    isSelected: selectedCardType == "Bad",
+                                    onTap: () => setModalState(
+                                      () => selectedCardType = "Bad",
+                                    ),
+                                  ),
+                                  _buildTypeOption(
+                                    label: "OK",
+                                    icon: Icons.sentiment_neutral,
+                                    iconColor: const Color(0xFF64748B),
+                                    bgColor: const Color(0xFFF1F5F9),
+                                    isSelected: selectedCardType == "OK",
+                                    onTap: () => setModalState(
+                                      () => selectedCardType = "OK",
+                                    ),
+                                  ),
+                                  _buildTypeOption(
+                                    label: "Good",
+                                    icon: Icons.sentiment_satisfied,
+                                    iconColor: const Color(0xFF00C853),
+                                    bgColor: const Color(0xFFE8F5E9),
+                                    isSelected: selectedCardType == "Good",
+                                    onTap: () => setModalState(
+                                      () => selectedCardType = "Good",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              const SizedBox(height: 40),
+                              const Text(
+                                "Number Of Cards",
+                                style: TextStyle(
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
+                                  color: Color(0xFF2D4990),
+                                  fontFamily: "Poppins",
+                                ),
+                              ),
+                              const SizedBox(height: 10),
+                              SliderTheme(
+                                data: SliderTheme.of(context).copyWith(
+                                  activeTrackColor: const Color(0xFF2D4990),
+                                  inactiveTrackColor: const Color(0xFFE2E8F0),
+                                  thumbColor: const Color(0xFF2D4990),
+                                  overlayColor: const Color(0x292D4990),
+                                  trackHeight: 4.0,
+                                  thumbShape: const RoundSliderThumbShape(
+                                    enabledThumbRadius: 8.0,
+                                  ),
+                                  overlayShape: const RoundSliderOverlayShape(
+                                    overlayRadius: 16.0,
+                                  ),
+                                ),
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 10,
+                                  ),
+                                  child: Column(
+                                    children: [
+                                      Slider(
+                                        value: numberOfCards,
+                                        min: 1,
+                                        max: maxCards,
+                                        onChanged: (value) {
+                                          setModalState(() {
+                                            numberOfCards = value;
+                                          });
+                                        },
+                                      ),
+                                      Align(
+                                        alignment: Alignment.centerRight,
+                                        child: Text(
+                                          "${maxCards.toInt()} Cards",
+                                          style: const TextStyle(
+                                            fontSize: 10,
+                                            color: Color(0xFF64748B),
+                                            fontWeight: FontWeight.w500,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 15),
+                              Center(
+                                child: Text(
+                                  "${numberOfCards.toInt()} Cards",
+                                  style: const TextStyle(
+                                    fontSize: 22,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF2D4990),
+                                    fontFamily: "Poppins",
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(height: 5),
+                            ],
+                          ),
+                        ),
+                        GestureDetector(
+                          onTap: () {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => FlashScreen(),
+                              ),
+                            );
+                            // Navigate to actual revision screen
+                          },
+                          child: Container(
+                            width: double.infinity,
+                            decoration: const BoxDecoration(
+                              gradient: LinearGradient(
+                                colors: [Color(0xFF2D4990), Color(0xFF1E293B)],
+                                begin: Alignment.topCenter,
+                                end: Alignment.bottomCenter,
+                              ),
+                              // Removed borderRadius here, as main container handles it
+                            ),
+                            padding: const EdgeInsets.symmetric(vertical: 22),
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: const [
+                                Text(
+                                  "LET'S START",
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    fontFamily: "Poppins",
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                SizedBox(width: 8),
+                                Icon(
+                                  Icons.chevron_right,
+                                  color: Colors.white,
+                                  size: 26,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildTypeOption({
+    required String label,
+    IconData? icon,
+    Color? iconColor,
+    Color? bgColor,
+    required bool isSelected,
+    required VoidCallback onTap,
+  }) {
+    return GestureDetector(
+      onTap: onTap,
+      child: Container(
+        width: 75,
+        height: 75,
+        decoration: BoxDecoration(
+          color: isSelected && label == "All"
+              ? const Color(0xFFEFF6FF)
+              : (bgColor ?? Colors.white),
+          borderRadius: BorderRadius.circular(15),
+          border: Border.all(
+            color: isSelected ? const Color(0xFF2D4990) : Colors.transparent,
+            width: 2,
+          ),
+          boxShadow: [
+            if (!isSelected)
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 8,
+                offset: const Offset(0, 2),
+              ),
+          ],
+        ),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            if (icon != null) ...[
+              Icon(icon, color: iconColor, size: 28),
+              const SizedBox(height: 4),
+            ],
+            Text(
+              label,
+              style: TextStyle(
+                fontSize: 13,
+                fontWeight: FontWeight.bold,
+                color: iconColor ?? const Color(0xFF2D4990),
+              ),
             ),
           ],
         ),

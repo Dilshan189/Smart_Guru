@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:smart_guru/utils/theam.dart';
+import 'quize.screen.dart';
 
 class PastModelPapersScreen extends StatefulWidget {
   final String title;
@@ -233,7 +234,20 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                                   width: double.infinity,
                                   height: 32,
                                   child: ElevatedButton(
-                                    onPressed: () {},
+                                    onPressed: () {
+                                      Navigator.push(
+                                        context,
+                                        MaterialPageRoute(
+                                          builder: (context) => QuizScreen(
+                                            levelName: exam["title"],
+                                            categoryTitle: "Paper Quiz",
+                                            questions: const [],
+                                            data: const [],
+                                            levelId: "1",
+                                          ),
+                                        ),
+                                      );
+                                    },
                                     style: ElevatedButton.styleFrom(
                                       backgroundColor: AppColors.primary,
                                       foregroundColor: AppColors.surfaceWhite,
@@ -525,7 +539,20 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                           child: SizedBox(
                             height: 36,
                             child: ElevatedButton(
-                              onPressed: () {},
+                              onPressed: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => QuizScreen(
+                                      levelName: title,
+                                      categoryTitle: "Paper Quiz",
+                                      questions: const [],
+                                      data: const [],
+                                      levelId: "1", // Hardcoded for testing
+                                    ),
+                                  ),
+                                );
+                              },
                               style: ElevatedButton.styleFrom(
                                 backgroundColor: AppColors.primary,
                                 foregroundColor: AppColors.surfaceWhite,
