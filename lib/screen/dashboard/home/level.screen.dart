@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:smart_guru/utils/theam.dart';
+import 'quize.screen.dart';
 
 class LevelScreen extends StatefulWidget {
   final String title;
@@ -93,116 +94,139 @@ class _LevelScreenState extends State<LevelScreen> {
     bool isLocked = item["isLocked"];
     bool isPremium = item["isPremium"];
 
-    return Container(
-      decoration: BoxDecoration(
-        color: const Color(0xFFF1F5F9).withOpacity(0.5),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: isLocked
-              ? Colors.blue.withOpacity(0.1)
-              : AppColors.primary.withOpacity(0.2),
-          width: 1,
+    return InkWell(
+      onTap: () {
+        if (!isLocked) {
+          // Navigating to QuizScreen. In a real app, you would fetch questions from an API here
+          // or pass the category/level ID to QuizScreen to fetch its own questions.
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuizScreen(
+                levelName: "Level ${item['num']}",
+                categoryTitle: widget.title,
+                questions:
+                    const [], // Questions will be fetched by QuizScreen using levelId/categoryId
+                data: const [],
+                categoryId:
+                    "1", // This would normally come from the API/Data model
+                levelId: item['num'],
+              ),
+            ),
+          );
+        }
+      },
+      child: Container(
+        decoration: BoxDecoration(
+          color: const Color(0xFFF1F5F9).withOpacity(0.5),
+          borderRadius: BorderRadius.circular(20),
+          border: Border.all(
+            color: isLocked
+                ? Colors.blue.withOpacity(0.1)
+                : AppColors.primary.withOpacity(0.2),
+            width: 1,
+          ),
         ),
-      ),
-      child: Stack(
-        alignment: Alignment.center,
-        children: [
-          Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            children: [
-              Text(
-                "Level ${item['num']}",
-                style: TextStyle(
-                  fontFamily: "Poppins",
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                  color: isLocked
-                      ? const Color(0xFFABC4FF)
-                      : const Color(0xFF1E3A8A),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                width: 42,
-                height: 42,
-                decoration: BoxDecoration(
-                  color: isLocked
-                      ? const Color(0xFFDBE6FF)
-                      : const Color(0xFFDBE6FF),
-                  shape: BoxShape.circle,
-                ),
-                child: Center(
-                  child: SvgPicture.asset(
-                    isLocked
-                        ? "assets/images/Group 512878.svg"
-                        : "assets/images/uis_unlock.svg",
-                    colorFilter: ColorFilter.mode(
-                      isLocked
-                          ? const Color(0xFF8DA9FF)
-                          : const Color(0xFF1E3A8A),
-                      BlendMode.srcIn,
-                    ),
-                    width: 22,
-                    height: 28,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 8),
-              if (!isPremium)
+        child: Stack(
+          alignment: Alignment.center,
+          children: [
+            Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
                 Text(
-                  item['status'],
+                  "Level ${item['num']}",
                   style: TextStyle(
                     fontFamily: "Poppins",
-                    fontSize: 10,
-                    fontWeight: FontWeight.w600,
+                    fontSize: 14,
+                    fontWeight: FontWeight.bold,
                     color: isLocked
                         ? const Color(0xFFABC4FF)
                         : const Color(0xFF1E3A8A),
                   ),
                 ),
-            ],
-          ),
-          if (isPremium)
-            Positioned(
-              bottom: 0,
-              left: 0,
-              right: 0,
-              child: Container(
-                height: 21,
-                decoration: const BoxDecoration(
-                  color: Color(0xFF2D4990),
-                  borderRadius: BorderRadius.only(
-                    bottomLeft: Radius.circular(20),
-                    bottomRight: Radius.circular(20),
+                const SizedBox(height: 8),
+                Container(
+                  width: 42,
+                  height: 42,
+                  decoration: BoxDecoration(
+                    color: isLocked
+                        ? const Color(0xFFDBE6FF)
+                        : const Color(0xFFDBE6FF),
+                    shape: BoxShape.circle,
                   ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Text(
-                      "Premium",
-                      style: TextStyle(
-                        fontFamily: "Poppins",
-                        fontSize: 10,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    SizedBox(width: 10),
-                    SvgPicture.asset(
-                      "assets/images/fluent_premium-28-filled.svg",
-                      colorFilter: const ColorFilter.mode(
-                        Colors.white,
+                  child: Center(
+                    child: SvgPicture.asset(
+                      isLocked
+                          ? "assets/images/Group 512878.svg"
+                          : "assets/images/uis_unlock.svg",
+                      colorFilter: ColorFilter.mode(
+                        isLocked
+                            ? const Color(0xFF8DA9FF)
+                            : const Color(0xFF1E3A8A),
                         BlendMode.srcIn,
                       ),
-                      width: 15,
-                      height: 15,
+                      width: 22,
+                      height: 28,
                     ),
-                  ],
+                  ),
+                ),
+                const SizedBox(height: 8),
+                if (!isPremium)
+                  Text(
+                    item['status'],
+                    style: TextStyle(
+                      fontFamily: "Poppins",
+                      fontSize: 10,
+                      fontWeight: FontWeight.w600,
+                      color: isLocked
+                          ? const Color(0xFFABC4FF)
+                          : const Color(0xFF1E3A8A),
+                    ),
+                  ),
+              ],
+            ),
+            if (isPremium)
+              Positioned(
+                bottom: 0,
+                left: 0,
+                right: 0,
+                child: Container(
+                  height: 21,
+                  decoration: const BoxDecoration(
+                    color: Color(0xFF2D4990),
+                    borderRadius: BorderRadius.only(
+                      bottomLeft: Radius.circular(20),
+                      bottomRight: Radius.circular(20),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Text(
+                        "Premium",
+                        style: TextStyle(
+                          fontFamily: "Poppins",
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                        ),
+                      ),
+                      const SizedBox(width: 10),
+                      SvgPicture.asset(
+                        "assets/images/fluent_premium-28-filled.svg",
+                        colorFilter: const ColorFilter.mode(
+                          Colors.white,
+                          BlendMode.srcIn,
+                        ),
+                        width: 15,
+                        height: 15,
+                      ),
+                    ],
+                  ),
                 ),
               ),
-            ),
-        ],
+          ],
+        ),
       ),
     );
   }
