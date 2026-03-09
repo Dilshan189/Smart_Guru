@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_guru/utils/theam.dart';
 import 'package:smart_guru/screen/dashboard/home/level.screen.dart';
 
-class IqCategory extends StatefulWidget {
+class LessonWiseScreen extends StatefulWidget {
   final String title;
   final String subtitle;
   final List<Map<String, dynamic>> quizList;
@@ -11,7 +11,7 @@ class IqCategory extends StatefulWidget {
   final String levelId;
   final Function(double)? onRefresh;
 
-  const IqCategory({
+  const LessonWiseScreen({
     super.key,
     required this.title,
     required this.quizList,
@@ -23,10 +23,10 @@ class IqCategory extends StatefulWidget {
   });
 
   @override
-  State<IqCategory> createState() => _IqCategoryState();
+  State<LessonWiseScreen> createState() => _LessonWiseScreenState();
 }
 
-class _IqCategoryState extends State<IqCategory> {
+class _LessonWiseScreenState extends State<LessonWiseScreen> {
   final List<Map<String, dynamic>> levels = [
     {
       "id": "1",
@@ -188,19 +188,20 @@ class _IqCategoryState extends State<IqCategory> {
                               ),
                             ),
                             const SizedBox(width: 10),
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFEEF2FF),
-                                shape: BoxShape.circle,
+                            if (!isPremium)
+                              Container(
+                                width: 32,
+                                height: 32,
+                                decoration: const BoxDecoration(
+                                  color: Color(0xFFEEF2FF),
+                                  shape: BoxShape.circle,
+                                ),
+                                child: const Icon(
+                                  Icons.arrow_forward_ios,
+                                  size: 14,
+                                  color: Color(0xFF4338CA),
+                                ),
                               ),
-                              child: const Icon(
-                                Icons.arrow_forward_ios,
-                                size: 14,
-                                color: Color(0xFF4338CA),
-                              ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 15),

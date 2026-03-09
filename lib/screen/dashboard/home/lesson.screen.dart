@@ -1,20 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
+import 'package:smart_guru/screen/dashboard/home/past.model.papers.screen.dart';
 import 'package:smart_guru/utils/theam.dart';
 import 'package:smart_guru/screen/dashboard/home/quiz.item.screen.dart';
 import 'package:smart_guru/screen/dashboard/home/lesson.wise.screen.dart';
+import 'package:smart_guru/screen/dashboard/home/short.note.screen.dart';
 
-class IQScreen extends StatefulWidget {
+class LessonScreen extends StatefulWidget {
   final String title;
   final String categoryId;
 
-  const IQScreen({super.key, required this.title, required this.categoryId});
+  const LessonScreen({
+    super.key,
+    required this.title,
+    required this.categoryId,
+  });
 
   @override
-  State<IQScreen> createState() => _IQScreenState();
+  State<LessonScreen> createState() => _LessonScreenState();
 }
 
-class _IQScreenState extends State<IQScreen> {
+class _LessonScreenState extends State<LessonScreen> {
   final List<Map<String, dynamic>> quizItems = [
     {
       "id": "lessons",
@@ -121,13 +127,36 @@ class _IQScreenState extends State<IQScreen> {
                             Navigator.push(
                               context,
                               MaterialPageRoute(
-                                builder: (context) => IqCategory(
+                                builder: (context) => LessonWiseScreen(
                                   title: widget.title,
                                   subtitle: item["title"],
                                   quizList: const [],
                                   categoryId: widget.categoryId,
                                   levelId: "1",
                                 ),
+                              ),
+                            );
+                          } else if (item["id"] == "past_papers") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    PastModelPapersScreen(title: item["title"]),
+                              ),
+                            );
+                          } else if (item["id"] == "model_papers") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) =>
+                                    PastModelPapersScreen(title: item["title"]),
+                              ),
+                            );
+                          } else if (item["id"] == "short_notes") {
+                            Navigator.push(
+                              context,
+                              MaterialPageRoute(
+                                builder: (context) => const ShortNoteScreen(),
                               ),
                             );
                           } else {
@@ -149,7 +178,7 @@ class _IQScreenState extends State<IQScreen> {
                       border: Border.all(color: const Color(0xFFF1F5F9)),
                       boxShadow: [
                         BoxShadow(
-                          color: Colors.black.withOpacity(0.02),
+                          color: Colors.black.withValues(alpha: 0.02),
                           blurRadius: 10,
                           offset: const Offset(0, 4),
                         ),
@@ -188,25 +217,22 @@ class _IQScreenState extends State<IQScreen> {
                               ),
                             ),
                             const SizedBox(width: 15),
-                            Container(
-                              width: 50,
-                              height: 50,
-                              decoration: BoxDecoration(
-                                color: isComingSoon
-                                    ? const Color(0xFF94A3B8).withOpacity(0.8)
-                                    : AppColors.primary,
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Center(
-                                child: Icon(
-                                  Icons.arrow_forward_ios,
-                                  color: isComingSoon
-                                      ? Colors.white.withOpacity(0.8)
-                                      : Colors.white,
-                                  size: 20,
+                            if (!isComingSoon)
+                              Container(
+                                width: 50,
+                                height: 50,
+                                decoration: BoxDecoration(
+                                  color: AppColors.primary,
+                                  borderRadius: BorderRadius.circular(12),
+                                ),
+                                child: const Center(
+                                  child: Icon(
+                                    Icons.arrow_forward_ios,
+                                    color: Colors.white,
+                                    size: 20,
+                                  ),
                                 ),
                               ),
-                            ),
                           ],
                         ),
                         const SizedBox(height: 20),
@@ -249,8 +275,8 @@ class _IQScreenState extends State<IQScreen> {
                 ),
                 if (isComingSoon)
                   Positioned(
-                    top: -1,
-                    right: -1,
+                    top: -9,
+                    right: -9,
                     child: SvgPicture.asset(
                       'assets/images/comingSoonLabel.svg',
                       width: 90,

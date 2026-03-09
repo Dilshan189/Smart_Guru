@@ -239,7 +239,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               Navigator.push(
                                 context,
                                 MaterialPageRoute(
-                                  builder: (context) => IQScreen(
+                                  builder: (context) => LessonScreen(
                                     title: word["sinhala"] ?? "",
                                     categoryId:
                                         word["module"]?.toString() ?? "",
