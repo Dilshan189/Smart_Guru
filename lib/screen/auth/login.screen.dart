@@ -81,7 +81,7 @@ class _LoginScreenState extends State<LoginScreen> {
                 width: 80,
                 height: 80,
                 decoration: BoxDecoration(
-                  color: const Color(0xFF2539A4), // Navy Blue circle
+                  color: const Color(0xFF2539A4),
                   shape: BoxShape.circle,
                   boxShadow: [
                     BoxShadow(

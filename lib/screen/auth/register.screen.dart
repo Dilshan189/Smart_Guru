@@ -15,6 +15,13 @@ class RegisterScreen extends StatefulWidget {
 class _RegisterScreenState extends State<RegisterScreen> {
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var w = size.width;
+    var h = size.height;
+
+    double sw(double v) => (v / 390.0) * w;
+    double sh(double v) => (v / 844.0) * h;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SizedBox(
@@ -23,48 +30,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
         child: Stack(
           children: [
             Positioned(
-              left: 20,
-              right: 20,
-              top: 222,
+              left: sw(20),
+              right: sw(20),
+              top: sh(222),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.start,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 6,
+                spacing: sh(6),
                 children: [
-                  const Text(
+                  Text(
                     'Name',
                     style: TextStyle(
                       color: AppColors.textBody,
-                      fontSize: 14,
+                      fontSize: sw(14),
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w400,
                       height: 1.25,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 18,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: sw(16),
+                      vertical: sh(18),
                     ),
                     decoration: ShapeDecoration(
                       color: Colors.white,
                       shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                          width: 1,
+                        side: BorderSide(
+                          width: sw(1),
                           color: Color(0xFFD8DADC),
                         ),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(sw(10)),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             'Your name',
                             style: TextStyle(
                               color: Color(0x7F000000),
-                              fontSize: 16,
+                              fontSize: sw(16),
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w400,
                               height: 1.25,
@@ -78,48 +85,48 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             Positioned(
-              left: 20,
-              right: 20,
-              top: 324,
+              left: sw(20),
+              right: sw(20),
+              top: sh(324),
               child: Column(
                 mainAxisSize: MainAxisSize.min,
                 mainAxisAlignment: MainAxisAlignment.center,
                 crossAxisAlignment: CrossAxisAlignment.stretch,
-                spacing: 6,
+                spacing: sh(6),
                 children: [
-                  const Text(
+                  Text(
                     'Phone number ',
                     style: TextStyle(
                       color: AppColors.textBody,
-                      fontSize: 14,
+                      fontSize: sw(14),
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w400,
                       height: 1.25,
                     ),
                   ),
                   Container(
-                    padding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 18,
+                    padding: EdgeInsets.symmetric(
+                      horizontal: sw(16),
+                      vertical: sh(18),
                     ),
                     decoration: ShapeDecoration(
                       color: Colors.white,
                       shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                          width: 1,
+                        side: BorderSide(
+                          width: sw(1),
                           color: Color(0xFFD8DADC),
                         ),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(sw(10)),
                       ),
                     ),
-                    child: const Row(
+                    child: Row(
                       children: [
                         Expanded(
                           child: Text(
                             '07X XXX XXXX',
                             style: TextStyle(
                               color: Color(0x7F000000),
-                              fontSize: 16,
+                              fontSize: sw(16),
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w400,
                               height: 1.25,
@@ -132,15 +139,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 ],
               ),
             ),
-            const Positioned(
-              left: 23,
-              right: 23,
-              top: 55,
+            Positioned(
+              left: sw(23),
+              right: sw(23),
+              top: sh(55),
               child: Text(
                 'Register for\nDaily Access',
                 style: TextStyle(
                   color: AppColors.primary,
-                  fontSize: 30,
+                  fontSize: sw(30),
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.w700,
                   height: 1.30,
@@ -149,9 +156,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             Positioned(
-              left: 20,
-              right: 20,
-              top: 435,
+              left: sw(20),
+              right: sw(20),
+              top: sh(435),
               child: CustomButton(
                 text: 'Register',
                 onPressed: () {
@@ -164,15 +171,15 @@ class _RegisterScreenState extends State<RegisterScreen> {
                 },
               ),
             ),
-            const Positioned(
-              left: 23,
-              right: 23,
-              top: 149,
+            Positioned(
+              left: sw(23),
+              right: sw(23),
+              top: sh(149),
               child: Text(
                 'Get started for just LKR 8 + tax/day. \nCancel anytime.',
                 style: TextStyle(
                   color: AppColors.textBody,
-                  fontSize: 14,
+                  fontSize: sw(14),
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.w300,
                   height: 1.25,
@@ -180,28 +187,28 @@ class _RegisterScreenState extends State<RegisterScreen> {
               ),
             ),
             Positioned(
-              left: 20,
-              right: 20,
-              top: 511,
+              left: sw(20),
+              right: sw(20),
+              top: sh(511),
               child: Center(
                 child: Text.rich(
                   TextSpan(
                     children: [
-                      const TextSpan(
+                      TextSpan(
                         text: 'Already purchased Lifetime??',
                         style: TextStyle(
                           color: Color(0xB2000000),
-                          fontSize: 14,
+                          fontSize: sw(14),
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w400,
                           height: 1.25,
                         ),
                       ),
-                      const TextSpan(
+                      TextSpan(
                         text: ' ',
                         style: TextStyle(
                           color: AppColors.textBody,
-                          fontSize: 14,
+                          fontSize: sw(14),
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w400,
                           height: 1.25,
@@ -209,9 +216,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
                       ),
                       TextSpan(
                         text: 'Login',
-                        style: const TextStyle(
+                        style: TextStyle(
                           color: AppColors.textBody,
-                          fontSize: 14,
+                          fontSize: sw(14),
                           fontFamily: 'Inter',
                           fontWeight: FontWeight.w600,
                           height: 1.25,

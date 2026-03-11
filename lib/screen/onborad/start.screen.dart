@@ -13,6 +13,10 @@ class StartScreen extends StatefulWidget {
 class _StartScreenState extends State<StartScreen> {
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var w = size.width;
+    var h = size.height;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SizedBox(
@@ -20,15 +24,14 @@ class _StartScreenState extends State<StartScreen> {
         height: double.infinity,
         child: Stack(
           children: [
-            // Blue Background Container
             Positioned(
               left: 0,
               right: 0,
-              top: 181,
+              top: h * 0.21,
               child: Center(
                 child: Container(
-                  width: 275,
-                  height: 375,
+                  width: w * 0.7,
+                  height: h * 0.44,
                   decoration: const ShapeDecoration(
                     gradient: LinearGradient(
                       begin: Alignment(0.50, 0.00),
@@ -48,13 +51,13 @@ class _StartScreenState extends State<StartScreen> {
             Positioned(
               left: 0,
               right: 0,
-              top: 168,
-              child: const Text(
+              top: h * 0.19,
+              child: Text(
                 'A+',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: Colors.white,
-                  fontSize: 137.27,
+                  fontSize: w * 0.35,
                   fontFamily: 'Inter',
                   fontWeight: FontWeight.w800,
                 ),
@@ -64,11 +67,11 @@ class _StartScreenState extends State<StartScreen> {
             Positioned(
               left: 0,
               right: 0,
-              top: 190,
+              top: h * 0.22,
               child: Center(
                 child: Container(
-                  width: 243,
-                  height: 366,
+                  width: w * 0.62,
+                  height: h * 0.43,
                   decoration: const BoxDecoration(
                     image: DecorationImage(
                       image: AssetImage(
@@ -84,13 +87,13 @@ class _StartScreenState extends State<StartScreen> {
             Positioned(
               left: 20,
               right: 20,
-              top: 591,
-              child: const Text(
+              top: h * 0.69,
+              child: Text(
                 'iaud¾Ü úÈhg flduia\nbf.k .uqo@',
                 textAlign: TextAlign.center,
                 style: TextStyle(
-                  color: Color(0xFF1E2939),
-                  fontSize: 24,
+                  color: const Color(0xFF1E2939),
+                  fontSize: w * 0.06,
                   fontFamily: 'FMGanganee',
                   fontWeight: FontWeight.w500,
                   height: 1.0,
@@ -101,7 +104,7 @@ class _StartScreenState extends State<StartScreen> {
             Positioned(
               left: 20,
               right: 20,
-              top: 780,
+              bottom: h * 0.05,
               child: CustomButton2(
                 text: 'Get Started ',
                 onPressed: () {

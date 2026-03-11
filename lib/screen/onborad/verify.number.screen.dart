@@ -33,6 +33,13 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var w = size.width;
+    var h = size.height;
+
+    double sw(double v) => (v / 390.0) * w;
+    double sh(double v) => (v / 844.0) * h;
+
     return Scaffold(
       backgroundColor: AppColors.background,
       body: SizedBox(
@@ -40,16 +47,16 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
         height: double.infinity,
         child: Stack(
           children: [
-            const Positioned(
-              left: 20,
-              right: 20,
-              top: 145,
+            Positioned(
+              left: sw(20),
+              right: sw(20),
+              top: sh(145),
               child: Text(
                 'Verify your phone number',
                 textAlign: TextAlign.center,
                 style: TextStyle(
                   color: AppColors.primary,
-                  fontSize: 30,
+                  fontSize: sw(30),
                   fontFamily: 'Poppins',
                   fontWeight: FontWeight.w700,
                   height: 1.30,
@@ -58,9 +65,9 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
               ),
             ),
             Positioned(
-              left: 20,
-              right: 20,
-              top: 236,
+              left: sw(20),
+              right: sw(20),
+              top: sh(236),
               child: Text.rich(
                 TextSpan(
                   children: [
@@ -69,17 +76,17 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                           'We’ve sent an SMS with an activation\n code to your phone ',
                       style: TextStyle(
                         color: Colors.black.withValues(alpha: 0.70),
-                        fontSize: 16,
+                        fontSize: sw(16),
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w400,
                         height: 1.25,
                       ),
                     ),
-                    const TextSpan(
+                    TextSpan(
                       text: '076 648 3484',
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 16,
+                        fontSize: sw(16),
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w400,
                         height: 1.25,
@@ -91,9 +98,9 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
               ),
             ),
             Positioned(
-              left: 20,
-              right: 20,
-              top: 311,
+              left: sw(20),
+              right: sw(20),
+              top: sh(311),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -103,6 +110,8 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                         : "",
                     _isError,
                     _pinController.text.length == 0,
+                    sw,
+                    sh,
                   ),
                   _buildCodeBox(
                     _pinController.text.length > 1
@@ -110,6 +119,8 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                         : "",
                     _isError,
                     _pinController.text.length == 1,
+                    sw,
+                    sh,
                   ),
                   _buildCodeBox(
                     _pinController.text.length > 2
@@ -117,6 +128,8 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                         : "",
                     _isError,
                     _pinController.text.length == 2,
+                    sw,
+                    sh,
                   ),
                   _buildCodeBox(
                     _pinController.text.length > 3
@@ -124,6 +137,8 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                         : "",
                     _isError,
                     _pinController.text.length == 3,
+                    sw,
+                    sh,
                   ),
                   _buildCodeBox(
                     _pinController.text.length > 4
@@ -131,14 +146,16 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                         : "",
                     _isError,
                     _pinController.text.length == 4,
+                    sw,
+                    sh,
                   ),
                 ],
               ),
             ),
             Positioned(
-              left: 20,
-              right: 20,
-              top: 437,
+              left: sw(20),
+              right: sw(20),
+              top: sh(437),
               child: Row(
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
@@ -146,7 +163,7 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                     'I didn’t receive a code ',
                     style: TextStyle(
                       color: Colors.black.withValues(alpha: 0.70),
-                      fontSize: 16,
+                      fontSize: sw(16),
                       fontFamily: 'Inter',
                       fontWeight: FontWeight.w400,
                       height: 1.25,
@@ -154,11 +171,11 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                   ),
                   InkWell(
                     onTap: () {},
-                    child: const Text(
+                    child: Text(
                       'Resend',
                       style: TextStyle(
                         color: Colors.black,
-                        fontSize: 16,
+                        fontSize: sw(16),
                         fontFamily: 'Inter',
                         fontWeight: FontWeight.w600,
                         height: 1.25,
@@ -170,24 +187,24 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
             ),
             if (_isError)
               Positioned(
-                left: 20,
-                right: 20,
-                top: 390,
-                child: const Text(
+                left: sw(20),
+                right: sw(20),
+                top: sh(390),
+                child: Text(
                   'Wrong code, please try again',
                   textAlign: TextAlign.center,
                   style: TextStyle(
                     color: Color(0xFFF04438),
-                    fontSize: 14,
+                    fontSize: sw(14),
                     fontFamily: 'Inter',
                     fontWeight: FontWeight.w500,
                   ),
                 ),
               ),
             Positioned(
-              left: 20,
-              right: 20,
-              top: 481,
+              left: sw(20),
+              right: sw(20),
+              top: sh(481),
               child: CustomButton(
                 text: 'Verify',
                 onPressed: () {
@@ -242,22 +259,22 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
               ),
             ),
             Positioned(
-              left: 20,
-              top: 50,
+              left: sw(20),
+              top: sh(50),
               child: Container(
-                width: 39,
-                height: 39,
+                width: sw(39),
+                height: sw(39),
                 decoration: ShapeDecoration(
                   shape: RoundedRectangleBorder(
-                    side: const BorderSide(width: 1, color: Color(0xFFD8DADC)),
-                    borderRadius: BorderRadius.circular(10),
+                    side: BorderSide(width: sw(1), color: Color(0xFFD8DADC)),
+                    borderRadius: BorderRadius.circular(sw(10)),
                   ),
                 ),
                 child: InkWell(
                   onTap: () {
                     Navigator.pop(context);
                   },
-                  child: const Icon(Icons.arrow_back_ios_new, size: 16),
+                  child: Icon(Icons.arrow_back_ios_new, size: sw(16)),
                 ),
               ),
             ),
@@ -267,18 +284,24 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
     );
   }
 
-  Widget _buildCodeBox(String code, bool isError, bool isFocused) {
+  Widget _buildCodeBox(
+    String code,
+    bool isError,
+    bool isFocused,
+    double Function(double) sw,
+    double Function(double) sh,
+  ) {
     return Container(
-      width: 63,
-      height: 64,
+      width: sw(63),
+      height: sw(64),
       alignment: Alignment.center,
       decoration: ShapeDecoration(
         shape: RoundedRectangleBorder(
           side: BorderSide(
-            width: 1,
+            width: sw(1),
             color: isError ? const Color(0xFFF04438) : const Color(0xFFD8DADC),
           ),
-          borderRadius: BorderRadius.circular(15),
+          borderRadius: BorderRadius.circular(sw(15)),
         ),
       ),
       child: Stack(
@@ -287,22 +310,22 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
           const SizedBox.expand(),
           if (isFocused && code.isEmpty)
             Positioned(
-              bottom: 12,
+              bottom: sh(12),
               child: Container(
-                width: 25,
-                height: 2,
+                width: sw(25),
+                height: sh(2),
                 decoration: BoxDecoration(
                   color: AppColors.primary,
-                  borderRadius: BorderRadius.circular(1),
+                  borderRadius: BorderRadius.circular(sw(1)),
                 ),
               ),
             ),
           Center(
             child: Text(
               code,
-              style: const TextStyle(
+              style: TextStyle(
                 color: Colors.black,
-                fontSize: 24,
+                fontSize: sw(24),
                 fontFamily: 'Inter',
                 fontWeight: FontWeight.w500,
                 height: 1.25,
