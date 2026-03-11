@@ -398,6 +398,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                         ),
                         GestureDetector(
                           onTap: () {
+                            Navigator.pop(context);
                             Navigator.push(
                               context,
                               MaterialPageRoute(

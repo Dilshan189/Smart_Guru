@@ -11,17 +11,43 @@ class FlashScreen extends StatefulWidget {
 }
 
 class _FlashScreenState extends State<FlashScreen>
-    with SingleTickerProviderStateMixin {
+    with TickerProviderStateMixin {
   bool _isAnswerVisible = false;
-  int _currentIndex = 3;
-  final int _totalCards = 15;
+  int _currentIndex = 0;
+  late int _totalCards;
+
+  final List<Map<String, String>> _flashcards = [
+    {
+      "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
+      "answer": "ක්ලයිව් ලොයිඩ්",
+    },
+    {
+      "question":
+          "ශ්‍රී ලංකාවට පළමු ටෙස්ට් ක්‍රිකට් ජයග්‍රහණය ලබා ගැනීමට නායකත්වය දුන්නේ කවුද?",
+      "answer": "දුලිප් මෙන්ඩිස්",
+    },
+    {
+      "question": "ශ්‍රී ලංකා ජාතික ක්‍රිකට් කණ්ඩායමේ පළමු ටෙස්ට් නායකයා කවුද?",
+      "answer": "බන්දුල වර්ණපුර",
+    },
+    {
+      "question":
+          "එක්දින ජාත්‍යන්තර ක්‍රිකට් තරගයකදී ලකුණු 400 සීමාව පසුකළ පළමු කණ්ඩායම කුමක්ද?",
+      "answer": "ඕස්ට්‍රේලියාව",
+    },
+  ];
 
   late AnimationController _controller;
   late Animation<double> _animation;
 
+  late AnimationController _swipeController;
+  late Animation<Offset> _swipeOffset;
+  late Animation<double> _swipeAngle;
+
   @override
   void initState() {
     super.initState();
+    _totalCards = _flashcards.length;
     _controller = AnimationController(
       duration: const Duration(milliseconds: 600),
       vsync: this,
@@ -30,12 +56,60 @@ class _FlashScreenState extends State<FlashScreen>
       begin: 0,
       end: 1,
     ).animate(CurvedAnimation(parent: _controller, curve: Curves.easeInOut));
+
+    _swipeController = AnimationController(
+      duration: const Duration(milliseconds: 400),
+      vsync: this,
+    );
+    _swipeOffset = Tween<Offset>(
+      begin: Offset.zero,
+      end: Offset.zero,
+    ).animate(_swipeController);
+    _swipeAngle = Tween<double>(begin: 0, end: 0).animate(_swipeController);
+
+    _swipeController.addStatusListener((status) {
+      if (status == AnimationStatus.completed) {
+        setState(() {
+          if (_currentIndex < _totalCards - 1) {
+            _currentIndex++;
+          } else {
+            _currentIndex = 0; // Loop back for testing
+          }
+          _isAnswerVisible = false;
+          _controller.value = 0; // reset flip
+        });
+        _swipeController.reset();
+      }
+    });
   }
 
   @override
   void dispose() {
     _controller.dispose();
+    _swipeController.dispose();
     super.dispose();
+  }
+
+  void _swipeCard(bool isRight) {
+    if (_swipeController.isAnimating) return;
+
+    _swipeOffset =
+        Tween<Offset>(
+          begin: Offset.zero,
+          end: isRight ? const Offset(1.5, 0.2) : const Offset(-1.5, 0.2),
+        ).animate(
+          CurvedAnimation(parent: _swipeController, curve: Curves.easeInOut),
+        );
+
+    _swipeAngle =
+        Tween<double>(
+          begin: 0,
+          end: isRight ? 0.2 : -0.2, // Angles in radians
+        ).animate(
+          CurvedAnimation(parent: _swipeController, curve: Curves.easeInOut),
+        );
+
+    _swipeController.forward(from: 0);
   }
 
   void _toggleFlip() {
@@ -87,7 +161,7 @@ class _FlashScreenState extends State<FlashScreen>
                       child: ClipRRect(
                         borderRadius: BorderRadius.circular(10),
                         child: LinearProgressIndicator(
-                          value: _currentIndex / _totalCards,
+                          value: (_currentIndex + 1) / _totalCards,
                           backgroundColor: Colors.white.withOpacity(0.3),
                           valueColor: const AlwaysStoppedAnimation<Color>(
                             Color(0xFF4ADE80),
@@ -117,7 +191,7 @@ class _FlashScreenState extends State<FlashScreen>
                     children: [
                       const SizedBox(height: 30),
                       Text(
-                        "$_currentIndex/$_totalCards",
+                        "${_currentIndex + 1}/$_totalCards",
                         style: const TextStyle(
                           fontSize: 16,
                           color: Color(0xFF94A3B8),
@@ -174,152 +248,181 @@ class _FlashScreenState extends State<FlashScreen>
   Widget _buildFlashCard() {
     return Expanded(
       child: AnimatedBuilder(
-        animation: _animation,
+        animation: Listenable.merge([_animation, _swipeController]),
         builder: (context, child) {
-          final angle = _animation.value * pi;
-          final isBack = angle > pi / 2;
+          final flipAngle = _animation.value * pi;
+          final isBack = flipAngle > pi / 2;
 
-          return Transform(
-            transform: Matrix4.identity()
-              ..setEntry(3, 2, 0.001)
-              ..rotateY(angle),
-            alignment: Alignment.center,
-            child: Container(
-              margin: const EdgeInsets.symmetric(horizontal: 25),
-              decoration: BoxDecoration(
-                color: Colors.white,
-                borderRadius: BorderRadius.circular(30),
-                border: Border.all(color: const Color(0xFFE2E8F0), width: 1),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.03),
-                    blurRadius: 15,
-                    offset: const Offset(0, 10),
+          final swipeOffset = _swipeOffset.value;
+          final swipeRotation = _swipeAngle.value;
+
+          return FractionalTranslation(
+            translation: swipeOffset,
+            child: Transform.rotate(
+              angle: swipeRotation,
+              child: Transform(
+                transform: Matrix4.identity()
+                  ..setEntry(3, 2, 0.001)
+                  ..rotateY(flipAngle),
+                alignment: Alignment.center,
+                child: Container(
+                  margin: const EdgeInsets.symmetric(horizontal: 25),
+                  decoration: BoxDecoration(
+                    color: Colors.white,
+                    borderRadius: BorderRadius.circular(30),
+                    border: Border.all(
+                      color: const Color(0xFFE2E8F0),
+                      width: 1,
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.03),
+                        blurRadius: 15,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
                   ),
-                ],
-              ),
-              child: Stack(
-                children: [
-                  Transform(
-                    transform: Matrix4.identity()..rotateY(isBack ? pi : 0),
-                    alignment: Alignment.center,
-                    child: Stack(
-                      children: [
-                        Positioned(
-                          top: 20,
-                          right: 20,
-                          child: Icon(
-                            Icons.sentiment_dissatisfied,
-                            color: const Color(0xFFE63946).withOpacity(0.8),
-                            size: 32,
-                          ),
+                  child: Stack(
+                    children: [
+                      Transform(
+                        transform: Matrix4.identity()..rotateY(isBack ? pi : 0),
+                        alignment: Alignment.center,
+                        child: Stack(
+                          children: [
+                            Positioned(
+                              top: 20,
+                              right: 20,
+                              child: Icon(
+                                Icons.sentiment_dissatisfied,
+                                color: const Color(0xFFE63946).withOpacity(0.8),
+                                size: 32,
+                              ),
+                            ),
+                            // Center Content
+                            Center(
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(
+                                  horizontal: 40,
+                                ),
+                                child: Text(
+                                  isBack
+                                      ? _flashcards[_currentIndex]["answer"]!
+                                      : _flashcards[_currentIndex]["question"]!, // Question
+                                  textAlign: TextAlign.center,
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: Color(0xFF1E293B),
+                                    fontFamily: "Inter",
+                                    height: 1.5,
+                                  ),
+                                ),
+                              ),
+                            ),
+                            // Bottom Action Section
+                            Positioned(
+                              bottom: 0,
+                              left: 0,
+                              right: 0,
+                              child: Column(
+                                children: [
+                                  Text(
+                                    "Swipe and rate your answer",
+                                    style: TextStyle(
+                                      color: const Color(
+                                        0xFF94A3B8,
+                                      ).withOpacity(0.6),
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 10),
+                                  Divider(
+                                    color: Colors.black.withOpacity(0.05),
+                                    height: 1,
+                                  ),
+                                  GestureDetector(
+                                    onTap: _toggleFlip,
+                                    child: Container(
+                                      padding: const EdgeInsets.symmetric(
+                                        vertical: 20,
+                                      ),
+                                      color: Colors.transparent,
+                                      child: Column(
+                                        mainAxisAlignment:
+                                            MainAxisAlignment.center,
+                                        children: [
+                                          SvgPicture.asset(
+                                            'assets/images/Vector (8).svg',
+                                            color: AppColors.primary,
+                                            width: 24,
+                                          ),
+                                          const SizedBox(height: 10),
+                                          Text(
+                                            isBack
+                                                ? "Tap to see question"
+                                                : "Tap to see answers",
+                                            style: const TextStyle(
+                                              color: AppColors.primary,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 14,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                        // Center Content
-                        Center(
+                      ),
+                      // Side Indicators (Visual Only)
+                      Positioned(
+                        left: 5,
+                        bottom: 7,
+                        child: GestureDetector(
+                          onTap: () => _swipeCard(false),
+                          behavior: HitTestBehavior.opaque,
                           child: Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 40),
-                            child: Text(
-                              isBack
-                                  ? "ක්ලයිව් ලොයිඩ්"
-                                  : "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?", // Question
-                              textAlign: TextAlign.center,
-                              style: const TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: Color(0xFF1E293B),
-                                fontFamily: "Inter",
-                                height: 1.5,
+                            padding: const EdgeInsets.all(10.0),
+                            child: Opacity(
+                              opacity: 0.4,
+                              child: SvgPicture.asset(
+                                'assets/images/material-symbols_swipe-left-outline.svg',
+                                width: 40,
+                                color: const Color.fromARGB(255, 73, 73, 73),
                               ),
                             ),
                           ),
                         ),
-                        // Bottom Action Section
-                        Positioned(
-                          bottom: 0,
-                          left: 0,
-                          right: 0,
-                          child: Column(
-                            children: [
-                              Text(
-                                "Swipe and rate your answer",
-                                style: TextStyle(
-                                  color: const Color(
-                                    0xFF94A3B8,
-                                  ).withOpacity(0.6),
-                                  fontSize: 11,
-                                  fontWeight: FontWeight.w500,
+                      ),
+                      Positioned(
+                        right: 5,
+                        bottom: 7,
+                        child: GestureDetector(
+                          onTap: () => _swipeCard(true),
+                          behavior: HitTestBehavior.opaque,
+                          child: Padding(
+                            padding: const EdgeInsets.all(10.0),
+                            child: Opacity(
+                              opacity: 0.4,
+                              child: Transform.scale(
+                                scaleX: -1,
+                                child: SvgPicture.asset(
+                                  'assets/images/material-symbols_swipe-left-outline (1).svg',
+                                  width: 40,
+                                  color: const Color.fromARGB(255, 73, 73, 73),
                                 ),
                               ),
-                              const SizedBox(height: 10),
-                              Divider(
-                                color: Colors.black.withOpacity(0.05),
-                                height: 1,
-                              ),
-                              GestureDetector(
-                                onTap: _toggleFlip,
-                                child: Container(
-                                  padding: const EdgeInsets.symmetric(
-                                    vertical: 20,
-                                  ),
-                                  color: Colors.transparent,
-                                  child: Column(
-                                    mainAxisAlignment: MainAxisAlignment.center,
-                                    children: [
-                                      SvgPicture.asset(
-                                        'assets/images/Vector (8).svg',
-                                        color: AppColors.primary,
-                                        width: 24,
-                                      ),
-                                      const SizedBox(height: 10),
-                                      Text(
-                                        isBack
-                                            ? "Tap to see question"
-                                            : "Tap to see answers",
-                                        style: const TextStyle(
-                                          color: AppColors.primary,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 14,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            ],
+                            ),
                           ),
                         ),
-                      ],
-                    ),
-                  ),
-                  // Side Indicators (Visual Only)
-                  Positioned(
-                    left: 15,
-                    bottom: 17,
-                    child: Opacity(
-                      opacity: 0.1,
-                      child: SvgPicture.asset(
-                        'assets/images/material-symbols_swipe-left-outline.svg',
-                        width: 40,
-                        color: const Color.fromARGB(255, 73, 73, 73),
                       ),
-                    ),
+                    ],
                   ),
-                  Positioned(
-                    right: 15,
-                    bottom: 17,
-                    child: Opacity(
-                      opacity: 0.1,
-                      child: Transform.scale(
-                        scaleX: -1,
-                        child: SvgPicture.asset(
-                          'assets/images/material-symbols_swipe-left-outline (1).svg',
-                          width: 40,
-                          color: const Color.fromARGB(255, 73, 73, 73),
-                        ),
-                      ),
-                    ),
-                  ),
-                ],
+                ),
               ),
             ),
           );
