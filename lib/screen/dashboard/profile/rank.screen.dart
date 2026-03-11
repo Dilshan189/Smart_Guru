@@ -1,6 +1,4 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/flutter_svg.dart';
-import 'package:smart_guru/screen/dashboard/nav.wrapper.dart';
 import 'package:smart_guru/utils/theam.dart';
 
 class RankScreen extends StatefulWidget {
@@ -91,12 +89,7 @@ class _RankScreenState extends State<RankScreen> {
               child: Row(
                 children: [
                   IconButton(
-                    onPressed: () => Navigator.pushReplacement(
-                      context,
-                      MaterialPageRoute(
-                        builder: (context) => const NavigationScreen(),
-                      ),
-                    ),
+                    onPressed: () => Navigator.pop(context),
                     icon: const Icon(
                       Icons.arrow_back,
                       color: Colors.white,

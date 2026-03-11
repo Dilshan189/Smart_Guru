@@ -1,8 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_guru/screen/dashboard/home/home.screen.dart';
-import 'package:smart_guru/screen/dashboard/profile.screen.dart';
-import 'package:smart_guru/screen/dashboard/rank.screen.dart';
+import 'package:smart_guru/screen/dashboard/profile/profile.home.screen.dart';
 import 'package:smart_guru/screen/dashboard/revise/revise.screen.dart';
 import 'package:smart_guru/utils/theam.dart';
 
@@ -23,8 +22,7 @@ class _NavigationScreenState extends State<NavigationScreen> {
     _pages = [
       const HomeScreen(),
       const ReviseScreen(),
-      const RankScreen(),
-      const ProfileScreen(),
+      const ProfileHomeScreen(),
     ];
   }
 
@@ -120,37 +118,31 @@ class _NavigationScreenState extends State<NavigationScreen> {
       ),
 
       /// Custom Bottom Navigation
-      bottomNavigationBar: selectIndex == 2
-          ? null
-          : SafeArea(
-              child: Container(
-                height: 86,
-                padding: const EdgeInsets.fromLTRB(26.87, 4.3, 26.87, 4.3),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  border: Border.all(
-                    color: const Color(0xFFF0EBF5),
-                    width: 1.61,
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0x1A05330F),
-                      blurRadius: 8.6,
-                      offset: const Offset(0, -4.3),
-                    ),
-                  ],
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    _buildNavItem('assets/images/Icon.svg', "Home", 0),
-                    _buildNavItem('assets/images/Icon_1.svg', "Revise", 1),
-                    _buildNavItem('assets/images/Icon_2.svg', "Rank", 2),
-                    _buildNavItem('assets/images/Icon_3.svg', "Profile", 3),
-                  ],
-                ),
+      bottomNavigationBar: SafeArea(
+        child: Container(
+          height: 86,
+          padding: const EdgeInsets.fromLTRB(26.87, 4.3, 26.87, 4.3),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            border: Border.all(color: const Color(0xFFF0EBF5), width: 1.61),
+            boxShadow: [
+              BoxShadow(
+                color: const Color(0x1A05330F),
+                blurRadius: 8.6,
+                offset: const Offset(0, -4.3),
               ),
-            ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              _buildNavItem('assets/images/Icon.svg', "Home", 0),
+              _buildNavItem('assets/images/Icon_1.svg', "Revise", 1),
+              _buildNavItem('assets/images/Icon_3.svg', "Profile", 2),
+            ],
+          ),
+        ),
+      ),
     );
   }
 

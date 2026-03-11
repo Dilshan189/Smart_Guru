@@ -57,10 +57,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         leading: Padding(
           padding: const EdgeInsets.only(left: 10),
           child: IconButton(
-            onPressed: () => Navigator.pushReplacement(
-              context,
-              MaterialPageRoute(builder: (context) => const NavigationScreen()),
-            ),
+            onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back, color: Colors.white, size: 28),
           ),
         ),

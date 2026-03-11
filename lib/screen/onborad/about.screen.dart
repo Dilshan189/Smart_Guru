@@ -72,7 +72,6 @@ class _AboutScreenState extends State<AboutScreen> {
                 maintainSize: true,
                 maintainAnimation: true,
                 maintainState: true,
-                visible: _currentPage == 0,
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
@@ -89,14 +88,7 @@ class _AboutScreenState extends State<AboutScreen> {
                     ),
                     child: InkWell(
                       onTap: () {
-                        if (_currentPage > 0) {
-                          _pageController.previousPage(
-                            duration: const Duration(milliseconds: 300),
-                            curve: Curves.easeInOut,
-                          );
-                        } else {
-                          Navigator.pop(context);
-                        }
+                        Navigator.pop(context);
                       },
                       child: const Icon(Icons.arrow_back_ios_new, size: 16),
                     ),
