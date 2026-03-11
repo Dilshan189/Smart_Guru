@@ -60,6 +60,13 @@ class _AboutScreenState extends State<AboutScreen> {
 
   @override
   Widget build(BuildContext context) {
+    var size = MediaQuery.of(context).size;
+    var w = size.width;
+    var h = size.height;
+
+    double sw(double v) => (v / 390.0) * w;
+    double sh(double v) => (v / 844.0) * h;
+
     return Scaffold(
       backgroundColor: Colors.white,
       body: SafeArea(
@@ -67,7 +74,7 @@ class _AboutScreenState extends State<AboutScreen> {
           children: [
             // Back Button
             Padding(
-              padding: const EdgeInsets.only(left: 20, top: 20),
+              padding: EdgeInsets.only(left: sw(20), top: sh(20)),
               child: Visibility(
                 maintainSize: true,
                 maintainAnimation: true,
@@ -75,56 +82,56 @@ class _AboutScreenState extends State<AboutScreen> {
                 child: Align(
                   alignment: Alignment.centerLeft,
                   child: Container(
-                    width: 39,
-                    height: 39,
+                    width: sw(39),
+                    height: sw(39),
                     decoration: ShapeDecoration(
                       shape: RoundedRectangleBorder(
-                        side: const BorderSide(
-                          width: 1,
+                        side: BorderSide(
+                          width: sw(1),
                           color: Color(0xFFD8DADC),
                         ),
-                        borderRadius: BorderRadius.circular(10),
+                        borderRadius: BorderRadius.circular(sw(10)),
                       ),
                     ),
                     child: InkWell(
                       onTap: () {
                         Navigator.pop(context);
                       },
-                      child: const Icon(Icons.arrow_back_ios_new, size: 16),
+                      child: Icon(Icons.arrow_back_ios_new, size: sw(16)),
                     ),
                   ),
                 ),
               ),
             ),
-            const SizedBox(height: 20),
+            SizedBox(height: sh(20)),
             // Line Progress Indicator
             Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 100),
+              padding: EdgeInsets.symmetric(horizontal: sw(100)),
               child: Stack(
                 children: [
                   Container(
-                    height: 10,
+                    height: sh(10),
                     width: double.infinity,
                     decoration: BoxDecoration(
                       color: const Color(0xFFF2F4F7),
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(sw(10)),
                     ),
                   ),
                   AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
-                    height: 10,
+                    height: sh(10),
                     width:
-                        (MediaQuery.of(context).size.width - 200) *
+                        (MediaQuery.of(context).size.width - sw(200)) *
                         ((_currentPage + 1) / _questions.length),
                     decoration: BoxDecoration(
                       color: AppColors.primary,
-                      borderRadius: BorderRadius.circular(10),
+                      borderRadius: BorderRadius.circular(sw(10)),
                     ),
                   ),
                 ],
               ),
             ),
-            const SizedBox(height: 40),
+            SizedBox(height: sh(40)),
             // Question Slider
             Expanded(
               child: PageView.builder(
@@ -139,33 +146,33 @@ class _AboutScreenState extends State<AboutScreen> {
                 itemCount: _questions.length,
                 itemBuilder: (context, index) {
                   return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 20),
+                    padding: EdgeInsets.symmetric(horizontal: sw(20)),
                     child: Column(
                       children: [
                         Text(
                           _questions[index]['question']!,
                           textAlign: TextAlign.center,
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: AppColors.primary,
-                            fontSize: 24,
+                            fontSize: sw(24),
                             fontFamily: 'Poppins',
                             fontWeight: FontWeight.w700,
                             height: 1.3,
                           ),
                         ),
-                        const SizedBox(height: 30),
+                        SizedBox(height: sh(30)),
                         Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 16,
-                            vertical: 8,
+                          padding: EdgeInsets.symmetric(
+                            horizontal: sw(16),
+                            vertical: sh(8),
                           ),
                           decoration: ShapeDecoration(
                             shape: RoundedRectangleBorder(
-                              side: const BorderSide(
-                                width: 1,
+                              side: BorderSide(
+                                width: sw(1),
                                 color: Color(0xFFD8DADC),
                               ),
-                              borderRadius: BorderRadius.circular(10),
+                              borderRadius: BorderRadius.circular(sw(10)),
                             ),
                           ),
                           child: TextField(
@@ -174,7 +181,7 @@ class _AboutScreenState extends State<AboutScreen> {
                               hintText: _questions[index]['placeholder'],
                               hintStyle: TextStyle(
                                 color: Colors.black.withValues(alpha: 0.3),
-                                fontSize: 16,
+                                fontSize: sw(16),
                                 fontFamily: 'Inter',
                                 fontWeight: FontWeight.w400,
                               ),
@@ -182,7 +189,7 @@ class _AboutScreenState extends State<AboutScreen> {
                             ),
                           ),
                         ),
-                        const SizedBox(height: 25),
+                        SizedBox(height: sh(25)),
                         CustomButton2(
                           text: 'Next',
                           isEnabled: _isButtonEnabled,
