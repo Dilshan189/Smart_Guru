@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/dashboard/revise/flashcard/flash.screen.dart';
+import 'package:smart_guru/utils/theam.dart';
 
 class FlashCardScreen extends StatefulWidget {
   const FlashCardScreen({super.key});
@@ -9,7 +10,6 @@ class FlashCardScreen extends StatefulWidget {
 }
 
 class _FlashCardScreenState extends State<FlashCardScreen> {
-  // Sample data to exactly mirror the provided screenshot
   final List<Map<String, dynamic>> flashcards = [
     {
       "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
@@ -36,7 +36,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Slightly off-white background
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
         child: Container(
@@ -128,7 +128,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     Color iconColor;
     IconData iconData;
 
-    // Define colors & icons corresponding to performance state
     if (status == "bad") {
       iconBgColor = const Color(0xFFFFEBEB);
       iconColor = const Color(0xFFE63946);
@@ -152,7 +151,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         border: Border.all(color: const Color(0xFFEAECF0), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000), // Very light drop shadow (10% black)
+            color: Color(0x0A000000),
             blurRadius: 3,
             spreadRadius: 0,
             offset: Offset(0, 1),
@@ -183,7 +182,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1D2939),
-                    fontFamily: "Inter", // Or FMGanganee depending on setup
+                    fontFamily: "Inter",
                     height: 1.4,
                   ),
                 ),
@@ -212,11 +211,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       },
       child: Container(
         width: double.infinity,
-        color: const Color(0xFF2E43A8), // Deep blue exactly matching Appbar
+        color: const Color(0xFF2E43A8),
         padding: EdgeInsets.only(
           top: 20,
           bottom: MediaQuery.of(context).padding.bottom == 0
-              ? 20 // Standard padding if no system safe area
+              ? 20
               : MediaQuery.of(context).padding.bottom + 10,
         ),
         child: Row(
@@ -406,17 +405,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                                 builder: (context) => FlashScreen(),
                               ),
                             );
-                            // Navigate to actual revision screen
                           },
                           child: Container(
                             width: double.infinity,
                             decoration: const BoxDecoration(
-                              gradient: LinearGradient(
-                                colors: [Color(0xFF2D4990), Color(0xFF1E293B)],
-                                begin: Alignment.topCenter,
-                                end: Alignment.bottomCenter,
-                              ),
-                              // Removed borderRadius here, as main container handles it
+                              gradient: AppColors.primaryGradient,
                             ),
                             padding: const EdgeInsets.symmetric(vertical: 22),
                             child: Row(

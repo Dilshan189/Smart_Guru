@@ -1,13 +1,14 @@
 import 'package:flutter/material.dart';
 
-class FlashCardScreen extends StatefulWidget {
-  const FlashCardScreen({super.key});
+class BookMarkIncorrectScreen extends StatefulWidget {
+  const BookMarkIncorrectScreen({super.key});
 
   @override
-  State<FlashCardScreen> createState() => _FlashCardScreenState();
+  State<BookMarkIncorrectScreen> createState() =>
+      _BookMarkIncorrectScreenState();
 }
 
-class _FlashCardScreenState extends State<FlashCardScreen> {
+class _BookMarkIncorrectScreenState extends State<BookMarkIncorrectScreen> {
   // Sample data to exactly mirror the provided screenshot
   final List<Map<String, dynamic>> flashcards = [
     {
@@ -35,7 +36,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8F9FA), // Slightly off-white background
+      backgroundColor: const Color(0xFFF8F9FA),
       appBar: PreferredSize(
         preferredSize: const Size.fromHeight(80),
         child: Container(
@@ -95,7 +96,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       ),
       body: Column(
         children: [
-          // Flashcards Scrollable Target List
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
@@ -117,7 +117,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     );
   }
 
-  // Dynamic Card Builder
   Widget _buildFlashcardItem({
     required String question,
     required String answer,
@@ -127,7 +126,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     Color iconColor;
     IconData iconData;
 
-    // Define colors & icons corresponding to performance state
     if (status == "bad") {
       iconBgColor = const Color(0xFFFFEBEB);
       iconColor = const Color(0xFFE63946);
@@ -151,7 +149,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         border: Border.all(color: const Color(0xFFEAECF0), width: 1),
         boxShadow: const [
           BoxShadow(
-            color: Color(0x0A000000), // Very light drop shadow (10% black)
+            color: Color(0x0A000000),
             blurRadius: 3,
             spreadRadius: 0,
             offset: Offset(0, 1),
@@ -161,7 +159,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          // Emotion Indicator
           Container(
             padding: const EdgeInsets.all(8),
             decoration: BoxDecoration(
@@ -182,7 +179,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
                     color: Color(0xFF1D2939),
-                    fontFamily: "Inter", // Or FMGanganee depending on setup
+                    fontFamily: "Inter",
                     height: 1.4,
                   ),
                 ),
@@ -203,19 +200,16 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
     );
   }
 
-  // Helper for bottom anchor button
   Widget _buildBottomButton() {
     return GestureDetector(
-      onTap: () {
-        // Handle trigger
-      },
+      onTap: () {},
       child: Container(
         width: double.infinity,
-        color: const Color(0xFF2E43A8), // Deep blue exactly matching Appbar
+        color: const Color(0xFF2E43A8),
         padding: EdgeInsets.only(
           top: 20,
           bottom: MediaQuery.of(context).padding.bottom == 0
-              ? 20 // Standard padding if no system safe area
+              ? 20
               : MediaQuery.of(context).padding.bottom + 10,
         ),
         child: Row(

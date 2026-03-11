@@ -200,8 +200,6 @@ class _FlashScreenState extends State<FlashScreen>
               ),
               child: Stack(
                 children: [
-                  // Correct orientation for content on the back side
-                  // We rotate the content back by pi if we are on the "back" side
                   Transform(
                     transform: Matrix4.identity()..rotateY(isBack ? pi : 0),
                     alignment: Alignment.center,
