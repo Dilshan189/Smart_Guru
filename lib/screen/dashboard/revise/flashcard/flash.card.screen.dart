@@ -49,7 +49,6 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
           ),
           child: Row(
             children: [
-              // Circular Back Arrow
               GestureDetector(
                 onTap: () {
                   Navigator.pop(context);

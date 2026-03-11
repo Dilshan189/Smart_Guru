@@ -118,31 +118,36 @@ class _NavigationScreenState extends State<NavigationScreen> {
       ),
 
       /// Custom Bottom Navigation
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          height: 86,
-          padding: const EdgeInsets.fromLTRB(26.87, 4.3, 26.87, 4.3),
-          decoration: BoxDecoration(
-            color: Colors.white,
-            border: Border.all(color: const Color(0xFFF0EBF5), width: 1.61),
-            boxShadow: [
-              BoxShadow(
-                color: const Color(0x1A05330F),
-                blurRadius: 8.6,
-                offset: const Offset(0, -4.3),
+      bottomNavigationBar: selectIndex == 2
+          ? null
+          : SafeArea(
+              child: Container(
+                height: 86,
+                padding: const EdgeInsets.fromLTRB(26.87, 4.3, 26.87, 4.3),
+                decoration: BoxDecoration(
+                  color: Colors.white,
+                  border: Border.all(
+                    color: const Color(0xFFF0EBF5),
+                    width: 1.61,
+                  ),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0x1A05330F),
+                      blurRadius: 8.6,
+                      offset: const Offset(0, -4.3),
+                    ),
+                  ],
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    _buildNavItem('assets/images/Icon.svg', "Home", 0),
+                    _buildNavItem('assets/images/Icon_1.svg', "Revise", 1),
+                    _buildNavItem('assets/images/Icon_3.svg', "Profile", 2),
+                  ],
+                ),
               ),
-            ],
-          ),
-          child: Row(
-            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-            children: [
-              _buildNavItem('assets/images/Icon.svg', "Home", 0),
-              _buildNavItem('assets/images/Icon_1.svg', "Revise", 1),
-              _buildNavItem('assets/images/Icon_3.svg', "Profile", 2),
-            ],
-          ),
-        ),
-      ),
+            ),
     );
   }
 

@@ -97,7 +97,7 @@ class _FlashScreenState extends State<FlashScreen>
                       ),
                     ),
                     const SizedBox(width: 20),
-                    const SizedBox(width: 34), // Placeholder for balance
+                    const SizedBox(width: 34),
                   ],
                 ),
               ),
@@ -205,7 +205,6 @@ class _FlashScreenState extends State<FlashScreen>
                     alignment: Alignment.center,
                     child: Stack(
                       children: [
-                        // Status Icon (Top Right)
                         Positioned(
                           top: 20,
                           right: 20,
@@ -221,7 +220,7 @@ class _FlashScreenState extends State<FlashScreen>
                             padding: const EdgeInsets.symmetric(horizontal: 40),
                             child: Text(
                               isBack
-                                  ? "ක්ලයිව් ලොයිඩ්" // Answer
+                                  ? "ක්ලයිව් ලොයිඩ්"
                                   : "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?", // Question
                               textAlign: TextAlign.center,
                               style: const TextStyle(
