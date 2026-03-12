@@ -256,135 +256,144 @@ class _FlashScreenState extends State<FlashScreen>
           final swipeOffset = _swipeOffset.value;
           final swipeRotation = _swipeAngle.value;
 
-          return FractionalTranslation(
-            translation: swipeOffset,
-            child: Transform.rotate(
-              angle: swipeRotation,
-              child: Transform(
-                transform: Matrix4.identity()
-                  ..setEntry(3, 2, 0.001)
-                  ..rotateY(flipAngle),
-                alignment: Alignment.center,
-                child: Container(
-                  margin: const EdgeInsets.symmetric(horizontal: 25),
-                  decoration: BoxDecoration(
-                    color: Colors.white,
-                    borderRadius: BorderRadius.circular(30),
-                    border: Border.all(
-                      color: const Color(0xFFE2E8F0),
-                      width: 1,
-                    ),
-                    boxShadow: [
-                      BoxShadow(
-                        color: Colors.black.withOpacity(0.03),
-                        blurRadius: 15,
-                        offset: const Offset(0, 10),
+          return GestureDetector(
+            onHorizontalDragEnd: (details) {
+              if (details.primaryVelocity == null) return;
+              if (details.primaryVelocity! > 300) {
+                _swipeCard(true);
+              } else if (details.primaryVelocity! < -300) {
+                _swipeCard(false);
+              }
+            },
+            child: FractionalTranslation(
+              translation: swipeOffset,
+              child: Transform.rotate(
+                angle: swipeRotation,
+                child: Transform(
+                  transform: Matrix4.identity()
+                    ..setEntry(3, 2, 0.001)
+                    ..rotateY(flipAngle),
+                  alignment: Alignment.center,
+                  child: Container(
+                    margin: const EdgeInsets.symmetric(horizontal: 25),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(30),
+                      border: Border.all(
+                        color: const Color(0xFFE2E8F0),
+                        width: 1,
                       ),
-                    ],
-                  ),
-                  child: Stack(
-                    children: [
-                      Transform(
-                        transform: Matrix4.identity()..rotateY(isBack ? pi : 0),
-                        alignment: Alignment.center,
-                        child: Stack(
-                          children: [
-                            Positioned(
-                              top: 20,
-                              right: 20,
-                              child: Icon(
-                                Icons.sentiment_dissatisfied,
-                                color: const Color(0xFFE63946).withOpacity(0.8),
-                                size: 32,
-                              ),
-                            ),
-                            // Center Content
-                            Center(
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(
-                                  horizontal: 40,
-                                ),
-                                child: Text(
-                                  isBack
-                                      ? _flashcards[_currentIndex]["answer"]!
-                                      : _flashcards[_currentIndex]["question"]!, // Question
-                                  textAlign: TextAlign.center,
-                                  style: const TextStyle(
-                                    fontSize: 18,
-                                    fontWeight: FontWeight.bold,
-                                    color: Color(0xFF1E293B),
-                                    fontFamily: "Inter",
-                                    height: 1.5,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            // Bottom Action Section
-                            Positioned(
-                              bottom: 0,
-                              left: 0,
-                              right: 0,
-                              child: Column(
-                                children: [
-                                  Text(
-                                    "Swipe and rate your answer",
-                                    style: TextStyle(
-                                      color: const Color(
-                                        0xFF94A3B8,
-                                      ).withOpacity(0.6),
-                                      fontSize: 11,
-                                      fontWeight: FontWeight.w500,
-                                    ),
-                                  ),
-                                  const SizedBox(height: 10),
-                                  Divider(
-                                    color: Colors.black.withOpacity(0.05),
-                                    height: 1,
-                                  ),
-                                  GestureDetector(
-                                    onTap: _toggleFlip,
-                                    child: Container(
-                                      padding: const EdgeInsets.symmetric(
-                                        vertical: 20,
-                                      ),
-                                      color: Colors.transparent,
-                                      child: Column(
-                                        mainAxisAlignment:
-                                            MainAxisAlignment.center,
-                                        children: [
-                                          SvgPicture.asset(
-                                            'assets/images/Vector (8).svg',
-                                            color: AppColors.primary,
-                                            width: 24,
-                                          ),
-                                          const SizedBox(height: 10),
-                                          Text(
-                                            isBack
-                                                ? "Tap to see question"
-                                                : "Tap to see answers",
-                                            style: const TextStyle(
-                                              color: AppColors.primary,
-                                              fontWeight: FontWeight.bold,
-                                              fontSize: 14,
-                                            ),
-                                          ),
-                                        ],
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                          ],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withOpacity(0.03),
+                          blurRadius: 15,
+                          offset: const Offset(0, 10),
                         ),
-                      ),
-                      // Side Indicators (Visual Only)
-                      Positioned(
-                        left: 5,
-                        bottom: 7,
-                        child: GestureDetector(
-                          onTap: () => _swipeCard(false),
-                          behavior: HitTestBehavior.opaque,
+                      ],
+                    ),
+                    child: Stack(
+                      children: [
+                        Transform(
+                          transform: Matrix4.identity()
+                            ..rotateY(isBack ? pi : 0),
+                          alignment: Alignment.center,
+                          child: Stack(
+                            children: [
+                              Positioned(
+                                top: 20,
+                                right: 20,
+                                child: Icon(
+                                  Icons.sentiment_dissatisfied,
+                                  color: const Color(
+                                    0xFFE63946,
+                                  ).withOpacity(0.8),
+                                  size: 32,
+                                ),
+                              ),
+                              // Center Content
+                              Center(
+                                child: Padding(
+                                  padding: const EdgeInsets.symmetric(
+                                    horizontal: 40,
+                                  ),
+                                  child: Text(
+                                    isBack
+                                        ? _flashcards[_currentIndex]["answer"]!
+                                        : _flashcards[_currentIndex]["question"]!, // Question
+                                    textAlign: TextAlign.center,
+                                    style: const TextStyle(
+                                      fontSize: 18,
+                                      fontWeight: FontWeight.bold,
+                                      color: Color(0xFF1E293B),
+                                      fontFamily: "Inter",
+                                      height: 1.5,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                              // Bottom Action Section
+                              Positioned(
+                                bottom: 0,
+                                left: 0,
+                                right: 0,
+                                child: Column(
+                                  children: [
+                                    Text(
+                                      "Swipe and rate your answer",
+                                      style: TextStyle(
+                                        color: const Color(
+                                          0xFF94A3B8,
+                                        ).withOpacity(0.6),
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.w500,
+                                      ),
+                                    ),
+                                    const SizedBox(height: 10),
+                                    Divider(
+                                      color: Colors.black.withOpacity(0.05),
+                                      height: 1,
+                                    ),
+                                    GestureDetector(
+                                      onTap: _toggleFlip,
+                                      child: Container(
+                                        padding: const EdgeInsets.symmetric(
+                                          vertical: 20,
+                                        ),
+                                        color: Colors.transparent,
+                                        child: Column(
+                                          mainAxisAlignment:
+                                              MainAxisAlignment.center,
+                                          children: [
+                                            SvgPicture.asset(
+                                              'assets/images/Vector (8).svg',
+                                              color: AppColors.primary,
+                                              width: 24,
+                                            ),
+                                            const SizedBox(height: 10),
+                                            Text(
+                                              isBack
+                                                  ? "Tap to see question"
+                                                  : "Tap to see answers",
+                                              style: const TextStyle(
+                                                color: AppColors.primary,
+                                                fontWeight: FontWeight.bold,
+                                                fontSize: 14,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                        // Side Indicators (Visual Only)
+                        Positioned(
+                          left: 5,
+                          bottom: 7,
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Opacity(
@@ -397,13 +406,9 @@ class _FlashScreenState extends State<FlashScreen>
                             ),
                           ),
                         ),
-                      ),
-                      Positioned(
-                        right: 5,
-                        bottom: 7,
-                        child: GestureDetector(
-                          onTap: () => _swipeCard(true),
-                          behavior: HitTestBehavior.opaque,
+                        Positioned(
+                          right: 5,
+                          bottom: 7,
                           child: Padding(
                             padding: const EdgeInsets.all(10.0),
                             child: Opacity(
@@ -419,8 +424,8 @@ class _FlashScreenState extends State<FlashScreen>
                             ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
                 ),
               ),
