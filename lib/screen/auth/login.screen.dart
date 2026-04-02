@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/auth/register.screen.dart';
+import 'package:smart_guru/services/api.service.dart';
 import 'package:smart_guru/utils/theam.dart';
-
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -11,6 +11,23 @@ class LoginScreen extends StatefulWidget {
 
 class _LoginScreenState extends State<LoginScreen> {
   final TextEditingController phoneController = TextEditingController();
+  bool isLoading = false;
+
+  void handleLogin() async {
+    if (phoneController.text.isEmpty) return;
+    setState(() => isLoading = true);
+    final response = await IQService.login(phoneController.text);
+    setState(() => isLoading = false);
+    if (response != null && response['status'] == 'S100') {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response['data']['message'] ?? "Login successful")));
+    } else {
+      String msg = "Login failed";
+      if (response != null && response['data'] is String) {
+        msg = response['data'];
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
 
   @override
   void initState() {
@@ -144,11 +161,13 @@ class _LoginScreenState extends State<LoginScreen> {
               SizedBox(height: height * 0.03),
 
               // Continue Button
-              CustomThiredButton(
-                text: "Continue",
-                onPressed: isPhoneValid ? () {} : null,
-                showArrow: true,
-              ),
+              isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : CustomThiredButton(
+                      text: "Continue",
+                      onPressed: isPhoneValid ? handleLogin : null,
+                      showArrow: true,
+                    ),
             ],
           ),
         ),

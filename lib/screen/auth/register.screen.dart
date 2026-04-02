@@ -2,6 +2,7 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/auth/login.screen.dart';
 import 'package:smart_guru/screen/onborad/verify.number.screen.dart';
+import 'package:smart_guru/services/api.service.dart';
 import '../../utils/theam.dart';
 import '../../widgets/custom.button.dart';
 
@@ -13,6 +14,42 @@ class RegisterScreen extends StatefulWidget {
 }
 
 class _RegisterScreenState extends State<RegisterScreen> {
+  final TextEditingController nameController = TextEditingController();
+  final TextEditingController phoneController = TextEditingController();
+  bool isLoading = false;
+
+  void handleRegister() async {
+    if (nameController.text.isEmpty || phoneController.text.isEmpty) {
+       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+       return;
+    }
+    setState(() => isLoading = true);
+    final response = await IQService.register(nameController.text, phoneController.text);
+    setState(() => isLoading = false);
+    if (response != null && response['status'] == 'S100') {
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response['data']['message'] ?? "Registration successful")));
+      Navigator.push(
+        context,
+        MaterialPageRoute(
+          builder: (context) => const VerifyNumberScreen(),
+        ),
+      );
+    } else {
+      String msg = "Registration failed";
+      if (response != null && response['data'] is String) {
+        msg = response['data'];
+      }
+      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
+    }
+  }
+
+  @override
+  void dispose() {
+    nameController.dispose();
+    phoneController.dispose();
+    super.dispose();
+  }
+
   @override
   Widget build(BuildContext context) {
     var size = MediaQuery.of(context).size;
@@ -67,10 +104,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            'Your name',
+                          child: TextField(
+                            controller: nameController,
+                            decoration: InputDecoration.collapsed(
+                              hintText: 'Your name',
+                              hintStyle: TextStyle(
+                                color: Color(0x7F000000),
+                                fontSize: sw(16),
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                                height: 1.25,
+                              ),
+                            ),
                             style: TextStyle(
-                              color: Color(0x7F000000),
+                              color: Colors.black,
                               fontSize: sw(16),
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w400,
@@ -122,10 +169,21 @@ class _RegisterScreenState extends State<RegisterScreen> {
                     child: Row(
                       children: [
                         Expanded(
-                          child: Text(
-                            '07X XXX XXXX',
+                          child: TextField(
+                            controller: phoneController,
+                            keyboardType: TextInputType.phone,
+                            decoration: InputDecoration.collapsed(
+                              hintText: '07X XXX XXXX',
+                              hintStyle: TextStyle(
+                                color: Color(0x7F000000),
+                                fontSize: sw(16),
+                                fontFamily: 'Inter',
+                                fontWeight: FontWeight.w400,
+                                height: 1.25,
+                              ),
+                            ),
                             style: TextStyle(
-                              color: Color(0x7F000000),
+                              color: Colors.black,
                               fontSize: sw(16),
                               fontFamily: 'Inter',
                               fontWeight: FontWeight.w400,
@@ -159,17 +217,12 @@ class _RegisterScreenState extends State<RegisterScreen> {
               left: sw(20),
               right: sw(20),
               top: sh(435),
-              child: CustomButton(
-                text: 'Register',
-                onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => const VerifyNumberScreen(),
+              child: isLoading
+                  ? const Center(child: CircularProgressIndicator())
+                  : CustomButton(
+                      text: 'Register',
+                      onPressed: handleRegister,
                     ),
-                  );
-                },
-              ),
             ),
             Positioned(
               left: sw(23),
