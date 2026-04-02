@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:smart_guru/screen/auth/register.screen.dart';
 import 'package:smart_guru/services/api.service.dart';
+import 'package:smart_guru/services/session.manager.dart';
 import 'package:smart_guru/utils/theam.dart';
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -20,13 +20,13 @@ class _LoginScreenState extends State<LoginScreen> {
     final response = await IQService.login(phoneController.text);
     setState(() => isLoading = false);
     if (response != null && response['status'] == 'S100') {
-      final box = GetStorage();
-      box.write('user_id', response['data']['user_id']);
-      box.write('token', response['data']['token']);
-      box.write('name', response['data']['name']);
-      box.write('phone', response['data']['phone']);
-      box.write('is_premium', response['data']['is_premium']);
-      box.write('is_logged_in', true);
+      await SessionManager.saveSession(
+        userId: response['data']['user_id'],
+        token: response['data']['token'],
+        name: response['data']['name'],
+        phone: response['data']['phone'],
+        isPremium: response['data']['is_premium'],
+      );
 
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(content: Text(response['data']['message'] ?? "Login successful")),

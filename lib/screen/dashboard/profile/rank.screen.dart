@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
-import 'package:get_storage/get_storage.dart';
 import 'package:smart_guru/services/api.service.dart';
+import 'package:smart_guru/services/session.manager.dart';
 import 'package:smart_guru/utils/theam.dart';
 
 class RankScreen extends StatefulWidget {
@@ -24,9 +24,8 @@ class _RankScreenState extends State<RankScreen> {
 
   Future<void> fetchLeaderboard() async {
     setState(() => isLoading = true);
-    final box = GetStorage();
-    final int? userId = box.read('user_id');
-    final String? token = box.read('token');
+    final int? userId = SessionManager.userId;
+    final String? token = SessionManager.token;
 
     if (userId == null || token == null) {
       if (mounted) setState(() => isLoading = false);
