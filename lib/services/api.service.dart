@@ -41,7 +41,8 @@ class IQService {
     }
   }
 
-  /// register
+  /// register ---------------------------------------------------------------
+
   static Future<dynamic> register(
     String name,
     String phone, {
