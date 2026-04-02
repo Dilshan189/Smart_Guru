@@ -1,5 +1,6 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
 import 'package:smart_guru/screen/auth/login.screen.dart';
 import 'package:smart_guru/screen/onborad/verify.number.screen.dart';
 import 'package:smart_guru/services/api.service.dart';
@@ -27,6 +28,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
     final response = await IQService.register(nameController.text, phoneController.text);
     setState(() => isLoading = false);
     if (response != null && response['status'] == 'S100') {
+      final box = GetStorage();
+      box.write('user_id', response['data']['user_id']);
+      box.write('token', response['data']['token']);
+      box.write('name', response['data']['name']);
+      box.write('phone', response['data']['phone']);
+      box.write('is_premium', response['data']['is_premium']);
+      box.write('is_logged_in', true);
+
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response['data']['message'] ?? "Registration successful")));
       Navigator.push(
         context,

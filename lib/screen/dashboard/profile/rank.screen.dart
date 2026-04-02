@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:get_storage/get_storage.dart';
+import 'package:smart_guru/services/api.service.dart';
 import 'package:smart_guru/utils/theam.dart';
 
 class RankScreen extends StatefulWidget {
@@ -10,70 +12,39 @@ class RankScreen extends StatefulWidget {
 
 class _RankScreenState extends State<RankScreen> {
   String selectedTab = "All";
+  List<dynamic> leaderboard = [];
+  Map<String, dynamic>? userRank;
+  bool isLoading = true;
 
-  final List<Map<String, dynamic>> leaderboard = [
-    {
-      "rank": 1,
-      "name": "Bryan Wolf",
-      "points": 43,
-      "image": "https://i.pravatar.cc/150?u=1",
-    },
-    {
-      "rank": 2,
-      "name": "Meghan Jes...",
-      "points": 40,
-      "image": "https://i.pravatar.cc/150?u=2",
-    },
-    {
-      "rank": 3,
-      "name": "Alex Turner",
-      "points": 38,
-      "image": "https://i.pravatar.cc/150?u=3",
-    },
-    {
-      "rank": 4,
-      "name": "Marsha Fisher",
-      "points": 36,
-      "image": "https://i.pravatar.cc/150?u=4",
-    },
-    {
-      "rank": 5,
-      "name": "Juanita Cormier",
-      "points": 35,
-      "image": "https://i.pravatar.cc/150?u=5",
-    },
-    {
-      "rank": 6,
-      "name": "Charles Hapmer",
-      "points": 34,
-      "image": "https://i.pravatar.cc/150?u=6",
-    },
-    {
-      "rank": 7,
-      "name": "Tamara Schmidt",
-      "points": 33,
-      "image": "https://i.pravatar.cc/150?u=7",
-    },
-    {
-      "rank": 8,
-      "name": "Ricardo Veum",
-      "points": 32,
-      "image": "https://i.pravatar.cc/150?u=8",
-    },
-    {
-      "rank": 9,
-      "name": "Gary Sanford",
-      "points": 31,
-      "image": "https://i.pravatar.cc/150?u=9",
-    },
-  ];
+  @override
+  void initState() {
+    super.initState();
+    fetchLeaderboard();
+  }
 
-  final Map<String, dynamic> userRank = {
-    "rank": 16,
-    "name": "Tharindu Fernando",
-    "points": 34,
-    "image": "https://i.pravatar.cc/150?u=16",
-  };
+  Future<void> fetchLeaderboard() async {
+    setState(() => isLoading = true);
+    final box = GetStorage();
+    final int? userId = box.read('user_id');
+    final String? token = box.read('token');
+
+    if (userId == null || token == null) {
+      if (mounted) setState(() => isLoading = false);
+      return;
+    }
+
+    final response = await IQService.getLeaderboard(userId, token);
+
+    if (response != null) {
+      setState(() {
+        leaderboard = response['leaderboard'] ?? [];
+        userRank = response['userRank'];
+        isLoading = false;
+      });
+    } else {
+      setState(() => isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -126,96 +97,135 @@ class _RankScreenState extends State<RankScreen> {
                 ],
               ),
             ),
-            const SizedBox(height: 40),
-
-            // Podium
-            Padding(
-              padding: const EdgeInsets.symmetric(horizontal: 20),
-              child: Row(
-                mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                crossAxisAlignment: CrossAxisAlignment.end,
-                children: [
-                  _buildPodiumUser(leaderboard[1], 80, 2),
-                  Padding(
-                    padding: const EdgeInsets.only(bottom: 15),
-                    child: _buildPodiumUser(leaderboard[0], 100, 1),
-                  ),
-                  _buildPodiumUser(leaderboard[2], 80, 3),
-                ],
-              ),
-            ),
-
-            const SizedBox(height: 5),
-
-            // Leaderboard List
-            Expanded(
-              child: Container(
-                padding: const EdgeInsets.only(top: 30),
-                decoration: const BoxDecoration(
-                  color: Color(0xFFF5F5F9),
-                  borderRadius: BorderRadius.vertical(top: Radius.circular(35)),
-                ),
-                child: ListView.builder(
-                  padding: const EdgeInsets.symmetric(horizontal: 20),
-                  itemCount: leaderboard.length - 3,
-                  itemBuilder: (context, index) {
-                    final user = leaderboard[index + 3];
-                    return _buildLeaderboardItem(user);
-                  },
-                ),
-              ),
-            ),
-            // User Sticky Bar
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 30, vertical: 20),
-              decoration: const BoxDecoration(
-                gradient: AppColors.primaryGradient,
-                borderRadius: BorderRadius.vertical(top: Radius.circular(30)),
-              ),
-              child: SafeArea(
-                top: false,
-                child: Row(
-                  children: [
-                    Text(
-                      "${userRank['rank']}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 18,
-                        fontFamily: "Poppins",
-                      ),
+            isLoading
+                ? const Expanded(
+                    child: Center(
+                      child: CircularProgressIndicator(color: Colors.white),
                     ),
-                    const SizedBox(width: 20),
-                    CircleAvatar(
-                      radius: 22,
-                      backgroundImage: NetworkImage(userRank['image']),
-                    ),
-                    const SizedBox(width: 15),
-                    Expanded(
+                  )
+                : leaderboard.isEmpty
+                ? const Expanded(
+                    child: Center(
                       child: Text(
-                        userRank['name'],
-                        style: const TextStyle(
-                          color: Colors.white,
-                          fontWeight: FontWeight.bold,
-                          fontSize: 16,
-                          fontFamily: "Poppins",
+                        "No data available",
+                        style: TextStyle(color: Colors.white),
+                      ),
+                    ),
+                  )
+                : Expanded(
+                    child: Column(
+                      children: [
+                        // Podium
+                        Padding(
+                          padding: const EdgeInsets.symmetric(horizontal: 20),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              if (leaderboard.length > 1)
+                                _buildPodiumUser(leaderboard[1], 80, 2),
+                              if (leaderboard.isNotEmpty)
+                                Padding(
+                                  padding: const EdgeInsets.only(bottom: 15),
+                                  child: _buildPodiumUser(
+                                    leaderboard[0],
+                                    100,
+                                    1,
+                                  ),
+                                ),
+                              if (leaderboard.length > 2)
+                                _buildPodiumUser(leaderboard[2], 80, 3),
+                            ],
+                          ),
                         ),
-                        overflow: TextOverflow.ellipsis,
-                      ),
+                        const SizedBox(height: 5),
+                        // Leaderboard List
+                        Expanded(
+                          child: Container(
+                            padding: const EdgeInsets.only(top: 30),
+                            decoration: const BoxDecoration(
+                              color: Color(0xFFF5F5F9),
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(35),
+                              ),
+                            ),
+                            child: ListView.builder(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 20,
+                              ),
+                              itemCount: leaderboard.length > 3
+                                  ? leaderboard.length - 3
+                                  : 0,
+                              itemBuilder: (context, index) {
+                                final user = leaderboard[index + 3];
+                                return _buildLeaderboardItem(user);
+                              },
+                            ),
+                          ),
+                        ),
+                        // User Sticky Bar
+                        if (userRank != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 30,
+                              vertical: 20,
+                            ),
+                            decoration: const BoxDecoration(
+                              gradient: AppColors.primaryGradient,
+                              borderRadius: BorderRadius.vertical(
+                                top: Radius.circular(30),
+                              ),
+                            ),
+                            child: SafeArea(
+                              top: false,
+                              child: Row(
+                                children: [
+                                  Text(
+                                    "${userRank!['rank']}",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 18,
+                                      fontFamily: "Poppins",
+                                    ),
+                                  ),
+                                  const SizedBox(width: 20),
+                                  CircleAvatar(
+                                    radius: 22,
+                                    backgroundImage: NetworkImage(
+                                      userRank!['image'] ??
+                                          "https://i.pravatar.cc/150?u=${userRank!['user_id']}",
+                                    ),
+                                  ),
+                                  const SizedBox(width: 15),
+                                  Expanded(
+                                    child: Text(
+                                      userRank!['name'] ?? "Unknown",
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontWeight: FontWeight.bold,
+                                        fontSize: 16,
+                                        fontFamily: "Poppins",
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                  Text(
+                                    "${userRank!['points']}",
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontWeight: FontWeight.bold,
+                                      fontSize: 20,
+                                      fontFamily: "Poppins",
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ),
+                      ],
                     ),
-                    Text(
-                      "${userRank['points']}",
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        fontSize: 20,
-                        fontFamily: "Poppins",
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
+                  ),
           ],
         ),
       ),
@@ -271,7 +281,10 @@ class _RankScreenState extends State<RankScreen> {
                 shape: BoxShape.circle,
                 border: Border.all(color: Colors.white, width: 3),
                 image: DecorationImage(
-                  image: NetworkImage(user['image']),
+                  image: NetworkImage(
+                    user['image'] ??
+                        "https://i.pravatar.cc/150?u=${user['user_id']}",
+                  ),
                   fit: BoxFit.cover,
                 ),
               ),
@@ -334,11 +347,13 @@ class _RankScreenState extends State<RankScreen> {
           const SizedBox(width: 8),
           CircleAvatar(
             radius: 20,
-            backgroundImage: NetworkImage(user['image']),
+            backgroundImage: NetworkImage(
+              user['image'] ?? "https://i.pravatar.cc/150?u=${user['user_id']}",
+            ),
           ),
           const SizedBox(width: 12),
           Text(
-            user['name'],
+            user['name'] ?? "Unknown",
             style: const TextStyle(fontWeight: FontWeight.w600, fontSize: 15),
           ),
           const Spacer(),
