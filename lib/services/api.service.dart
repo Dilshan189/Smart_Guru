@@ -19,7 +19,18 @@ class CommerceService {
 
       var data = response.data;
       if (data is String) {
-        data = jsonDecode(data);
+        String trimmed = data.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          data = jsonDecode(data);
+        } else {
+          if (kDebugMode) {
+            print('[CommerceService][login] Non-JSON response received: $data');
+          }
+          return {
+            "status": "E100",
+            "data": "Server error: Received invalid response format.",
+          };
+        }
       }
       return data;
     } on DioException catch (e) {
@@ -30,7 +41,14 @@ class CommerceService {
       }
       if (e.response != null && e.response?.data != null) {
         var data = e.response!.data;
-        if (data is String) data = jsonDecode(data);
+        if (data is String) {
+          String trimmed = data.trim();
+          if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+            data = jsonDecode(data);
+          } else {
+            return {"status": "E100", "data": "Server error: ${e.message}"};
+          }
+        }
         return data;
       }
       return {"status": "E100", "data": "Network Error: ${e.message}"};
@@ -38,7 +56,7 @@ class CommerceService {
       if (kDebugMode) {
         print('[CommerceService][login] exception: $e');
       }
-      return null;
+      return {"status": "E100", "data": "An unexpected error occurred."};
     }
   }
 
@@ -117,7 +135,12 @@ class CommerceService {
 
       var data = response.data;
       if (data is String) {
-        data = jsonDecode(data);
+        String trimmed = data.trim();
+        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
+          data = jsonDecode(data);
+        } else {
+          return [];
+        }
       }
 
       if (data is Map && data['status'] == "S100" && data['data'] != null) {

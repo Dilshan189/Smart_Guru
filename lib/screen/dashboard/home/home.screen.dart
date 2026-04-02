@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:carousel_slider/carousel_slider.dart';
+import 'package:smart_guru/services/api.service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:smart_guru/screen/dashboard/home/lesson.screen.dart';
 
@@ -12,52 +13,38 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  final TextEditingController _couponController = TextEditingController();
+  List<dynamic> words = [];
+  bool _isLoading = true;
   int _activePage = 0;
   final CarouselSliderController _carouselController =
       CarouselSliderController();
 
-  final List<Map<String, dynamic>> words = [
-    {
-      "sinhala": "wd¾Ól úoHdj",
-      "module": "1",
-      "Question": "1240 MCQs",
-      "Coming Soon": false,
-      'image': 'assets/images/Icon (7).svg',
-      "title": "සාමාන්ය දැනුම",
-      "progress": 0.65,
-      "color": Color(0xFF1A237E),
-    },
-    {
-      "sinhala": ".sKqïlrKh",
-      "module": "2",
-      "Question": "980 MCQs",
-      'image': 'assets/images/Icon (5).svg',
-      "Coming Soon": true,
-      "title": "බුද්ධි පරීක්ෂණ",
-      "progress": 0.0,
-      "color": Color(0xFF78909C),
-    },
-    {
-      "sinhala": "jHdmdr wOHk​h",
-      "module": "3",
-      "Question": "1150 MCQs",
-      'image': 'assets/images/Icon (6).svg',
-      "Coming Soon": true,
-      "title": "භාෂා හැකියාව",
-      "progress": 0.0,
-      "color": Color(0xFF78909C),
-    },
-  ];
-
   @override
   void initState() {
     super.initState();
+    _fetchSubjects();
+  }
+
+  Future<void> _fetchSubjects() async {
+    try {
+      final List<dynamic> fetchedSubjects = await CommerceService.getSubject();
+      setState(() {
+        words = fetchedSubjects;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Error fetching subjects: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
-    // If device is invalid
+    if (_isLoading) {
+      return const Scaffold(body: Center(child: CircularProgressIndicator()));
+    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -222,10 +209,21 @@ class _HomeScreenState extends State<HomeScreen> {
           SliverList(
             key: const ValueKey('quiz_list_section'),
             delegate: SliverChildBuilderDelegate((context, index) {
-              final word = words[index];
-              final bool isComingSoon = word["Coming Soon"] == true;
-              final double progress = word["progress"] ?? 0.0;
-              final Color iconBg = word["color"] ?? const Color(0xFF1A237E);
+              final Map<String, dynamic> subject = words[index];
+              final String subjectName = subject['name'] ?? "";
+              final String subjectId = subject['id']?.toString() ?? "";
+              final bool isComingSoon = subject["status"] == "0";
+              final double progress = 0.0; // API does not provide progress yet
+
+              // Generate colors dynamically
+              final List<Color> colors = [
+                const Color(0xFF1A237E),
+                const Color(0xFF2E7D32),
+                const Color(0xFFC62828),
+                const Color(0xFFEF6C00),
+                const Color(0xFF6A1B9A),
+              ];
+              final Color iconBg = colors[index % colors.length];
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
@@ -240,9 +238,8 @@ class _HomeScreenState extends State<HomeScreen> {
                                 context,
                                 MaterialPageRoute(
                                   builder: (context) => LessonScreen(
-                                    title: word["sinhala"] ?? "",
-                                    categoryId:
-                                        word["module"]?.toString() ?? "",
+                                    title: subjectName,
+                                    categoryId: subjectId,
                                   ),
                                 ),
                               );
@@ -277,12 +274,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     padding: const EdgeInsets.all(10),
-                                    child: SvgPicture.asset(
-                                      word['image'] ?? '',
-                                      colorFilter: const ColorFilter.mode(
-                                        Colors.white,
-                                        BlendMode.srcIn,
-                                      ),
+                                    child: const Icon(
+                                      Icons.book_outlined,
+                                      color: Colors.white,
                                     ),
                                   ),
                                   const SizedBox(width: 16),
@@ -292,16 +286,18 @@ class _HomeScreenState extends State<HomeScreen> {
                                           CrossAxisAlignment.start,
                                       children: [
                                         Text(
-                                          word["sinhala"] ?? "",
+                                          subjectName,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
                                             fontSize: 18,
-                                            fontFamily: "FMGanganee",
+                                            fontFamily: "Poppins",
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          word["Question"] ?? "",
+                                          isComingSoon
+                                              ? "Coming Soon"
+                                              : "Tap to explore chapters",
                                           style: const TextStyle(
                                             color: Colors.grey,
                                             fontSize: 14,
