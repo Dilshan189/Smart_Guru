@@ -2,8 +2,9 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter/foundation.dart';
 
-class IQService {
-  static const String baseUrl = "http://10.0.2.2/commerceAPP/index.php/API/";
+class CommerceService {
+  static const String baseUrl =
+      "https://commerce.ideacipher.com/index.php/API/";
 
   /// Auth ---------------------------------------------------------------------
 
@@ -24,7 +25,7 @@ class IQService {
     } on DioException catch (e) {
       if (kDebugMode) {
         print(
-          '[IQService][login] DioException: ${e.response?.data ?? e.message}',
+          '[CommerceService][login] DioException: ${e.response?.data ?? e.message}',
         );
       }
       if (e.response != null && e.response?.data != null) {
@@ -35,7 +36,7 @@ class IQService {
       return {"status": "E100", "data": "Network Error: ${e.message}"};
     } catch (e) {
       if (kDebugMode) {
-        print('[IQService][login] exception: $e');
+        print('[CommerceService][login] exception: $e');
       }
       return null;
     }
@@ -69,7 +70,7 @@ class IQService {
     } on DioException catch (e) {
       if (kDebugMode) {
         print(
-          '[IQService][register] DioException: ${e.response?.data ?? e.message}',
+          '[CommerceService][register] DioException: ${e.response?.data ?? e.message}',
         );
       }
       if (e.response != null && e.response?.data != null) {
@@ -80,7 +81,7 @@ class IQService {
       return {"status": "E100", "data": "Network Error: ${e.message}"};
     } catch (e) {
       if (kDebugMode) {
-        print('[IQService][register] exception: $e');
+        print('[CommerceService][register] exception: $e');
       }
       return null;
     }
@@ -126,13 +127,13 @@ class IQService {
     } on DioException catch (e) {
       if (kDebugMode) {
         print(
-          '[IQService][getCategory] DioException: ${e.response?.data ?? e.message}',
+          '[CommerceService][getCategory] DioException: ${e.response?.data ?? e.message}',
         );
       }
       return [];
     } catch (e) {
       if (kDebugMode) {
-        print('[IQService][getCategory] exception: $e');
+        print('[CommerceService][getCategory] exception: $e');
       }
       return [];
     }
@@ -635,13 +636,13 @@ class IQService {
     } on DioException catch (e) {
       if (kDebugMode) {
         print(
-          '[IQService][getLevel] DioException: ${e.response?.data ?? e.message}',
+          '[CommerceService][getLevel] DioException: ${e.response?.data ?? e.message}',
         );
       }
       return [];
     } catch (e) {
       if (kDebugMode) {
-        print('[IQService][getLevel] exception: $e');
+        print('[CommerceService][getLevel] exception: $e');
       }
       return [];
     }

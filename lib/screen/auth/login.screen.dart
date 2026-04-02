@@ -1,8 +1,11 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/auth/register.screen.dart';
+import 'package:smart_guru/screen/onborad/verify.number.screen.dart';
 import 'package:smart_guru/services/api.service.dart';
 import 'package:smart_guru/services/session.manager.dart';
 import 'package:smart_guru/utils/theam.dart';
+
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
 
@@ -17,24 +20,49 @@ class _LoginScreenState extends State<LoginScreen> {
   void handleLogin() async {
     if (phoneController.text.isEmpty) return;
     setState(() => isLoading = true);
-    final response = await IQService.login(phoneController.text);
+    final response = await CommerceService.login(phoneController.text);
     setState(() => isLoading = false);
     if (response != null && response['status'] == 'S100') {
-      await SessionManager.saveSession(
-        userId: response['data']['user_id'],
-        token: response['data']['token'],
-        name: response['data']['name'],
-        phone: response['data']['phone'],
-        isPremium: response['data']['is_premium'],
-      );
+      try {
+        final userData = response['data'];
+        if (userData != null && userData is Map) {
+          // Robustly parse user_id from string/int
+          final userId =
+              int.tryParse(userData['user_id']?.toString() ?? "0") ?? 0;
 
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(response['data']['message'] ?? "Login successful")),
-      );
+          await SessionManager.saveSession(
+            userId: userId,
+            token: userData['token']?.toString() ?? "",
+            name: userData['name']?.toString() ?? "",
+            phone: userData['phone']?.toString() ?? "",
+            isPremium: int.tryParse(userData['is_premium']?.toString() ?? "0"),
+          );
+        }
+      } catch (e) {
+        if (kDebugMode) print('[LoginScreen] Session save error: $e');
+      }
+
+      // Always navigate if status is S100
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(response['data']?['message'] ?? "Login successful"),
+          ),
+        );
+
+        Navigator.pushReplacement(
+          context,
+          MaterialPageRoute(builder: (context) => const VerifyNumberScreen()),
+        );
+      }
     } else {
       String msg = "Login failed";
       if (response != null && response['data'] is String) {
         msg = response['data'];
+      } else if (response != null &&
+          response['data'] is Map &&
+          response['data']['message'] != null) {
+        msg = response['data']['message'];
       }
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }

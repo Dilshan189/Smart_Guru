@@ -32,7 +32,7 @@ class _RankScreenState extends State<RankScreen> {
       return;
     }
 
-    final response = await IQService.getLeaderboard(userId, token);
+    final response = await CommerceService.getLeaderboard(userId, token);
 
     if (response != null) {
       setState(() {

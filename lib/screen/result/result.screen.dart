@@ -95,7 +95,7 @@ class _LevelCompleteState extends State<LevelComplete> {
 
     //   final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    //   final response = await IQService.getUserPoints(
+    //   final response = await CommerceService.getUserPoints(
     //     userId: userProvider.userId.toString(),
     //     token: userProvider.token ?? "",
     //     point: points.toString(),
@@ -130,7 +130,7 @@ class _LevelCompleteState extends State<LevelComplete> {
     // try {
     //   final userProvider = Provider.of<UserProvider>(context, listen: false);
 
-    //   final profileResponse = await IQService.getProfile(
+    //   final profileResponse = await CommerceService.getProfile(
     //     userId: userProvider.userId.toString(),
     //     token: userProvider.token ?? "",
     //   );

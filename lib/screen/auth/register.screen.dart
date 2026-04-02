@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/auth/login.screen.dart';
@@ -21,32 +22,64 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
   void handleRegister() async {
     if (nameController.text.isEmpty || phoneController.text.isEmpty) {
-       ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
-       return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(const SnackBar(content: Text("Please fill all fields")));
+      return;
     }
     setState(() => isLoading = true);
-    final response = await IQService.register(nameController.text, phoneController.text);
+    final response = await CommerceService.register(
+      nameController.text,
+      phoneController.text,
+    );
     setState(() => isLoading = false);
     if (response != null && response['status'] == 'S100') {
-      await SessionManager.saveSession(
-        userId: response['data']['user_id'],
-        token: response['data']['token'],
-        name: response['data']['name'],
-        phone: response['data']['phone'],
-        isPremium: response['data']['is_premium'],
-      );
+      try {
+        final userData = response['data'];
+        if (userData != null && userData is Map) {
+          final userId = int.tryParse(userData['user_id'].toString()) ?? 0;
 
-      ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(response['data']['message'] ?? "Registration successful")));
-      Navigator.push(
-        context,
-        MaterialPageRoute(
-          builder: (context) => const VerifyNumberScreen(),
-        ),
-      );
+          await SessionManager.saveSession(
+            userId: userId,
+            token: userData['token']?.toString() ?? "",
+            name: userData['name']?.toString() ?? "",
+            phone: userData['phone']?.toString() ?? "",
+            isPremium: int.tryParse(userData['is_premium']?.toString() ?? "0"),
+          );
+        }
+
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                response['data']['message'] ?? "Registration successful",
+              ),
+            ),
+          );
+
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const VerifyNumberScreen()),
+          );
+        }
+      } catch (e) {
+        if (kDebugMode) print('[RegisterScreen] Error saving session: $e');
+        // Still navigate even if session saving fails, or handle as needed
+        if (mounted) {
+          Navigator.pushReplacement(
+            context,
+            MaterialPageRoute(builder: (context) => const VerifyNumberScreen()),
+          );
+        }
+      }
     } else {
       String msg = "Registration failed";
       if (response != null && response['data'] is String) {
         msg = response['data'];
+      } else if (response != null &&
+          response['data'] is Map &&
+          response['data']['message'] != null) {
+        msg = response['data']['message'];
       }
       ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
     }
@@ -228,10 +261,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
               top: sh(435),
               child: isLoading
                   ? const Center(child: CircularProgressIndicator())
-                  : CustomButton(
-                      text: 'Register',
-                      onPressed: handleRegister,
-                    ),
+                  : CustomButton(text: 'Register', onPressed: handleRegister),
             ),
             Positioned(
               left: sw(23),
