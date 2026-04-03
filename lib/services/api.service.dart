@@ -115,12 +115,19 @@ class CommerceService {
     String? token,
   }) async {
     try {
+      if (kDebugMode) {
+        print('[CommerceService][getCategory] Token used: $token');
+      }
       final dio = Dio();
       final Map<String, dynamic> body = {};
       if (categoryId != null) body['category_id'] = categoryId;
       if (module != null) body['module'] = module;
       if (status != null) body['status'] = status;
       if (isPremium != null) body['is_premium'] = isPremium;
+
+      if (kDebugMode) {
+        print('[CommerceService][getCategory] Request body: $body');
+      }
 
       final response = await dio.post(
         "${baseUrl}getCategory",
@@ -134,6 +141,10 @@ class CommerceService {
       );
 
       var data = response.data;
+      if (kDebugMode) {
+        print('[CommerceService][getCategory] Raw response: $data');
+      }
+
       if (data is String) {
         String trimmed = data.trim();
         if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
@@ -354,11 +365,18 @@ class CommerceService {
     String? token,
   }) async {
     try {
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLesson] Token: $token');
+      }
       final dio = Dio();
       final Map<String, dynamic> body = {};
       if (lessonId != null) body['lesson_id'] = lessonId;
       if (subjectId != null) body['subject_id'] = subjectId;
       if (status != null) body['status'] = status;
+
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLesson] Body: $body');
+      }
 
       final response = await dio.post(
         "${baseUrl}getSubjectLesson",
@@ -372,12 +390,18 @@ class CommerceService {
       );
 
       var data = response.data;
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLesson] Response: $data');
+      }
       if (data is String) data = jsonDecode(data);
       if (data is Map && data['status'] == "S100") {
         return data['data'] as List<dynamic>;
       }
       return [];
     } catch (e) {
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLesson] Exception: $e');
+      }
       return [];
     }
   }
@@ -392,12 +416,19 @@ class CommerceService {
     String? token,
   }) async {
     try {
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLessonLevel] Token: $token');
+      }
       final dio = Dio();
       final Map<String, dynamic> body = {};
       if (levelId != null) body['level_id'] = levelId;
       if (lessonId != null) body['lesson_id'] = lessonId;
       if (subjectId != null) body['subject_id'] = subjectId;
       if (status != null) body['status'] = status;
+
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLessonLevel] Body: $body');
+      }
 
       final response = await dio.post(
         "${baseUrl}getSubjectLessonLevel",
@@ -411,12 +442,18 @@ class CommerceService {
       );
 
       var data = response.data;
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLessonLevel] Response: $data');
+      }
       if (data is String) data = jsonDecode(data);
       if (data is Map && data['status'] == "S100") {
         return data['data'] as List<dynamic>;
       }
       return [];
     } catch (e) {
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectLessonLevel] Exception: $e');
+      }
       return [];
     }
   }

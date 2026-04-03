@@ -115,7 +115,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.w400,
-                          fontFamily: ' FMMalithi',
+                          fontFamily: 'FMMalithi',
                           fontSize: 10.84,
                         ),
                       ),
