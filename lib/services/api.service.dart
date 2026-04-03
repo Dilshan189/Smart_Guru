@@ -249,41 +249,6 @@ class CommerceService {
     }
   }
 
-  /// Question Reports fetch in data server ---------------------------------------------------------
-
-  static Future<List<dynamic>> getQuestionReports({
-    int? reportId,
-    int? questionId,
-    String? token,
-  }) async {
-    try {
-      final dio = Dio();
-      final Map<String, dynamic> body = {};
-      if (reportId != null) body['report_id'] = reportId;
-      if (questionId != null) body['question_id'] = questionId;
-
-      final response = await dio.post(
-        "${baseUrl}getQuestionReports",
-        data: body,
-        options: Options(
-          headers: {
-            "Content-Type": "application/json",
-            if (token != null) "token": token,
-          },
-        ),
-      );
-
-      var data = response.data;
-      if (data is String) data = jsonDecode(data);
-      if (data is Map && data['status'] == "S100") {
-        return data['data'] as List<dynamic>;
-      }
-      return [];
-    } catch (e) {
-      return [];
-    }
-  }
-
   /// Question Reports insert in data server --------------------------------------------------------
 
   static Future<Map<String, dynamic>> reportQuestion({
@@ -741,93 +706,6 @@ class CommerceService {
       if (kDebugMode) {
         print('[CommerceService][getLevel] exception: $e');
       }
-      return [];
-    }
-  }
-
-  /// Dashboard & Payments -----------------------------------------------------
-
-  static Future<dynamic> getDashboardSummary(String token) async {
-    try {
-      final dio = Dio();
-      final response = await dio.post(
-        "${baseUrl}getDashboardSummary",
-        options: Options(
-          headers: {"Content-Type": "application/json", "token": token},
-        ),
-      );
-
-      var data = response.data;
-      if (data is String) data = jsonDecode(data);
-      if (data is Map && data['status'] == "S100") {
-        return data['data'];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  static Future<dynamic> getDashboardData({int? limit, String? token}) async {
-    try {
-      final dio = Dio();
-      final response = await dio.post(
-        "${baseUrl}getDashboardData",
-        data: limit != null ? {"limit": limit} : {},
-        options: Options(
-          headers: {
-            "Content-Type": "application/json",
-            if (token != null) "token": token,
-          },
-        ),
-      );
-
-      var data = response.data;
-      if (data is String) data = jsonDecode(data);
-      if (data is Map && data['status'] == "S100") {
-        return data['data'];
-      }
-      return null;
-    } catch (e) {
-      return null;
-    }
-  }
-
-  /// payment
-
-  static Future<List<dynamic>> getPayment({
-    int? paymentId,
-    int? userId,
-    String? paymentStatus,
-    String? paymentMethod,
-    String? token,
-  }) async {
-    try {
-      final dio = Dio();
-      final Map<String, dynamic> body = {};
-      if (paymentId != null) body['payment_id'] = paymentId;
-      if (userId != null) body['user_id'] = userId;
-      if (paymentStatus != null) body['payment_status'] = paymentStatus;
-      if (paymentMethod != null) body['payment_method'] = paymentMethod;
-
-      final response = await dio.post(
-        "${baseUrl}getPayment",
-        data: body,
-        options: Options(
-          headers: {
-            "Content-Type": "application/json",
-            if (token != null) "token": token,
-          },
-        ),
-      );
-
-      var data = response.data;
-      if (data is String) data = jsonDecode(data);
-      if (data is Map && data['status'] == "S100") {
-        return data['data'] as List<dynamic>;
-      }
-      return [];
-    } catch (e) {
       return [];
     }
   }
