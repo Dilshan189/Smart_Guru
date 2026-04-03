@@ -9,11 +9,7 @@ class LevelScreen extends StatefulWidget {
   final String title;
   final String lessonId;
 
-  const LevelScreen({
-    super.key,
-    required this.title,
-    required this.lessonId,
-  });
+  const LevelScreen({super.key, required this.title, required this.lessonId});
 
   @override
   State<LevelScreen> createState() => _LevelScreenState();
@@ -34,10 +30,10 @@ class _LevelScreenState extends State<LevelScreen> {
       final String? token = SessionManager.token;
       final List<dynamic> fetchedLevels =
           await CommerceService.getSubjectLessonLevel(
-        lessonId: int.tryParse(widget.lessonId),
-        token: token,
-        status: "active",
-      );
+            lessonId: int.tryParse(widget.lessonId),
+            token: token,
+            status: "active",
+          );
 
       setState(() {
         levels = fetchedLevels;
@@ -97,29 +93,31 @@ class _LevelScreenState extends State<LevelScreen> {
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : levels.isEmpty
-              ? const Center(child: Text("No levels available"))
-              : GridView.builder(
-                  padding: const EdgeInsets.all(20),
-                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-                    crossAxisCount: 3,
-                    crossAxisSpacing: 16,
-                    mainAxisSpacing: 16,
-                    childAspectRatio: 1.0,
-                  ),
-                  itemCount: levels.length,
-                  itemBuilder: (context, index) {
-                    final level = levels[index];
-                    return _buildLevelCard(level, index);
-                  },
-                ),
+          ? const Center(child: Text("No levels available"))
+          : GridView.builder(
+              padding: const EdgeInsets.all(20),
+              gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                crossAxisCount: 3,
+                crossAxisSpacing: 16,
+                mainAxisSpacing: 16,
+                childAspectRatio: 1.0,
+              ),
+              itemCount: levels.length,
+              itemBuilder: (context, index) {
+                final level = levels[index];
+                return _buildLevelCard(level, index);
+              },
+            ),
     );
   }
 
   Widget _buildLevelCard(dynamic item, int index) {
     final String levelName = item["name"] ?? "Level ${index + 1}";
     final bool isPremium = item["is_premium"] == 1;
+
     // Assume first level is unlocked if no lock logic from API yet, others locked unless premium?
     // Using a simple logic for now:
+
     final bool isLocked = index > 0 && !isPremium;
 
     return InkWell(
