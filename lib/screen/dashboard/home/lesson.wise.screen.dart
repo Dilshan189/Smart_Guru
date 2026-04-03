@@ -29,19 +29,19 @@ class LessonWiseScreen extends StatefulWidget {
 }
 
 class _LessonWiseScreenState extends State<LessonWiseScreen> {
-  List<dynamic> levels = [];
+  List<dynamic> lessons = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchLevels();
+    _fetchLessons();
   }
 
-  Future<void> _fetchLevels() async {
+  Future<void> _fetchLessons() async {
     try {
       final String? token = SessionManager.token;
-      final List<dynamic> fetchedLevels =
+      final List<dynamic> fetchedLessons =
           await CommerceService.getSubjectLesson(
             lessonId: int.tryParse(widget.categoryId),
             token: token,
@@ -49,11 +49,11 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
           );
 
       setState(() {
-        levels = fetchedLevels;
+        lessons = fetchedLessons;
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Error fetching levels: $e");
+      debugPrint("Error fetching lessons: $e");
       setState(() {
         _isLoading = false;
       });
@@ -105,15 +105,15 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : levels.isEmpty
+          : lessons.isEmpty
           ? const Center(child: Text("No items available"))
           : ListView.builder(
               padding: const EdgeInsets.all(20),
-              itemCount: levels.length,
+              itemCount: lessons.length,
               itemBuilder: (context, index) {
-                final level = levels[index];
-                final String levelName = level["name"] ?? "";
-                final bool isPremium = level["is_premium"] == 1;
+                final lesson = lessons[index];
+                final String lessonName = lesson["name"] ?? "";
+                final bool isPremium = lesson["is_premium"] == 1;
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 15),
@@ -123,8 +123,8 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                         context,
                         MaterialPageRoute(
                           builder: (context) => LevelScreen(
-                            title: levelName,
-                            lessonId: level["id"]?.toString() ?? "",
+                            title: lessonName,
+                            lessonId: lesson["id"]?.toString() ?? "",
                           ),
                         ),
                       );
@@ -173,7 +173,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                                   const SizedBox(width: 15),
                                   Expanded(
                                     child: Text(
-                                      levelName,
+                                      lessonName,
                                       style: const TextStyle(
                                         fontFamily: "FMGanganee",
                                         fontSize: 16,

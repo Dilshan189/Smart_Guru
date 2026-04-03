@@ -223,43 +223,16 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                                   return;
                                 }
 
-                                setState(() {
-                                  errorMessage = null;
-                                  // Add submittting state if needed locally
-                                });
-
-                                try {
-                                  final result =
-                                      await CommerceService.reportQuestion(
-                                        questionId: 0, // General problem
-                                        reason: message,
-                                        token: SessionManager.token,
-                                      );
-
-                                  if (result['success']) {
-                                    if (context.mounted) {
-                                      Navigator.pop(context);
-                                      ScaffoldMessenger.of(
-                                        context,
-                                      ).showSnackBar(
-                                        SnackBar(
-                                          content: Text(
-                                            result['message'] ??
-                                                "Report submitted successfully",
-                                          ),
-                                          backgroundColor: Colors.green,
-                                        ),
-                                      );
-                                    }
-                                  } else {
-                                    setState(() {
-                                      errorMessage = result['message'];
-                                    });
-                                  }
-                                } catch (e) {
-                                  setState(() {
-                                    errorMessage = "Something went wrong";
-                                  });
+                                if (context.mounted) {
+                                  Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    const SnackBar(
+                                      content: Text(
+                                        "Report submitted successfully",
+                                      ),
+                                      backgroundColor: Colors.green,
+                                    ),
+                                  );
                                 }
                               },
                               child: const Text(

@@ -20,16 +20,16 @@ class LessonScreen extends StatefulWidget {
 }
 
 class _LessonScreenState extends State<LessonScreen> {
-  List<dynamic> quizItems = [];
+  List<dynamic> categories = [];
   bool _isLoading = true;
 
   @override
   void initState() {
     super.initState();
-    _fetchLessons();
+    fetchCategoryLessons();
   }
 
-  Future<void> _fetchLessons() async {
+  Future<void> fetchCategoryLessons() async {
     try {
       final String? token = SessionManager.token;
       final List<dynamic> fetchedCategories = await CommerceService.getCategory(
@@ -40,11 +40,11 @@ class _LessonScreenState extends State<LessonScreen> {
       );
 
       setState(() {
-        quizItems = fetchedCategories;
+        categories = fetchedCategories;
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Error fetching lessons: $e");
+      debugPrint("Error fetching category lessons: $e");
       setState(() {
         _isLoading = false;
       });
@@ -96,16 +96,16 @@ class _LessonScreenState extends State<LessonScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : quizItems.isEmpty
+          : categories.isEmpty
           ? const Center(child: Text("No lessons available"))
           : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-              itemCount: quizItems.length,
+              itemCount: categories.length,
               itemBuilder: (context, index) {
-                final item = quizItems[index];
-                final String title = item["name"] ?? "";
-                final String subtitle = item["description"] ?? "";
-                final bool isComingSoon = item["status"] == "inactive";
+                final category = categories[index];
+                final String title = category["name"] ?? "";
+                final String subtitle = category["description"] ?? "";
+                final bool isComingSoon = category["status"] == "inactive";
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 20),
@@ -124,7 +124,7 @@ class _LessonScreenState extends State<LessonScreen> {
                                       title: widget.title,
                                       subtitle: title,
                                       quizList: const [],
-                                      categoryId: item["id"]?.toString() ?? "",
+                                      categoryId: category["id"]?.toString() ?? "",
                                       levelId: "1",
                                     ),
                                   ),
