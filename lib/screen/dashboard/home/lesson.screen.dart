@@ -1,10 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
-import 'package:smart_guru/screen/dashboard/home/past.model.papers.screen.dart';
 import 'package:smart_guru/utils/theam.dart';
-import 'package:smart_guru/screen/dashboard/home/quiz.item.screen.dart';
 import 'package:smart_guru/screen/dashboard/home/lesson.wise.screen.dart';
-import 'package:smart_guru/screen/dashboard/home/short.note.screen.dart';
+import 'package:smart_guru/services/api.service.dart';
+import 'package:smart_guru/services/session.manager.dart';
 
 class LessonScreen extends StatefulWidget {
   final String title;
@@ -21,48 +20,36 @@ class LessonScreen extends StatefulWidget {
 }
 
 class _LessonScreenState extends State<LessonScreen> {
-  final List<Map<String, dynamic>> quizItems = [
-    {
-      "id": "lessons",
-      "title": "පාඩම් අනුව ප්‍රශ්න",
-      "subtitle": "පාඩම් අනුව වර්ගීකරණය කරන ලද ප්‍රශ්න ඇතුළත් වේ.",
-      "count_left": "12 lessons",
-      "count_right": "1000 MCQs",
-      "isComingSoon": false,
-    },
-    {
-      "id": "past_papers",
-      "title": "පසුගිය විභාග ප්‍රශ්න",
-      "subtitle": "පසුගිය විභාග ප්‍රශ්න පත්‍ර ඇතුළත් වේ.",
-      "count_left": "2020-2025",
-      "count_right": "200 MCQs",
-      "isComingSoon": false,
-    },
-    {
-      "id": "model_papers",
-      "title": "අනුමාන ප්‍රශ්න පත්‍ර",
-      "subtitle": "අප විසින් සකස් කරන ලද අනුමාන ප්‍රශ්න ඇතුළත් වේ.",
-      "count_left": "12 Papers",
-      "count_right": "200 MCQs",
-      "isComingSoon": false,
-    },
-    {
-      "id": "short_notes",
-      "title": "කෙටි සටහන්",
-      "subtitle": "විෂය කොටස්වලට අදාළ කෙටි සටහන් මෙහි ඇතුළත් වේ.",
-      "count_left": "0 Topics",
-      "count_right": "0 PDFs",
-      "isComingSoon": false,
-    },
-    {
-      "id": "video_lessons",
-      "title": "වීඩියෝ පාඩම්",
-      "subtitle": "වීඩියෝ පාඩම් මාලාව ළඟදීම බලාපොරොත්තු වන්න.",
-      "count_left": "0 Lessons",
-      "count_right": "0 videos",
-      "isComingSoon": true,
-    },
-  ];
+  List<dynamic> quizItems = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLessons();
+  }
+
+  Future<void> _fetchLessons() async {
+    try {
+      final String? token = SessionManager.token;
+      final List<dynamic> fetchedCategories = await CommerceService.getCategory(
+        categoryId: int.tryParse(widget.categoryId),
+        module: "word",
+        token: token,
+        status: "active",
+      );
+
+      setState(() {
+        quizItems = fetchedCategories;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Error fetching lessons: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -107,186 +94,163 @@ class _LessonScreenState extends State<LessonScreen> {
           ),
         ),
       ),
-      body: ListView.builder(
-        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-        itemCount: quizItems.length,
-        itemBuilder: (context, index) {
-          final item = quizItems[index];
-          final bool isComingSoon = item["isComingSoon"] == true;
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : quizItems.isEmpty
+          ? const Center(child: Text("No lessons available"))
+          : ListView.builder(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
+              itemCount: quizItems.length,
+              itemBuilder: (context, index) {
+                final item = quizItems[index];
+                final String title = item["name"] ?? "";
+                final String subtitle = item["description"] ?? "";
+                final bool isComingSoon = item["status"] == "inactive";
 
-          return Padding(
-            padding: const EdgeInsets.only(bottom: 20),
-            child: Stack(
-              clipBehavior: Clip.none,
-              children: [
-                InkWell(
-                  onTap: isComingSoon
-                      ? null
-                      : () {
-                          if (item["id"] == "lessons") {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => LessonWiseScreen(
-                                  title: widget.title,
-                                  subtitle: item["title"],
-                                  quizList: const [],
-                                  categoryId: widget.categoryId,
-                                  levelId: "1",
-                                ),
-                              ),
-                            );
-                          } else if (item["id"] == "past_papers") {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    PastModelPapersScreen(title: item["title"]),
-                              ),
-                            );
-                          } else if (item["id"] == "model_papers") {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    PastModelPapersScreen(title: item["title"]),
-                              ),
-                            );
-                          } else if (item["id"] == "short_notes") {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) => const ShortNoteScreen(),
-                              ),
-                            );
-                          } else {
-                            Navigator.push(
-                              context,
-                              MaterialPageRoute(
-                                builder: (context) =>
-                                    QuizItemScreen(title: item["title"]),
-                              ),
-                            );
-                          }
-                        },
-                  borderRadius: BorderRadius.circular(20),
-                  child: Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      borderRadius: BorderRadius.circular(20),
-                      border: Border.all(color: const Color(0xFFF1F5F9)),
-                      boxShadow: [
-                        BoxShadow(
-                          color: Colors.black.withValues(alpha: 0.02),
-                          blurRadius: 10,
-                          offset: const Offset(0, 4),
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    item["title"],
-                                    style: const TextStyle(
-                                      fontFamily: "FMGanganee",
-                                      fontSize: 18,
-                                      fontWeight: FontWeight.bold,
-                                      color: Color(0xFF1E293B),
+                return Padding(
+                  padding: const EdgeInsets.only(bottom: 20),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      InkWell(
+                        onTap: isComingSoon
+                            ? null
+                            : () {
+                                // Default to lessons navigation for categories fetched
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LessonWiseScreen(
+                                      title: widget.title,
+                                      subtitle: title,
+                                      quizList: const [],
+                                      categoryId: item["id"]?.toString() ?? "",
+                                      levelId: "1",
                                     ),
                                   ),
-                                  const SizedBox(height: 6),
+                                );
+                              },
+                        borderRadius: BorderRadius.circular(20),
+                        child: Container(
+                          padding: const EdgeInsets.all(20),
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(20),
+                            border: Border.all(color: const Color(0xFFF1F5F9)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
+                              ),
+                            ],
+                          ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      crossAxisAlignment:
+                                          CrossAxisAlignment.start,
+                                      children: [
+                                        Text(
+                                          title,
+                                          style: const TextStyle(
+                                            fontFamily: "FMGanganee",
+                                            fontSize: 18,
+                                            fontWeight: FontWeight.bold,
+                                            color: Color(0xFF1E293B),
+                                          ),
+                                        ),
+                                        const SizedBox(height: 6),
+                                        Text(
+                                          subtitle,
+                                          style: const TextStyle(
+                                            fontFamily: "FMGanganee",
+                                            fontSize: 14,
+                                            color: Color(0xFF94A3B8),
+                                            height: 1.4,
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                  const SizedBox(width: 15),
+                                  if (!isComingSoon)
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: AppColors.primary,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Center(
+                                        child: Icon(
+                                          Icons.arrow_forward_ios,
+                                          color: Colors.white,
+                                          size: 20,
+                                        ),
+                                      ),
+                                    ),
+                                ],
+                              ),
+                              const SizedBox(height: 20),
+                              Row(
+                                mainAxisAlignment:
+                                    MainAxisAlignment.spaceBetween,
+                                children: [
                                   Text(
-                                    item["subtitle"],
+                                    // item["count_left"] ?
+                                    "Available",
                                     style: const TextStyle(
-                                      fontFamily: "FMGanganee",
+                                      fontFamily: "Poppins",
                                       fontSize: 14,
-                                      color: Color(0xFF94A3B8),
-                                      height: 1.4,
+                                      color: Color(0xFF64748B),
+                                      fontWeight: FontWeight.w500,
+                                    ),
+                                  ),
+                                  Container(
+                                    padding: const EdgeInsets.symmetric(
+                                      horizontal: 12,
+                                      vertical: 6,
+                                    ),
+                                    decoration: BoxDecoration(
+                                      color: const Color(0xFFF1F5F9),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Text(
+                                      "View",
+                                      style: TextStyle(
+                                        fontFamily: "Poppins",
+                                        fontSize: 13,
+                                        color: Color(0xFF475569),
+                                        fontWeight: FontWeight.bold,
+                                      ),
                                     ),
                                   ),
                                 ],
                               ),
-                            ),
-                            const SizedBox(width: 15),
-                            if (!isComingSoon)
-                              Container(
-                                width: 50,
-                                height: 50,
-                                decoration: BoxDecoration(
-                                  color: AppColors.primary,
-                                  borderRadius: BorderRadius.circular(12),
-                                ),
-                                child: const Center(
-                                  child: Icon(
-                                    Icons.arrow_forward_ios,
-                                    color: Colors.white,
-                                    size: 20,
-                                  ),
-                                ),
-                              ),
-                          ],
+                            ],
+                          ),
                         ),
-                        const SizedBox(height: 20),
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                          children: [
-                            Text(
-                              item["count_left"],
-                              style: const TextStyle(
-                                fontFamily: "Poppins",
-                                fontSize: 14,
-                                color: Color(0xFF64748B),
-                                fontWeight: FontWeight.w500,
-                              ),
-                            ),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                horizontal: 12,
-                                vertical: 6,
-                              ),
-                              decoration: BoxDecoration(
-                                color: const Color(0xFFF1F5F9),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                item["count_right"],
-                                style: const TextStyle(
-                                  fontFamily: "Poppins",
-                                  fontSize: 13,
-                                  color: Color(0xFF475569),
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                            ),
-                          ],
+                      ),
+                      if (isComingSoon)
+                        Positioned(
+                          top: -9,
+                          right: -9,
+                          child: SvgPicture.asset(
+                            'assets/images/comingSoonLabel.svg',
+                            width: 90,
+                          ),
                         ),
-                      ],
-                    ),
+                    ],
                   ),
-                ),
-                if (isComingSoon)
-                  Positioned(
-                    top: -9,
-                    right: -9,
-                    child: SvgPicture.asset(
-                      'assets/images/comingSoonLabel.svg',
-                      width: 90,
-                    ),
-                  ),
-              ],
+                );
+              },
             ),
-          );
-        },
-      ),
     );
   }
 }

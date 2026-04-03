@@ -1,34 +1,55 @@
 import 'package:flutter/material.dart';
-import 'package:flutter_svg/svg.dart';
+import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_guru/utils/theam.dart';
+import 'package:smart_guru/services/api.service.dart';
+import 'package:smart_guru/services/session.manager.dart';
 import 'quize.screen.dart';
 
 class LevelScreen extends StatefulWidget {
   final String title;
-  const LevelScreen({super.key, required this.title});
+  final String lessonId;
+
+  const LevelScreen({
+    super.key,
+    required this.title,
+    required this.lessonId,
+  });
 
   @override
   State<LevelScreen> createState() => _LevelScreenState();
 }
 
 class _LevelScreenState extends State<LevelScreen> {
-  // Sample data to match the screenshot
-  final List<Map<String, dynamic>> levels = [
-    {"num": "1", "status": "85%", "isLocked": false, "isPremium": false},
-    {
-      "num": "2",
-      "status": "Not Started",
-      "isLocked": false,
-      "isPremium": false,
-    },
-    {"num": "3", "status": "Locked", "isLocked": true, "isPremium": false},
-    {"num": "4", "status": "Locked", "isLocked": true, "isPremium": false},
-    {"num": "5", "status": "Locked", "isLocked": true, "isPremium": false},
-    {"num": "6", "status": "Locked", "isLocked": true, "isPremium": false},
-    {"num": "7", "status": "", "isLocked": true, "isPremium": true},
-    {"num": "8", "status": "", "isLocked": true, "isPremium": true},
-    {"num": "9", "status": "", "isLocked": true, "isPremium": true},
-  ];
+  List<dynamic> levels = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchLevels();
+  }
+
+  Future<void> _fetchLevels() async {
+    try {
+      final String? token = SessionManager.token;
+      final List<dynamic> fetchedLevels =
+          await CommerceService.getSubjectLessonLevel(
+        lessonId: int.tryParse(widget.lessonId),
+        token: token,
+        status: "active",
+      );
+
+      setState(() {
+        levels = fetchedLevels;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Error fetching subject lesson levels: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,44 +94,47 @@ class _LevelScreenState extends State<LevelScreen> {
           ),
         ),
       ),
-      body: GridView.builder(
-        padding: const EdgeInsets.all(20),
-        gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
-          crossAxisCount: 3,
-          crossAxisSpacing: 16,
-          mainAxisSpacing: 16,
-          childAspectRatio: 1.0,
-        ),
-        itemCount: levels.length,
-        itemBuilder: (context, index) {
-          final level = levels[index];
-          return _buildLevelCard(level);
-        },
-      ),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : levels.isEmpty
+              ? const Center(child: Text("No levels available"))
+              : GridView.builder(
+                  padding: const EdgeInsets.all(20),
+                  gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                    crossAxisCount: 3,
+                    crossAxisSpacing: 16,
+                    mainAxisSpacing: 16,
+                    childAspectRatio: 1.0,
+                  ),
+                  itemCount: levels.length,
+                  itemBuilder: (context, index) {
+                    final level = levels[index];
+                    return _buildLevelCard(level, index);
+                  },
+                ),
     );
   }
 
-  Widget _buildLevelCard(Map<String, dynamic> item) {
-    bool isLocked = item["isLocked"];
-    bool isPremium = item["isPremium"];
+  Widget _buildLevelCard(dynamic item, int index) {
+    final String levelName = item["name"] ?? "Level ${index + 1}";
+    final bool isPremium = item["is_premium"] == 1;
+    // Assume first level is unlocked if no lock logic from API yet, others locked unless premium?
+    // Using a simple logic for now:
+    final bool isLocked = index > 0 && !isPremium;
 
     return InkWell(
       onTap: () {
         if (!isLocked) {
-          // Navigating to QuizScreen. In a real app, you would fetch questions from an API here
-          // or pass the category/level ID to QuizScreen to fetch its own questions.
           Navigator.push(
             context,
             MaterialPageRoute(
               builder: (context) => QuizScreen(
-                levelName: "Level ${item['num']}",
+                levelName: levelName,
                 categoryTitle: widget.title,
-                questions:
-                    const [], // Questions will be fetched by QuizScreen using levelId/categoryId
+                questions: const [],
                 data: const [],
-                categoryId:
-                    "1", // This would normally come from the API/Data model
-                levelId: item['num'],
+                categoryId: widget.lessonId,
+                levelId: item["id"]?.toString() ?? index.toString(),
               ),
             ),
           );
@@ -134,10 +158,13 @@ class _LevelScreenState extends State<LevelScreen> {
               mainAxisAlignment: MainAxisAlignment.center,
               children: [
                 Text(
-                  "Level ${item['num']}",
+                  levelName,
+                  textAlign: TextAlign.center,
+                  maxLines: 1,
+                  overflow: TextOverflow.ellipsis,
                   style: TextStyle(
                     fontFamily: "Poppins",
-                    fontSize: 14,
+                    fontSize: 12,
                     fontWeight: FontWeight.bold,
                     color: isLocked
                         ? const Color(0xFFABC4FF)
@@ -148,10 +175,8 @@ class _LevelScreenState extends State<LevelScreen> {
                 Container(
                   width: 42,
                   height: 42,
-                  decoration: BoxDecoration(
-                    color: isLocked
-                        ? const Color(0xFFDBE6FF)
-                        : const Color(0xFFDBE6FF),
+                  decoration: const BoxDecoration(
+                    color: Color(0xFFDBE6FF),
                     shape: BoxShape.circle,
                   ),
                   child: Center(
@@ -173,7 +198,7 @@ class _LevelScreenState extends State<LevelScreen> {
                 const SizedBox(height: 8),
                 if (!isPremium)
                   Text(
-                    item['status'],
+                    isLocked ? "Locked" : "Unlocked",
                     style: TextStyle(
                       fontFamily: "Poppins",
                       fontSize: 10,
@@ -211,15 +236,15 @@ class _LevelScreenState extends State<LevelScreen> {
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 10),
+                      const SizedBox(width: 5),
                       SvgPicture.asset(
                         "assets/images/fluent_premium-28-filled.svg",
                         colorFilter: const ColorFilter.mode(
                           Colors.white,
                           BlendMode.srcIn,
                         ),
-                        width: 15,
-                        height: 15,
+                        width: 12,
+                        height: 12,
                       ),
                     ],
                   ),
