@@ -5,6 +5,9 @@ import 'package:smart_guru/screen/dashboard/profile/profile.screen.dart';
 import 'package:smart_guru/screen/dashboard/profile/rank.screen.dart';
 import 'package:smart_guru/utils/theam.dart';
 
+import 'package:smart_guru/services/api.service.dart';
+import 'package:smart_guru/services/session.manager.dart';
+
 class ProfileHomeScreen extends StatefulWidget {
   const ProfileHomeScreen({super.key});
 
@@ -14,6 +17,57 @@ class ProfileHomeScreen extends StatefulWidget {
 
 class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
   Map<String, dynamic>? profile;
+  bool _isLoading = true;
+  String _rank = "0";
+  String _points = "0";
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchProfileData();
+  }
+
+  /// Api calls
+  Future<void> _fetchProfileData() async {
+    try {
+      final String? token = SessionManager.token;
+      final int? userId = SessionManager.userId;
+
+      if (token != null && userId != null) {
+        // Fetch points and leaderboard in parallel
+        final results = await Future.wait([
+          CommerceService.getUserPoints(userId, token),
+          CommerceService.getLeaderboard(userId, token),
+        ]);
+
+        if (mounted) {
+          setState(() {
+            // Extract points
+            if (results[0] != null && results[0] is Map) {
+              _points = results[0]['total_points']?.toString() ?? "0";
+            }
+
+            // Extract rank from leaderboard data
+            if (results[1] != null && results[1] is Map) {
+              _rank = results[1]['rank']?.toString() ?? "0";
+            }
+
+            _isLoading = false;
+          });
+        }
+      } else {
+        if (mounted) setState(() => _isLoading = false);
+      }
+    } catch (e) {
+      debugPrint("Error fetching profile data: $e");
+      if (mounted) {
+        setState(() {
+          _isLoading = false;
+        });
+      }
+    }
+  }
+
   // final TextEditingController _couponController = TextEditingController();
 
   void _showReportDialog() {
@@ -61,7 +115,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontWeight: FontWeight.w400,
-                          fontFamily: 'Malithi',
+                          fontFamily: ' FMMalithi',
                           fontSize: 10.84,
                         ),
                       ),
@@ -160,14 +214,53 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                                   borderRadius: BorderRadius.circular(10),
                                 ),
                               ),
-                              onPressed: () {
-                                if (reportController.text.trim().isEmpty) {
+                              onPressed: () async {
+                                final message = reportController.text.trim();
+                                if (message.isEmpty) {
                                   setState(() {
                                     errorMessage = "Please enter your message";
                                   });
                                   return;
                                 }
-                                Navigator.pop(context);
+
+                                setState(() {
+                                  errorMessage = null;
+                                  // Add submittting state if needed locally
+                                });
+
+                                try {
+                                  final result =
+                                      await CommerceService.reportQuestion(
+                                        questionId: 0, // General problem
+                                        reason: message,
+                                        token: SessionManager.token,
+                                      );
+
+                                  if (result['success']) {
+                                    if (context.mounted) {
+                                      Navigator.pop(context);
+                                      ScaffoldMessenger.of(
+                                        context,
+                                      ).showSnackBar(
+                                        SnackBar(
+                                          content: Text(
+                                            result['message'] ??
+                                                "Report submitted successfully",
+                                          ),
+                                          backgroundColor: Colors.green,
+                                        ),
+                                      );
+                                    }
+                                  } else {
+                                    setState(() {
+                                      errorMessage = result['message'];
+                                    });
+                                  }
+                                } catch (e) {
+                                  setState(() {
+                                    errorMessage = "Something went wrong";
+                                  });
+                                }
                               },
                               child: const Text(
                                 'Submit',
@@ -400,11 +493,6 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
   }
 
   @override
-  void initState() {
-    super.initState();
-  }
-
-  @override
   Widget build(BuildContext context) {
     /// responsive helpers
     final screenWidth = MediaQuery.of(context).size.width;
@@ -494,66 +582,71 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                             child: Row(
                               mainAxisAlignment: MainAxisAlignment.end,
                               children: [
-                                Container(
-                                  width: 80,
-                                  height: 21,
-                                  decoration: BoxDecoration(
-                                    color: Color(0xFFFF6901),
-                                    borderRadius: BorderRadius.circular(5),
-                                  ),
-                                  child: Row(
-                                    children: [
-                                      Padding(
-                                        padding: EdgeInsets.only(left: 5),
-                                        child: SvgPicture.asset(
-                                          "assets/images/fluent_premium-28-filled.svg",
+                                SessionManager.isPremium == 1
+                                    ? Container(
+                                        width: 80,
+                                        height: 21,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFFF6901),
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
+                                        ),
+                                        child: Row(
+                                          children: [
+                                            Padding(
+                                              padding: const EdgeInsets.only(
+                                                left: 5,
+                                              ),
+                                              child: SvgPicture.asset(
+                                                "assets/images/fluent_premium-28-filled.svg",
+                                              ),
+                                            ),
+                                            const SizedBox(width: 5),
+                                            const Text(
+                                              "Premium",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontFamily: 'Poppins',
+                                                fontSize: 10,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
+                                        ),
+                                      )
+                                    : Container(
+                                        width: 67,
+                                        height: 21,
+                                        decoration: BoxDecoration(
+                                          color: const Color(0xFFD10A2D),
+                                          borderRadius: BorderRadius.circular(
+                                            5,
+                                          ),
+                                        ),
+                                        child: const Row(
+                                          children: [
+                                            Padding(
+                                              padding: EdgeInsets.only(left: 5),
+                                              child: Icon(
+                                                Icons.error,
+                                                color: Color(0xFFFFFFFF),
+                                                size: 18,
+                                              ),
+                                            ),
+                                            SizedBox(width: 5),
+                                            Text(
+                                              "Basic",
+                                              style: TextStyle(
+                                                fontWeight: FontWeight.w500,
+                                                fontFamily: 'Poppins',
+                                                fontSize: 10,
+                                                color: Colors.white,
+                                              ),
+                                            ),
+                                          ],
                                         ),
                                       ),
-                                      SizedBox(width: 5),
-                                      Text(
-                                        "Premium",
-                                        style: TextStyle(
-                                          fontWeight: FontWeight.w500,
-                                          fontFamily: 'Poppins',
-                                          fontSize: 10,
-                                          color: Colors.white,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ),
-                                // : Container(
-                                //     width: 67,
-                                //     height: 21,
-                                //     decoration: BoxDecoration(
-                                //       color: Color(0xFFD10A2D),
-                                //       borderRadius: BorderRadius.circular(
-                                //         5,
-                                //       ),
-                                //     ),
-                                //     child: Row(
-                                //       children: [
-                                //         Padding(
-                                //           padding: EdgeInsets.only(left: 5),
-                                //           child: Icon(
-                                //             Icons.error,
-                                //             color: Color(0xFFFFFFFF),
-                                //             size: 18,
-                                //           ),
-                                //         ),
-                                //         SizedBox(width: 5),
-                                //         Text(
-                                //           "Basic",
-                                //           style: TextStyle(
-                                //             fontWeight: FontWeight.w500,
-                                //             fontFamily: 'Poppins',
-                                //             fontSize: 10,
-                                //             color: Colors.white,
-                                //           ),
-                                //         ),
-                                //       ],
-                                //     ),
-                                //   ),
                               ],
                             ),
                           ),
@@ -574,8 +667,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                           SizedBox(height: 2 * scale),
 
                           Text(
-                            // userProvider.name ?? "",
-                            "Deneth Samitha",
+                            SessionManager.name ?? "User",
                             style: TextStyle(
                               fontWeight: FontWeight.w700,
                               fontFamily: 'Poppins',
@@ -586,8 +678,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                           SizedBox(height: 2 * scale),
 
                           Text(
-                            //userProvider.phone ?? "",
-                            "071 123 4567",
+                            SessionManager.phone ?? "",
                             style: TextStyle(
                               height: 1,
                               fontWeight: FontWeight.w400,
@@ -635,8 +726,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                                     ),
 
                                     Text(
-                                      // userProvider.rank ??
-                                      "0",
+                                      _rank,
                                       style: TextStyle(
                                         fontFamily: 'OpenSans',
                                         fontSize: 13.02 * scale,
@@ -656,19 +746,19 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                                     margin: EdgeInsets.symmetric(
                                       horizontal: 18 * scale,
                                     ),
-                                    color: Color(0xFFD9D9D9),
+                                    color: const Color(0xFFD9D9D9),
                                   ),
                                 ),
 
                                 Padding(
-                                  padding: EdgeInsets.only(left: 20),
+                                  padding: const EdgeInsets.only(left: 20),
                                   child: Row(
                                     children: [
                                       Container(
                                         width: 34.64 * scale,
                                         height: 34.68 * scale,
                                         decoration: BoxDecoration(
-                                          color: Color(0xFFE1DAFB),
+                                          color: const Color(0xFFE1DAFB),
                                           borderRadius: BorderRadius.circular(
                                             25,
                                           ),
@@ -699,8 +789,7 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                                           ),
 
                                           Text(
-                                            // userProvider.points ??
-                                            "0",
+                                            _points,
                                             style: TextStyle(
                                               fontFamily: 'OpenSans',
                                               fontSize: 13.02 * scale,

@@ -238,7 +238,7 @@ class CommerceService {
     }
   }
 
-  /// Question Reports ---------------------------------------------------------
+  /// Question Reports fetch in data server ---------------------------------------------------------
 
   static Future<List<dynamic>> getQuestionReports({
     int? reportId,
@@ -270,6 +270,37 @@ class CommerceService {
       return [];
     } catch (e) {
       return [];
+    }
+  }
+
+  /// Question Reports insert in data server --------------------------------------------------------
+
+  static Future<Map<String, dynamic>> reportQuestion({
+    required int questionId,
+    required String reason,
+    String? token,
+  }) async {
+    try {
+      final dio = Dio();
+      final response = await dio.post(
+        "${baseUrl}reportQuestion",
+        data: {"question_id": questionId, "reason": reason},
+        options: Options(
+          headers: {
+            "Content-Type": "application/json",
+            if (token != null) "token": token,
+          },
+        ),
+      );
+
+      var data = response.data;
+      if (data is String) data = jsonDecode(data);
+      if (data is Map && data['status'] == "S100") {
+        return {"success": true, "message": data['data']['message']};
+      }
+      return {"success": false, "message": data['data'] ?? "Error reporting"};
+    } catch (e) {
+      return {"success": false, "message": e.toString()};
     }
   }
 
