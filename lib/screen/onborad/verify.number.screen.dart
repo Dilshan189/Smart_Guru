@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../utils/theam.dart';
 import '../../widgets/custom.button.dart';
-import 'about.screen.dart';
+import '../dashboard/nav.wrapper.dart';
 
 class VerifyNumberScreen extends StatefulWidget {
   const VerifyNumberScreen({super.key});
@@ -214,12 +214,13 @@ class _VerifyNumberScreenState extends State<VerifyNumberScreen> {
                       setState(() {
                         _isError = false;
                       });
-                      // Navigate to About Screen
-                      Navigator.push(
+                      // Navigate to Home Screen
+                      Navigator.pushAndRemoveUntil(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const AboutScreen(),
+                          builder: (context) => const NavigationScreen(),
                         ),
+                        (route) => false,
                       );
                     } else {
                       setState(() {

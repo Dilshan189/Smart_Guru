@@ -298,12 +298,18 @@ class CommerceService {
       );
 
       var data = response.data;
+      if (kDebugMode) {
+        print('[CommerceService][getSubject] Response: $data');
+      }
       if (data is String) data = jsonDecode(data);
       if (data is Map && data['status'] == "S100") {
         return data['data'] as List<dynamic>;
       }
       return [];
     } catch (e) {
+      if (kDebugMode) {
+        print('[CommerceService][getSubject] Exception: $e');
+      }
       return [];
     }
   }

@@ -5,6 +5,8 @@ import 'package:smart_guru/services/api.service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:smart_guru/screen/dashboard/home/lesson.screen.dart';
 
+import 'package:smart_guru/services/session.manager.dart';
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -27,7 +29,11 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchSubjects() async {
     try {
-      final List<dynamic> fetchedSubjects = await CommerceService.getSubject();
+      final String? token = SessionManager.token;
+      final List<dynamic> fetchedSubjects = await CommerceService.getSubject(
+        token: token,
+        status: "active",
+      );
       setState(() {
         words = fetchedSubjects;
         _isLoading = false;
