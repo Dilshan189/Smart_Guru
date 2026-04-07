@@ -32,10 +32,11 @@ class _LessonScreenState extends State<LessonScreen> {
   Future<void> fetchCategoryLessons() async {
     try {
       final String? token = SessionManager.token;
-      final Map<String, dynamic>? counts = await CommerceService.getSubjectModuleCounts(
-        subjectId: int.tryParse(widget.categoryId) ?? 0,
-        token: token,
-      );
+      final Map<String, dynamic>? counts =
+          await CommerceService.getSubjectModuleCounts(
+            subjectId: int.tryParse(widget.categoryId) ?? 0,
+            token: token,
+          );
 
       setState(() {
         subjectData = counts;
@@ -105,29 +106,31 @@ class _LessonScreenState extends State<LessonScreen> {
                 bool isComingSoon = false;
 
                 if (index == 0) {
-                  title = "පාඩම් අනුව ප්‍රශ්න";
-                  subtitle = "පාඩම් අනුව වර්ගීකරණය කරන ලද ප්‍රශ්න ඇතුලත් වේ.";
+                  title = "mdvï wkqj m%Ya​k";
+                  subtitle = "mdvï wkqj j¾.SlrKh lrk ,o m%Yak we;=,;a fõ'";
                   leftText = "${subjectData?['total_lessons'] ?? 0} lessons";
                   rightText = "View";
                 } else if (index == 1) {
-                  title = "පසුගිය විභාග ප්‍රශ්න";
-                  subtitle = "පසුගිය විභාග ප්‍රශ්න පත්‍ර ඇතුලත් වේ.";
+                  title = "miq.sh úNd. m%Ya​k";
+                  subtitle = "miq.sh úNd. m%Yak m;% we;=,;a fõ''";
                   leftText = "${subjectData?['total_pass_papers'] ?? 0} Papers";
                   rightText = "View";
                 } else if (index == 2) {
-                  title = "අනුමාන ප්‍රශ්න පත්‍ර";
-                  subtitle = "අප විසින් සකසන විභාග අනුමාන ප්‍රශ්න ඇතුලත් වේ.";
-                  leftText = "${subjectData?['total_model_papers'] ?? 0} Papers";
+                  title = "wkqudk m%Yak m​;%";
+                  subtitle = "wm úiska ieliq úNd. wkqmdk m%Yak we;=,;a fõ'";
+                  leftText =
+                      "${subjectData?['total_model_papers'] ?? 0} Papers";
                   rightText = "View";
                 } else if (index == 3) {
-                  title = "කෙටි සටහන්";
-                  subtitle = "විෂය කොටස්වලට අදාළ කෙටි සටහන් මෙහි ඇතුලත් වේ.";
+                  title = "flá igy​ka";
+                  subtitle = "úYh fldgiaj,g wod, flá igyka fuys we;=,;a fõ'";
                   leftText = "${subjectData?['total_short_notes'] ?? 0} Topics";
                   rightText = "View";
                 } else if (index == 4) {
-                  title = "වීඩියෝ පාඩම්";
-                  subtitle = "වීඩියෝ පාඩම් මීළඟට බලාපොරොත්තු වන්න.";
-                  leftText = "${subjectData?['total_video_lessons'] ?? 0} Lessons";
+                  title = "ùäfhda mdv​ï";
+                  subtitle = "úäfhda mdvï ud,dj ,.§u n,dfmdfrd;a;= jkak";
+                  leftText =
+                      "${subjectData?['total_video_lessons'] ?? 0} Lessons";
                   rightText = "View";
                   isComingSoon = true;
                 }
@@ -188,7 +191,8 @@ class _LessonScreenState extends State<LessonScreen> {
                                         Text(
                                           title,
                                           style: const TextStyle(
-                                            fontSize: 16,
+                                            fontFamily: "FMMalithi",
+                                            fontSize: 18,
                                             fontWeight: FontWeight.bold,
                                             color: Color(0xFF1E293B),
                                           ),
@@ -197,7 +201,8 @@ class _LessonScreenState extends State<LessonScreen> {
                                         Text(
                                           subtitle,
                                           style: const TextStyle(
-                                            fontSize: 13,
+                                            fontFamily: "FMMalithi",
+                                            fontSize: 14,
                                             color: Color(0xFF94A3B8),
                                             height: 1.4,
                                           ),
