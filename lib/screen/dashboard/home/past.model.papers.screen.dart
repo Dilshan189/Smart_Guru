@@ -198,6 +198,29 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                     } else {
                       paperStatus = "Not Started";
                     }
+                    // Set colors based on status
+                    Color imageColor;
+                    Color iconColor;
+                    IconData icon;
+
+                    if (isPremium) {
+                      imageColor = const Color(0xFFFFFBEB);
+                      iconColor = const Color(0xFFF59E0B);
+                      icon = Icons.lock;
+                    } else if (paperStatus == "Completed") {
+                      imageColor = const Color(0xFFDCFCE7);
+                      iconColor = const Color(0xFF16A34A);
+                      icon = Icons.description;
+                    } else if (paperStatus == "In Progress") {
+                      imageColor = const Color(0xFFE8ECFA);
+                      iconColor = const Color(0xFF283593);
+                      icon = Icons.description;
+                    } else {
+                      imageColor = const Color(0xFFF2F4F7);
+                      iconColor = const Color(0xFF94A3B8);
+                      icon = Icons.description;
+                    }
+
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
                       child: _buildPaperCard(
@@ -205,11 +228,9 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                         status: paperStatus,
                         score: paper["score"]?.toString() ?? "00/100",
                         isPremium: isPremium,
-                        imageColor: _getPaperColor(index, isPremium),
-                        iconColor: isPremium
-                            ? const Color(0xFFF59E0B)
-                            : AppColors.accent,
-                        icon: isPremium ? Icons.lock : Icons.file_copy,
+                        imageColor: imageColor,
+                        iconColor: iconColor,
+                        icon: icon,
                         timeSpent: paper["time_spent"]?.toString(),
                       ),
                     );
@@ -218,16 +239,6 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
               ),
             ),
     );
-  }
-
-  Color _getPaperColor(int index, bool isPremium) {
-    if (isPremium) return const Color(0xFFFFFBEB);
-    final colors = [
-      AppColors.accent.withOpacity(0.08),
-      const Color(0xFFF2F4F7),
-      AppColors.successGreen.withOpacity(0.1),
-    ];
-    return colors[index % colors.length];
   }
 
   Widget _buildResumeCard(Map<String, dynamic> exam) {
