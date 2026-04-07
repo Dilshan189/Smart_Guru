@@ -895,57 +895,60 @@ class _QuizScreenState extends State<QuizScreen> {
     });
 
     try {
-      print("Fetching Questions for Mode: ${_isPaperQuizCategory() ? 'Paper Quiz' : 'Level Quiz'}");
-      print("IDs: SubjectID=${widget.subjectId}, LessonID=${widget.categoryId}, LevelID=${widget.levelId}, PaperType=${widget.paperType}");
+      print(
+        "Fetching Questions for Mode: ${_isPaperQuizCategory() ? 'Paper Quiz' : 'Level Quiz'}",
+      );
+      print(
+        "IDs: SubjectID=${widget.subjectId}, LessonID=${widget.categoryId}, LevelID=${widget.levelId}, PaperType=${widget.paperType}",
+      );
 
       final List<dynamic> result = _isPaperQuizCategory()
           ? await CommerceService.getSubjectPaperQuestion(
-            subjectId: int.tryParse(widget.subjectId ?? ''),
-            paperId: int.tryParse(widget.levelId ?? ''),
-            paperType: widget.paperType,
-            token: SessionManager.token,
-          )
+              subjectId: int.tryParse(widget.subjectId ?? ''),
+              paperId: int.tryParse(widget.levelId ?? ''),
+              paperType: widget.paperType,
+              token: SessionManager.token,
+            )
           : await CommerceService.getSubjectLessonQuestion(
-            subjectId: int.tryParse(widget.subjectId ?? ''),
-            lessonId: int.tryParse(widget.categoryId ?? ''),
-            levelId: int.tryParse(widget.levelId ?? ''),
-            token: SessionManager.token,
-          );
+              subjectId: int.tryParse(widget.subjectId ?? ''),
+              lessonId: int.tryParse(widget.categoryId ?? ''),
+              levelId: int.tryParse(widget.levelId ?? ''),
+              token: SessionManager.token,
+            );
 
       print("API Response results count: ${result.length}");
 
-      List<Map<String, dynamic>> mapped =
-          result.map((item) {
-            List<Map<String, dynamic>> options = [];
-            for (int i = 1; i <= 5; i++) {
-              final ansKey = 'ans_0$i';
-              final imgKey = 'ans_0${i}_img';
-              if (item[ansKey] != null && item[ansKey].toString().isNotEmpty) {
-                options.add({
-                  'text': item[ansKey].toString(),
-                  'image': item[imgKey]?.toString() ?? '',
-                });
-              }
-            }
+      List<Map<String, dynamic>> mapped = result.map((item) {
+        List<Map<String, dynamic>> options = [];
+        for (int i = 1; i <= 5; i++) {
+          final ansKey = 'ans_0$i';
+          final imgKey = 'ans_0${i}_img';
+          if (item[ansKey] != null && item[ansKey].toString().isNotEmpty) {
+            options.add({
+              'text': item[ansKey].toString(),
+              'image': item[imgKey]?.toString() ?? '',
+            });
+          }
+        }
 
-            int correctIdx = -1;
-            final String? currentAns = item['current_ans']?.toString();
-            if (currentAns != null && currentAns.isNotEmpty) {
-              correctIdx = (int.tryParse(currentAns) ?? 1) - 1;
-            }
+        int correctIdx = -1;
+        final String? currentAns = item['current_ans']?.toString();
+        if (currentAns != null && currentAns.isNotEmpty) {
+          correctIdx = (int.tryParse(currentAns) ?? 1) - 1;
+        }
 
-            return {
-              'id': item['id']?.toString() ?? item['question_id']?.toString() ?? '',
-              'question': item['question'] ?? '',
-              'questionImage': item['question_img'] ?? '',
-              'options': options,
-              'correctAnswerIndex': correctIdx,
-              'explanation': item['example_text'] ?? '',
-              'explanationImage': item['example_img'] ?? '',
-              'exampleAudio': item['example_audio'] ?? '',
-              'paragraphText': item['example_text'] ?? '',
-            };
-          }).toList();
+        return {
+          'id': item['id']?.toString() ?? item['question_id']?.toString() ?? '',
+          'question': item['question'] ?? '',
+          'questionImage': item['question_img'] ?? '',
+          'options': options,
+          'correctAnswerIndex': correctIdx,
+          'explanation': item['example_text'] ?? '',
+          'explanationImage': item['example_img'] ?? '',
+          'exampleAudio': item['example_audio'] ?? '',
+          'paragraphText': item['example_text'] ?? '',
+        };
+      }).toList();
 
       if (mounted) {
         setState(() {
@@ -1012,7 +1015,16 @@ class _QuizScreenState extends State<QuizScreen> {
         body: Center(
           child: _isFetching
               ? const CircularProgressIndicator(color: AppColors.primary)
-              : const Text('No questions found for this level'),
+              : Text(
+                  _isPaperQuizCategory()
+                      ? "No paper questions found"
+                      : "No questions found for this level",
+                  style: const TextStyle(
+                    fontSize: 16,
+                    color: AppColors.secondaryText,
+                    fontFamily: 'Inter',
+                  ),
+                ),
         ),
       );
     }
@@ -1317,7 +1329,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             .toString()
                             .isNotEmpty)
                           Image.network(
-                            "https://smartiq.ideacipher.com/upload/images/${question['questionImage']}",
+                            "https://commerce.ideacipher.com/upload/images/${question['questionImage']}",
                           ),
                       ],
                     ],
@@ -1423,7 +1435,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                 (opt['image'] ?? '').toString().isNotEmpty) ...[
                               const SizedBox(width: 10),
                               Image.network(
-                                "https://smartiq.ideacipher.com/upload/images/${opt['image']}",
+                                "https://commerce.ideacipher.com/upload/images/${opt['image']}",
                                 width: 50,
                                 height: 50,
                                 fit: BoxFit.contain,
