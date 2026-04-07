@@ -187,21 +187,30 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                   ...List.generate(_papers.length, (index) {
                     final paper = _papers[index];
                     final bool isPremium = paper["is_premium"] == 1;
+                    String paperStatus;
+                    if (isPremium) {
+                      paperStatus = "Premium Access Required";
+                    } else if (paper["is_completed"] == 1) {
+                      paperStatus = "Completed";
+                    } else if (paper["is_started"] == 1 ||
+                        (paper["progress"] != null && paper["progress"] > 0)) {
+                      paperStatus = "In Progress";
+                    } else {
+                      paperStatus = "Not Started";
+                    }
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
                       child: _buildPaperCard(
                         title: paper["title"] ?? paper["name"] ?? "",
-                        status:
-                            isPremium
-                                ? "Premium Access Required"
-                                : (paper["is_completed"] == 1
-                                    ? "Completed"
-                                    : "Not Started"),
+                        status: paperStatus,
                         score: paper["score"]?.toString() ?? "00/100",
                         isPremium: isPremium,
                         imageColor: _getPaperColor(index, isPremium),
-                        iconColor: isPremium ? const Color(0xFFF59E0B) : AppColors.accent,
+                        iconColor: isPremium
+                            ? const Color(0xFFF59E0B)
+                            : AppColors.accent,
                         icon: isPremium ? Icons.lock : Icons.file_copy,
+                        timeSpent: paper["time_spent"]?.toString(),
                       ),
                     );
                   }),
@@ -359,6 +368,32 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
     );
   }
 
+  Color _getStatusDotColor(String status) {
+    switch (status) {
+      case "Completed":
+        return const Color(0xFF22C55E); // Green
+      case "In Progress":
+        return const Color(0xFF3B82F6); // Blue
+      case "Premium Access Required":
+        return const Color(0xFFF59E0B); // Amber
+      default:
+        return const Color(0xFF94A3B8); // Grey for Not Started
+    }
+  }
+
+  Color _getStatusTextColor(String status) {
+    switch (status) {
+      case "Completed":
+        return const Color(0xFF16A34A);
+      case "In Progress":
+        return const Color(0xFF2563EB);
+      case "Premium Access Required":
+        return const Color(0xFFD97706);
+      default:
+        return const Color(0xFF64748B);
+    }
+  }
+
   Widget _buildPaperCard({
     required String title,
     required String status,
@@ -367,7 +402,13 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
     required Color imageColor,
     required Color iconColor,
     required IconData icon,
+    String? timeSpent,
   }) {
+    final bool isCompleted = status == "Completed";
+    final String buttonText = status == "Not Started"
+        ? "Start Exam"
+        : "Start Exam";
+
     return Container(
       decoration: BoxDecoration(
         color: AppColors.surfaceWhite,
@@ -414,45 +455,79 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                           color: isPremium
                               ? AppColors.secondaryText
                               : AppColors.primaryText,
-                          fontFamily: 'Inter',
+                          fontFamily: 'FMMalithi',
                         ),
                       ),
                       const SizedBox(height: 6),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 6,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: isPremium
-                              ? const Color(0xFFFFFBEB)
-                              : AppColors.lightGrey.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          status,
-                          style: TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.w600,
-                            color: isPremium ? const Color(0xFFD97706) : AppColors.bodyText,
-                            fontFamily: 'Inter',
-                          ),
-                        ),
-                      ),
-                      const SizedBox(height: 10),
+                      // Status with colored dot
                       Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
+                          Container(
+                            width: 8,
+                            height: 8,
+                            decoration: BoxDecoration(
+                              color: _getStatusDotColor(status),
+                              shape: BoxShape.circle,
+                            ),
+                          ),
+                          const SizedBox(width: 6),
                           Text(
-                            isPremium ? "" : score,
-                            style: const TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.accent,
+                            status,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                              color: _getStatusTextColor(status),
                               fontFamily: 'Inter',
                             ),
                           ),
-                          if (!isPremium)
+                        ],
+                      ),
+                      const SizedBox(height: 8),
+                      // Score and Button row
+                      if (!isPremium)
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  score,
+                                  style: TextStyle(
+                                    fontSize: isCompleted ? 20 : 16,
+                                    fontWeight: isCompleted
+                                        ? FontWeight.bold
+                                        : FontWeight.w500,
+                                    color: isCompleted
+                                        ? AppColors.primaryText
+                                        : const Color(0xFF94A3B8),
+                                    fontFamily: 'Inter',
+                                  ),
+                                ),
+                                if (isCompleted && timeSpent != null)
+                                  Padding(
+                                    padding: const EdgeInsets.only(top: 4),
+                                    child: Row(
+                                      children: [
+                                        const Icon(
+                                          Icons.access_time,
+                                          size: 13,
+                                          color: Color(0xFF94A3B8),
+                                        ),
+                                        const SizedBox(width: 4),
+                                        Text(
+                                          timeSpent,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            color: Color(0xFF94A3B8),
+                                            fontFamily: 'Inter',
+                                          ),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                              ],
+                            ),
                             SizedBox(
                               height: 32,
                               child: ElevatedButton(
@@ -475,20 +550,20 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                                   foregroundColor: AppColors.surfaceWhite,
                                   elevation: 0,
                                   shape: RoundedRectangleBorder(
-                                    borderRadius: BorderRadius.circular(15),
+                                    borderRadius: BorderRadius.circular(10),
                                   ),
                                 ),
-                                child: const Text(
-                                  "Start",
-                                  style: TextStyle(
+                                child: Text(
+                                  buttonText,
+                                  style: const TextStyle(
                                     fontSize: 12,
                                     fontWeight: FontWeight.bold,
                                   ),
                                 ),
                               ),
                             ),
-                        ],
-                      ),
+                          ],
+                        ),
                     ],
                   ),
                 ),

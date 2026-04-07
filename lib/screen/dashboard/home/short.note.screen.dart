@@ -140,11 +140,14 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
       onTap: () async {
         if (pdfFile != null && pdfFile.isNotEmpty) {
           try {
-            final url = Uri.parse("https://commerce.ideacipher.com/$pdfFile");
-            debugPrint("Opening PDF URL: $url");
+            final pdfUrl = "https://commerce.ideacipher.com/$pdfFile";
+            final viewerUrl = Uri.parse(
+              "https://docs.google.com/gview?embedded=true&url=${Uri.encodeComponent(pdfUrl)}",
+            );
+            debugPrint("Opening PDF via viewer: $viewerUrl");
             final launched = await launchUrl(
-              url,
-              mode: LaunchMode.platformDefault,
+              viewerUrl,
+              mode: LaunchMode.inAppBrowserView,
             );
             if (!launched && mounted) {
               ScaffoldMessenger.of(context).showSnackBar(
