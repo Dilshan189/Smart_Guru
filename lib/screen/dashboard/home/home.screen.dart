@@ -1,11 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:carousel_slider/carousel_slider.dart';
-import 'package:smart_guru/services/api.service.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:smart_guru/screen/dashboard/home/lesson.screen.dart';
-
-import 'package:smart_guru/services/session.manager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -24,26 +21,37 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
-    _fetchSubjects();
-  }
 
-  Future<void> _fetchSubjects() async {
-    try {
-      final String? token = SessionManager.token;
-      final List<dynamic> fetchedSubjects = await CommerceService.getSubject(
-        token: token,
-        status: "active",
-      );
-      setState(() {
-        words = fetchedSubjects;
-        _isLoading = false;
-      });
-    } catch (e) {
-      debugPrint("Error fetching subjects: $e");
-      setState(() {
-        _isLoading = false;
-      });
-    }
+    _isLoading = false;
+    words = [
+      {
+        "id": "2",
+        "name": "wd¾Ól úoHdj",
+        "mcqs": "1240 MCQs",
+        "progress": 0.65,
+        "status": "1",
+        "icon": Icons.trending_up,
+        "iconBg": const Color(0xFF2E43A8),
+      },
+      {
+        "id": "2",
+        "name": ".sKqïlrKh",
+        "mcqs": "980 MCQs",
+        "progress": 0.0,
+        "status": "0",
+        "icon": Icons.calculate_outlined,
+        "iconBg": const Color(0xFF8F9BB3),
+      },
+      {
+        "id": "3",
+        "name": "jHdmdr wOHk​h",
+        "mcqs": "1150 MCQs",
+        "progress": 0.0,
+        "status": "0",
+        "icon": Icons.business_center_outlined,
+        "iconBg": const Color(0xFF8F9BB3),
+      },
+    ];
   }
 
   @override
@@ -219,17 +227,11 @@ class _HomeScreenState extends State<HomeScreen> {
               final String subjectName = subject['name'] ?? "";
               final String subjectId = subject['id']?.toString() ?? "";
               final bool isComingSoon = subject["status"] == "0";
-              final double progress = 0.0; // API does not provide progress yet
+              final double progress = subject['progress'] ?? 0.0;
+              final String mcqs = subject['mcqs'] ?? "0 MCQs";
 
-              // Generate colors dynamically
-              final List<Color> colors = [
-                const Color(0xFF1A237E),
-                const Color(0xFF2E7D32),
-                const Color(0xFFC62828),
-                const Color(0xFFEF6C00),
-                const Color(0xFF6A1B9A),
-              ];
-              final Color iconBg = colors[index % colors.length];
+              final Color iconBg = subject['iconBg'] ?? const Color(0xFF1A237E);
+              final IconData iconData = subject['icon'] ?? Icons.book_outlined;
 
               return Padding(
                 padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
@@ -280,10 +282,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     padding: const EdgeInsets.all(10),
-                                    child: const Icon(
-                                      Icons.book_outlined,
-                                      color: Colors.white,
-                                    ),
+                                    child: Icon(iconData, color: Colors.white),
                                   ),
                                   const SizedBox(width: 16),
                                   Expanded(
@@ -295,18 +294,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                           subjectName,
                                           style: const TextStyle(
                                             fontWeight: FontWeight.bold,
-                                            fontSize: 18,
-                                            fontFamily: "Poppins",
+                                            fontSize: 16,
+                                            fontFamily: "FMGanganee",
+                                            color: Color(0xFF1E293B),
                                           ),
                                         ),
                                         const SizedBox(height: 4),
                                         Text(
-                                          isComingSoon
-                                              ? "Coming Soon"
-                                              : "Tap to explore chapters",
+                                          mcqs,
                                           style: const TextStyle(
                                             color: Colors.grey,
-                                            fontSize: 14,
+                                            fontSize: 13,
                                             fontFamily: "Poppins",
                                           ),
                                         ),
@@ -383,7 +381,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         right: -9,
                         child: SvgPicture.asset(
                           'assets/images/comingSoonLabel.svg',
-                          width: 110,
+                          width: 80,
                         ),
                       ),
                   ],

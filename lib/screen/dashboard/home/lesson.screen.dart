@@ -20,7 +20,7 @@ class LessonScreen extends StatefulWidget {
 }
 
 class _LessonScreenState extends State<LessonScreen> {
-  List<dynamic> categories = [];
+  Map<String, dynamic>? subjectData;
   bool _isLoading = true;
 
   @override
@@ -32,19 +32,17 @@ class _LessonScreenState extends State<LessonScreen> {
   Future<void> fetchCategoryLessons() async {
     try {
       final String? token = SessionManager.token;
-      final List<dynamic> fetchedCategories = await CommerceService.getCategory(
-        categoryId: int.tryParse(widget.categoryId),
-        module: "word",
+      final Map<String, dynamic>? counts = await CommerceService.getSubjectModuleCounts(
+        subjectId: int.tryParse(widget.categoryId) ?? 0,
         token: token,
-        status: "active",
       );
 
       setState(() {
-        categories = fetchedCategories;
+        subjectData = counts;
         _isLoading = false;
       });
     } catch (e) {
-      debugPrint("Error fetching category lessons: $e");
+      debugPrint("Error fetching subject lessons: $e");
       setState(() {
         _isLoading = false;
       });
@@ -96,16 +94,43 @@ class _LessonScreenState extends State<LessonScreen> {
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
-          : categories.isEmpty
-          ? const Center(child: Text("No lessons available"))
           : ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 25),
-              itemCount: categories.length,
+              itemCount: 5,
               itemBuilder: (context, index) {
-                final category = categories[index];
-                final String title = category["name"] ?? "";
-                final String subtitle = category["description"] ?? "";
-                final bool isComingSoon = category["status"] == "inactive";
+                String title = "";
+                String subtitle = "";
+                String leftText = "";
+                String rightText = "";
+                bool isComingSoon = false;
+
+                if (index == 0) {
+                  title = "පාඩම් අනුව ප්‍රශ්න";
+                  subtitle = "පාඩම් අනුව වර්ගීකරණය කරන ලද ප්‍රශ්න ඇතුලත් වේ.";
+                  leftText = "${subjectData?['total_lessons'] ?? 0} lessons";
+                  rightText = "View";
+                } else if (index == 1) {
+                  title = "පසුගිය විභාග ප්‍රශ්න";
+                  subtitle = "පසුගිය විභාග ප්‍රශ්න පත්‍ර ඇතුලත් වේ.";
+                  leftText = "${subjectData?['total_pass_papers'] ?? 0} Papers";
+                  rightText = "View";
+                } else if (index == 2) {
+                  title = "අනුමාන ප්‍රශ්න පත්‍ර";
+                  subtitle = "අප විසින් සකසන විභාග අනුමාන ප්‍රශ්න ඇතුලත් වේ.";
+                  leftText = "${subjectData?['total_model_papers'] ?? 0} Papers";
+                  rightText = "View";
+                } else if (index == 3) {
+                  title = "කෙටි සටහන්";
+                  subtitle = "විෂය කොටස්වලට අදාළ කෙටි සටහන් මෙහි ඇතුලත් වේ.";
+                  leftText = "${subjectData?['total_short_notes'] ?? 0} Topics";
+                  rightText = "View";
+                } else if (index == 4) {
+                  title = "වීඩියෝ පාඩම්";
+                  subtitle = "වීඩියෝ පාඩම් මීළඟට බලාපොරොත්තු වන්න.";
+                  leftText = "${subjectData?['total_video_lessons'] ?? 0} Lessons";
+                  rightText = "View";
+                  isComingSoon = true;
+                }
 
                 return Padding(
                   padding: const EdgeInsets.only(bottom: 20),
@@ -116,30 +141,34 @@ class _LessonScreenState extends State<LessonScreen> {
                         onTap: isComingSoon
                             ? null
                             : () {
-                                // Default to lessons navigation for categories fetched
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (context) => LessonWiseScreen(
-                                      title: widget.title,
-                                      subtitle: title,
-                                      quizList: const [],
-                                      categoryId: category["id"]?.toString() ?? "",
-                                      levelId: "1",
+                                if (index == 0) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => LessonWiseScreen(
+                                        title: widget.title,
+                                        subtitle: title,
+                                        quizList: const [],
+                                        categoryId: widget.categoryId,
+                                        levelId: "1",
+                                      ),
                                     ),
-                                  ),
-                                );
+                                  );
+                                }
                               },
-                        borderRadius: BorderRadius.circular(20),
+                        borderRadius: BorderRadius.circular(16),
                         child: Container(
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(color: const Color(0xFFF1F5F9)),
+                            borderRadius: BorderRadius.circular(16),
+                            border: Border.all(
+                              color: const Color(0xFFF1F5F9),
+                              width: 1,
+                            ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.02),
+                                color: Colors.black.withOpacity(0.04),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -159,8 +188,7 @@ class _LessonScreenState extends State<LessonScreen> {
                                         Text(
                                           title,
                                           style: const TextStyle(
-                                            fontFamily: "FMGanganee",
-                                            fontSize: 18,
+                                            fontSize: 16,
                                             fontWeight: FontWeight.bold,
                                             color: Color(0xFF1E293B),
                                           ),
@@ -169,8 +197,7 @@ class _LessonScreenState extends State<LessonScreen> {
                                         Text(
                                           subtitle,
                                           style: const TextStyle(
-                                            fontFamily: "FMGanganee",
-                                            fontSize: 14,
+                                            fontSize: 13,
                                             color: Color(0xFF94A3B8),
                                             height: 1.4,
                                           ),
@@ -179,22 +206,25 @@ class _LessonScreenState extends State<LessonScreen> {
                                     ),
                                   ),
                                   const SizedBox(width: 15),
-                                  if (!isComingSoon)
-                                    Container(
-                                      width: 50,
-                                      height: 50,
-                                      decoration: BoxDecoration(
-                                        color: AppColors.primary,
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      child: const Center(
-                                        child: Icon(
-                                          Icons.arrow_forward_ios,
-                                          color: Colors.white,
-                                          size: 20,
-                                        ),
+                                  Container(
+                                    width: 45,
+                                    height: 45,
+                                    decoration: BoxDecoration(
+                                      color: isComingSoon
+                                          ? const Color(0xFF64748B) // Grayish
+                                          : const Color(
+                                              0xFF283593,
+                                            ), // Deep Blue
+                                      borderRadius: BorderRadius.circular(12),
+                                    ),
+                                    child: const Center(
+                                      child: Icon(
+                                        Icons.arrow_forward_ios,
+                                        color: Colors.white,
+                                        size: 18,
                                       ),
                                     ),
+                                  ),
                                 ],
                               ),
                               const SizedBox(height: 20),
@@ -203,29 +233,28 @@ class _LessonScreenState extends State<LessonScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    // item["count_left"] ?
-                                    "Available",
+                                    leftText,
                                     style: const TextStyle(
                                       fontFamily: "Poppins",
-                                      fontSize: 14,
+                                      fontSize: 13,
                                       color: Color(0xFF64748B),
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
                                   Container(
                                     padding: const EdgeInsets.symmetric(
-                                      horizontal: 12,
+                                      horizontal: 14,
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
                                       color: const Color(0xFFF1F5F9),
                                       borderRadius: BorderRadius.circular(8),
                                     ),
-                                    child: const Text(
-                                      "View",
-                                      style: TextStyle(
+                                    child: Text(
+                                      rightText,
+                                      style: const TextStyle(
                                         fontFamily: "Poppins",
-                                        fontSize: 13,
+                                        fontSize: 12,
                                         color: Color(0xFF475569),
                                         fontWeight: FontWeight.bold,
                                       ),
@@ -239,11 +268,11 @@ class _LessonScreenState extends State<LessonScreen> {
                       ),
                       if (isComingSoon)
                         Positioned(
-                          top: -9,
-                          right: -9,
+                          top: -6,
+                          right: -6,
                           child: SvgPicture.asset(
                             'assets/images/comingSoonLabel.svg',
-                            width: 90,
+                            width: 80,
                           ),
                         ),
                     ],

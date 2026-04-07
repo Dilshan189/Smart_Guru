@@ -105,74 +105,6 @@ class CommerceService {
     }
   }
 
-  /// Category -----------------------------------------------------------------
-
-  static Future<List<dynamic>> getCategory({
-    int? categoryId,
-    String? module,
-    String? status,
-    int? isPremium,
-    String? token,
-  }) async {
-    try {
-      if (kDebugMode) {
-        print('[CommerceService][getCategory] Token used: $token');
-      }
-      final dio = Dio();
-      final Map<String, dynamic> body = {};
-      if (categoryId != null) body['category_id'] = categoryId;
-      if (module != null) body['module'] = module;
-      if (status != null) body['status'] = status;
-      if (isPremium != null) body['is_premium'] = isPremium;
-
-      if (kDebugMode) {
-        print('[CommerceService][getCategory] Request body: $body');
-      }
-
-      final response = await dio.post(
-        "${baseUrl}getCategory",
-        data: body,
-        options: Options(
-          headers: {
-            "Content-Type": "application/json",
-            if (token != null) "token": token,
-          },
-        ),
-      );
-
-      var data = response.data;
-      if (kDebugMode) {
-        print('[CommerceService][getCategory] Raw response: $data');
-      }
-
-      if (data is String) {
-        String trimmed = data.trim();
-        if (trimmed.startsWith('{') || trimmed.startsWith('[')) {
-          data = jsonDecode(data);
-        } else {
-          return [];
-        }
-      }
-
-      if (data is Map && data['status'] == "S100" && data['data'] != null) {
-        return data['data'] as List<dynamic>;
-      }
-      return [];
-    } on DioException catch (e) {
-      if (kDebugMode) {
-        print(
-          '[CommerceService][getCategory] DioException: ${e.response?.data ?? e.message}',
-        );
-      }
-      return [];
-    } catch (e) {
-      if (kDebugMode) {
-        print('[CommerceService][getCategory] exception: $e');
-      }
-      return [];
-    }
-  }
-
   /// Paragraph ----------------------------------------------------------------
 
   static Future<List<dynamic>> getParagraph({
@@ -318,6 +250,44 @@ class CommerceService {
         print('[CommerceService][getSubject] Exception: $e');
       }
       return [];
+    }
+  }
+
+  /// Subject Module Counts ----------------------------------------------------
+
+  static Future<Map<String, dynamic>?> getSubjectModuleCounts({
+    required int subjectId,
+    String? token,
+  }) async {
+    try {
+      final dio = Dio();
+      final Map<String, dynamic> body = {'subject_id': subjectId};
+
+      final response = await dio.post(
+        "${baseUrl}getSubjectModuleCounts",
+        data: body,
+        options: Options(
+          headers: {
+            "Content-Type": "application/json",
+            if (token != null) "token": token,
+          },
+        ),
+      );
+
+      var data = response.data;
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectModuleCounts] Response: $data');
+      }
+      if (data is String) data = jsonDecode(data);
+      if (data is Map && data['status'] == "S100") {
+        return data['data'] as Map<String, dynamic>;
+      }
+      return null;
+    } catch (e) {
+      if (kDebugMode) {
+        print('[CommerceService][getSubjectModuleCounts] Exception: $e');
+      }
+      return null;
     }
   }
 
@@ -557,39 +527,6 @@ class CommerceService {
 
       final response = await dio.post(
         "${baseUrl}getSubjectShortNote",
-        data: body,
-        options: Options(
-          headers: {
-            "Content-Type": "application/json",
-            if (token != null) "token": token,
-          },
-        ),
-      );
-
-      var data = response.data;
-      if (data is String) data = jsonDecode(data);
-      if (data is Map && data['status'] == "S100") {
-        return data['data'] as List<dynamic>;
-      }
-      return [];
-    } catch (e) {
-      return [];
-    }
-  }
-
-  /// Subject Module Mobile (Aggregate) ----------------------------------------
-
-  static Future<List<dynamic>> getSubjectModuleMobile({
-    int? subjectId,
-    String? token,
-  }) async {
-    try {
-      final dio = Dio();
-      final Map<String, dynamic> body = {};
-      if (subjectId != null) body['subject_id'] = subjectId;
-
-      final response = await dio.post(
-        "${baseUrl}getSubjectModuleMobile",
         data: body,
         options: Options(
           headers: {

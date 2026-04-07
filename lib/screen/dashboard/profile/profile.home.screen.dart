@@ -698,12 +698,6 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                         child: Column(
                           children: [
                             _ProfileMenuItem(
-                              SvgPictureAsset: 'assets/images/d3.svg',
-                              label: 'Apply Coupon code',
-                              color: Color(0xFF4EDC8A),
-                              onTap: () {},
-                            ),
-                            _ProfileMenuItem(
                               SvgPictureAsset: 'assets/images/d4.svg',
                               label: 'Leaderboard',
                               color: Color(0xFFB18AFF),
@@ -736,6 +730,12 @@ class _ProfileHomeScreenState extends State<ProfileHomeScreen> {
                               onTap: () {
                                 _showReportDialog();
                               },
+                            ),
+                            _ProfileMenuItem(
+                              SvgPictureAsset: 'assets/images/whatsapp.svg',
+                              label: 'Contact US',
+                              color: Color(0xFF4EDC8A),
+                              onTap: () {},
                             ),
                             SizedBox(height: 50),
                             Row(

@@ -3,7 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_guru/screen/dashboard/home/home.screen.dart';
 import 'package:smart_guru/screen/dashboard/profile/profile.home.screen.dart';
 import 'package:smart_guru/screen/dashboard/revise/revise.screen.dart';
-import 'package:smart_guru/utils/theam.dart';
+import '../../services/session.manager.dart';
+import '../../utils/theam.dart';
 
 class NavigationScreen extends StatefulWidget {
   const NavigationScreen({super.key});
@@ -40,17 +41,17 @@ class _NavigationScreenState extends State<NavigationScreen> {
                       padding: const EdgeInsets.only(left: 10),
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
+                        children: [
                           Text(
-                            "Deneth Samitha",
-                            style: TextStyle(
+                            SessionManager.name ?? "User",
+                            style: const TextStyle(
                               fontFamily: "Inter",
                               fontWeight: FontWeight.w700,
                               fontSize: 20,
                               color: Colors.black,
                             ),
                           ),
-                          Text(
+                          const Text(
                             "Ready to practice today?",
                             style: TextStyle(
                               fontFamily: "Inter",

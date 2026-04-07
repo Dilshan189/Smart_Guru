@@ -43,7 +43,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
       final String? token = SessionManager.token;
       final List<dynamic> fetchedLessons =
           await CommerceService.getSubjectLesson(
-            lessonId: int.tryParse(widget.categoryId),
+            subjectId: int.tryParse(widget.categoryId),
             token: token,
             status: "active",
           );
@@ -112,7 +112,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
               itemCount: lessons.length,
               itemBuilder: (context, index) {
                 final lesson = lessons[index];
-                final String lessonName = lesson["name"] ?? "";
+                final String lessonName = lesson["title"] ?? lesson["name"] ?? "";
                 final bool isPremium = lesson["is_premium"] == 1;
 
                 return Padding(

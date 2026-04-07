@@ -1,14 +1,46 @@
 import 'package:flutter/material.dart';
 import 'package:smart_guru/utils/theam.dart';
+import 'package:smart_guru/services/api.service.dart';
+import 'package:smart_guru/services/session.manager.dart';
 
 class ShortNoteScreen extends StatefulWidget {
-  const ShortNoteScreen({super.key});
+  final String subjectId;
+  const ShortNoteScreen({super.key, required this.subjectId});
 
   @override
   State<ShortNoteScreen> createState() => _ShortNoteScreenState();
 }
 
 class _ShortNoteScreenState extends State<ShortNoteScreen> {
+  List<dynamic> _notes = [];
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _fetchShortNotes();
+  }
+
+  Future<void> _fetchShortNotes() async {
+    try {
+      final token = SessionManager.token;
+      final results = await CommerceService.getSubjectShortNote(
+        subjectId: int.tryParse(widget.subjectId),
+        token: token,
+        status: "active",
+      );
+      setState(() {
+        _notes = results;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Error fetching short notes: $e");
+      setState(() {
+        _isLoading = false;
+      });
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -52,112 +84,39 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
           ),
         ),
       ),
-      body: SingleChildScrollView(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Search Bar
-            Container(
-              height: 54,
-              decoration: BoxDecoration(
-                color: AppColors.surfaceWhite,
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(color: AppColors.lightGrey, width: 1),
-              ),
-              child: const TextField(
-                decoration: InputDecoration(
-                  hintText: "Search notes...",
-                  hintStyle: TextStyle(
-                    color: Color(0xFF94A3B8),
-                    fontSize: 14,
-                    fontFamily: 'Inter',
-                  ),
-                  prefixIcon: Icon(Icons.search, color: Color(0xFF94A3B8)),
-                  border: InputBorder.none,
-                  contentPadding: EdgeInsets.symmetric(vertical: 15),
+      body: _isLoading
+          ? const Center(child: CircularProgressIndicator())
+          : _notes.isEmpty
+              ? const Center(child: Text("No short notes available"))
+              : ListView.builder(
+                  padding: const EdgeInsets.all(20),
+                  itemCount: _notes.length,
+                  itemBuilder: (context, index) {
+                    final note = _notes[index];
+                    return Padding(
+                      padding: const EdgeInsets.only(bottom: 12.0),
+                      child: _buildNoteCard(
+                        title: note["name"] ?? "",
+                        subtitle: note["description"] ?? "",
+                        pages: "${note["pages"] ?? "0"} Pages",
+                        tag: note["tag"] ?? "General",
+                        subTag: note["category_name"] ?? "ECON",
+                        thumbnailColor: _getThumbnailColor(index),
+                      ),
+                    );
+                  },
                 ),
-              ),
-            ),
-            const SizedBox(height: 24),
-
-            // Continue Reading Section
-            const Text(
-              "Continue Reading",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF475569),
-                fontFamily: 'Inter',
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildNoteCard(
-              title: "වෙළඳ පොළට රජය මැදිහත් වන ආකාරය",
-              subtitle: "විෂය කොටස්වලට අදාල කෙටි සටහන් මෙහි ඇතුලත් වේ.",
-              pages: "12 Pages",
-              tag: "Demand\n& Supply",
-              subTag: "ECONOMICS",
-              thumbnailColor: const Color(0xFF717986),
-            ),
-            const SizedBox(height: 24),
-
-            // Short Notes Section
-            const Text(
-              "Short Notes",
-              style: TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.w600,
-                color: Color(0xFF475569),
-                fontFamily: 'Inter',
-              ),
-            ),
-            const SizedBox(height: 16),
-            _buildNoteCard(
-              title: "වෙළඳ පොළට රජය මැදිහත් වන ආකාරය",
-              subtitle: "විෂය කොටස්වලට අදාල කෙටි සටහන් මෙහි ඇතුලත් වේ.",
-              pages: "12 Pages",
-              tag: "Demand\n& Supply",
-              subTag: "ECONOMICS",
-              thumbnailColor: const Color(0xFFF07D3E),
-              thumbnailGradient: const LinearGradient(
-                begin: Alignment.topCenter,
-                end: Alignment.bottomCenter,
-                colors: [Color(0xFFF07D3E), Color(0xFFFBB13C)],
-              ),
-            ),
-            const SizedBox(height: 12),
-            _buildNoteCard(
-              title: "වෙළඳ පොළට රජය මැදිහත් වන ආකාරය",
-              subtitle: "විෂය කොටස්වලට අදාල කෙටි සටහන් මෙහි ඇතුලත් වේ.",
-              pages: "12 Pages",
-              tag: "Demand\n& Supply",
-              subTag: "ECONOMICS",
-              thumbnailColor: const Color(0xFF97A2B0),
-            ),
-            const SizedBox(height: 12),
-            _buildNoteCard(
-              title: "වෙළඳ පොළට රජය මැදිහත් වන ආකාරය",
-              subtitle: "විෂය කොටස්වලට අදාල කෙටි සටහන් මෙහි ඇතුලත් වේ.",
-              pages: "12 Pages",
-              tag: "Demand\n& Supply",
-              subTag: "ECONOMICS",
-              thumbnailColor: const Color(0xFF2E3E9C),
-            ),
-            const SizedBox(height: 12),
-            _buildNoteCard(
-              title: "වෙළඳ පොළට රජය මැදිහත් වන ආකාරය",
-              subtitle: "විෂය කොටස්වලට අදාල කෙටි සටහන් මෙහි ඇතුලත් වේ.",
-              pages: "12 Pages",
-              tag: "Demand\n& Supply",
-              subTag: "ECONOMICS",
-              thumbnailColor: const Color(0xFF2E77F6),
-            ),
-            const SizedBox(height: 20),
-          ],
-        ),
-      ),
     );
+  }
+
+  Color _getThumbnailColor(int index) {
+    final colors = [
+      const Color(0xFF717986),
+      const Color(0xFFF07D3E),
+      const Color(0xFF2E3E9C),
+      const Color(0xFF2E77F6),
+    ];
+    return colors[index % colors.length];
   }
 
   Widget _buildNoteCard({
@@ -176,7 +135,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
         borderRadius: BorderRadius.circular(15),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withValues(alpha: 0.04),
+            color: Colors.black.withOpacity(0.04),
             blurRadius: 10,
             offset: const Offset(0, 4),
           ),
@@ -212,7 +171,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                 Text(
                   subTag,
                   style: TextStyle(
-                    color: Colors.white.withValues(alpha: 0.7),
+                    color: Colors.white.withOpacity(0.7),
                     fontSize: 7,
                     fontWeight: FontWeight.w500,
                     fontFamily: 'Inter',
