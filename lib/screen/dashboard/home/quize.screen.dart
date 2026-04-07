@@ -7,6 +7,8 @@ import 'package:audioplayers/audioplayers.dart';
 import 'package:flutter_tts/flutter_tts.dart';
 
 import '../../result/result.screen.dart';
+import '../../../services/api.service.dart';
+import '../../../services/session.manager.dart';
 
 class QuizScreen extends StatefulWidget {
   final String levelName;
@@ -651,8 +653,42 @@ class _QuizScreenState extends State<QuizScreen> {
                                   return;
                                 }
 
+                                final question = _questions[currentIndex];
+                                final int? qId = int.tryParse(
+                                  question['id']?.toString() ?? '',
+                                );
+
+                                if (qId == null) {
+                                  setState(() {
+                                    reportError = "Invalid question ID";
+                                  });
+                                  return;
+                                }
+
+                                final result =
+                                    await CommerceService.reportQuestion(
+                                      questionId: qId,
+                                      reason: reason,
+                                      token: SessionManager.token,
+                                    );
+
                                 if (mounted) {
                                   Navigator.pop(context);
+                                  ScaffoldMessenger.of(context).showSnackBar(
+                                    SnackBar(
+                                      content: Text(
+                                        result['success']
+                                            ? "Report submitted successfully!"
+                                            : "Error: ${result['message']}",
+                                      ),
+                                      backgroundColor: result['success']
+                                          ? Colors.green
+                                          : Colors.red,
+                                    ),
+                                  );
+                                  if (result['success']) {
+                                    _reportController.clear();
+                                  }
                                 }
                               },
                               child: const Text('Submit'),
