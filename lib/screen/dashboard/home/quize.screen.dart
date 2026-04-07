@@ -343,9 +343,6 @@ class _QuizScreenState extends State<QuizScreen> {
         await _audioPlayer.play(AssetSource('sounds/wrong.mp3'));
       }
     } catch (e) {
-      // if (kDebugMode) { // kDebugMode is not defined here, assuming it's from foundation.dart or similar
-      //   print('Error playing sound: $e');
-      // }
       print('Error playing sound: $e'); // Using print for simplicity
     }
   }
@@ -997,20 +994,22 @@ class _QuizScreenState extends State<QuizScreen> {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios, size: 18),
           ),
-          title: Container(
-            width: 112.44,
-            height: 31.2,
-            decoration: BoxDecoration(
-              color: AppColors.primary,
-              borderRadius: BorderRadius.circular(25),
-            ),
-            child: Center(
-              child: Text(
-                '$remainingSeconds Seconds',
-                style: const TextStyle(color: Colors.white, fontSize: 12.48),
-              ),
-            ),
-          ),
+          title: _questions.isEmpty
+              ? null
+              : Container(
+                  width: 112.44,
+                  height: 31.2,
+                  decoration: BoxDecoration(
+                    color: AppColors.primary,
+                    borderRadius: BorderRadius.circular(25),
+                  ),
+                  child: Center(
+                    child: Text(
+                      '$remainingSeconds Seconds',
+                      style: const TextStyle(color: Colors.white, fontSize: 12.48),
+                    ),
+                  ),
+                ),
         ),
         body: Center(
           child: _isFetching
