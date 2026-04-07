@@ -2,6 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_guru/utils/theam.dart';
 import 'package:smart_guru/screen/dashboard/home/lesson.wise.screen.dart';
+import 'package:smart_guru/screen/dashboard/home/past.model.papers.screen.dart';
+import 'package:smart_guru/screen/dashboard/home/short.note.screen.dart';
 import 'package:smart_guru/services/api.service.dart';
 import 'package:smart_guru/services/session.manager.dart';
 
@@ -154,6 +156,37 @@ class _LessonScreenState extends State<LessonScreen> {
                                         quizList: const [],
                                         categoryId: widget.categoryId,
                                         levelId: "1",
+                                      ),
+                                    ),
+                                  );
+                                } else if (index == 1) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PastModelPapersScreen(
+                                        title: title,
+                                        subjectId: widget.categoryId,
+                                        paperType: "pass_paper",
+                                      ),
+                                    ),
+                                  );
+                                } else if (index == 2) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => PastModelPapersScreen(
+                                        title: title,
+                                        subjectId: widget.categoryId,
+                                        paperType: "model_paper",
+                                      ),
+                                    ),
+                                  );
+                                } else if (index == 3) {
+                                  Navigator.push(
+                                    context,
+                                    MaterialPageRoute(
+                                      builder: (context) => ShortNoteScreen(
+                                        subjectId: widget.categoryId,
                                       ),
                                     ),
                                   );

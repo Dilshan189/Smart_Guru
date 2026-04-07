@@ -190,7 +190,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
                       child: _buildPaperCard(
-                        title: paper["name"] ?? "",
+                        title: paper["title"] ?? paper["name"] ?? "",
                         status:
                             isPremium
                                 ? "Premium Access Required"

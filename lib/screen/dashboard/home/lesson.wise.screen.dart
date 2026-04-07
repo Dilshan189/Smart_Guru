@@ -112,7 +112,8 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
               itemCount: lessons.length,
               itemBuilder: (context, index) {
                 final lesson = lessons[index];
-                final String lessonName = lesson["title"] ?? lesson["name"] ?? "";
+                final String lessonName =
+                    lesson["title"] ?? lesson["name"] ?? "";
                 final bool isPremium = lesson["is_premium"] == 1;
 
                 return Padding(
@@ -176,7 +177,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                                       lessonName,
                                       style: const TextStyle(
                                         fontFamily: "FMGanganee",
-                                        fontSize: 16,
+                                        fontSize: 13,
                                         fontWeight: FontWeight.bold,
                                         color: Color(0xFF1E293B),
                                       ),
@@ -204,7 +205,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                                 children: [
                                   const SizedBox(width: 5),
                                   const Text(
-                                    "View Lessons",
+                                    "MCQs",
                                     style: TextStyle(
                                       fontFamily: "Poppins",
                                       fontSize: 12,
@@ -212,13 +213,15 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                                       fontWeight: FontWeight.w500,
                                     ),
                                   ),
-                                  const SizedBox(width: 30),
-                                  Expanded(
+                                  const SizedBox(width: 20),
+                                  SizedBox(
+                                    width: 220,
                                     child: ClipRRect(
                                       borderRadius: BorderRadius.circular(10),
                                       child: LinearProgressIndicator(
                                         value: 0.0,
                                         minHeight: 6,
+
                                         backgroundColor: const Color(
                                           0xFFF1F5F9,
                                         ),
