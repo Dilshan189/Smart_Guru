@@ -238,7 +238,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                       fontSize: 15,
                       fontWeight: FontWeight.bold,
                       color: Color(0xFF1E293B),
-                      fontFamily: 'FMGanganee',
+                      fontFamily: 'Inter',
                       height: 1.4,
                     ),
                   ),
@@ -248,7 +248,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                     style: const TextStyle(
                       fontSize: 12,
                       color: Color(0xFF94A3B8),
-                      fontFamily: 'FMGanganee',
+                      fontFamily: 'Inter',
                       height: 1.3,
                     ),
                   ),
