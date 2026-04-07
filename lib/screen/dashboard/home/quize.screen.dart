@@ -21,6 +21,8 @@ class QuizScreen extends StatefulWidget {
   final String? categoryId;
   final String? rootCategoryId;
   final String? levelId;
+  final String? subjectId;
+  final String? paperType;
   final List<Map<String, dynamic>>? allLevels;
   final int? currentLevelIndex;
   final bool isReviewQuiz;
@@ -38,6 +40,8 @@ class QuizScreen extends StatefulWidget {
     this.categoryId,
     this.rootCategoryId,
     this.levelId,
+    this.subjectId,
+    this.paperType,
     this.allLevels,
     this.currentLevelIndex,
     this.isReviewQuiz = false,
@@ -90,10 +94,11 @@ class _QuizScreenState extends State<QuizScreen> {
   List<dynamic> get _questions =>
       widget.questions.isNotEmpty ? widget.questions : _apiQuestions;
 
+  // ---------------------------------------------------------------------------
+  // Check if current quiz is a Past Paper (පැරණි ප්‍රශ්න පත්‍ර)
+  // ---------------------------------------------------------------------------
   bool _isPaperQuizCategory() {
-    final String title = widget.categoryTitle?.trim() ?? "";
-    return title.isNotEmpty &&
-        (title == "Paper Quiz" || title == "පැරණි ප්‍රශ්න පත්‍ර");
+    return widget.paperType != null;
   }
 
   int _calculatePaperQuizScore() {
@@ -212,6 +217,8 @@ class _QuizScreenState extends State<QuizScreen> {
               allLevels: levelsList,
               currentLevelIndex: nextIndex,
               isReviewQuiz: false,
+              subjectId: widget.subjectId,
+              paperType: widget.paperType,
             ),
           ),
         );
@@ -233,8 +240,9 @@ class _QuizScreenState extends State<QuizScreen> {
       return;
     }
 
+    // --- 1. Past Paper (පැරණි ප්‍රශ්න පත්‍ර) Logic ---
+    // Includes: No immediate answer checking, immediate "Next" navigation.
     if (_isPaperQuizCategory()) {
-      // Paper Quiz Logic: Save and move immediately
       setState(() {
         selectedAnswers[currentIndex] = selectedAnswer;
       });
@@ -262,6 +270,8 @@ class _QuizScreenState extends State<QuizScreen> {
       return;
     }
 
+    // --- 2. Level Quiz (සාමාන්‍ය Quiz) Logic ---
+    // Includes: Immediate answer checking ("Check"), showing explanation, and scoring.
     final question = _questions[currentIndex];
     final int correctAnswerIndex = question['correctAnswerIndex'] ?? -1;
 
@@ -884,94 +894,76 @@ class _QuizScreenState extends State<QuizScreen> {
       _isFetching = true;
     });
 
-    // Directly using a hardcoded list for testing, bypassing API calls entirely
-    List<Map<String, dynamic>> mapped = [
-      {
-        'id': 'm1',
-        'question': 'ශ්‍රී ලංකාවේ පරිපාලන අගනුවර කුමක්ද?',
-        'questionImage': '',
-        'options': [
-          {'text': 'කොළඹ', 'image': ''},
-          {'text': 'ශ්‍රී ජයවර්ධනපුර කෝට්ටේ', 'image': ''},
-          {'text': 'මහනුවර', 'image': ''},
-          {'text': 'අනුරාධපුරය', 'image': ''},
-        ],
-        'correctAnswer': 'ශ්‍රී ජයවර්ධනපුර කෝට්ටේ',
-        'correctAnswerIndex': 1,
-        'explanation':
-            'ශ්‍රී ලංකාවේ ප්‍රධාන පරිපාලන අගනුවර ශ්‍රී ජයවර්ධනපුර කෝට්ටේ වේ.',
-        'explanationImage': '',
-        'exampleAudio': '',
-        'paragraphText': '',
-      },
-      {
-        'id': 'm2',
-        'question': 'ලෝකයේ උසම කන්ද කුමක්ද?',
-        'questionImage': '',
-        'options': [
-          {'text': 'කේ 2 කන්ද', 'image': ''},
-          {'text': 'එවරස්ට් කන්ද', 'image': ''},
-          {'text': 'පිදුරුතලාගල කන්ද', 'image': ''},
-          {'text': 'මොන්ට් බ්ලැන්ක්', 'image': ''},
-        ],
-        'correctAnswer': 'එවරස්ට් කන්ද',
-        'correctAnswerIndex': 1,
-        'explanation':
-            'ලොව උසම කන්ද වන්නේ හිමාල කඳුවැටියේ පිහිටි එවරස්ට් කන්දයි.',
-        'explanationImage': '',
-        'exampleAudio': '',
-        'paragraphText': '',
-      },
-      {
-        'id': 'm3',
-        'question': 'සූර්යයාට නිල වශයෙන් අයත් ග්‍රහලෝක ගණන කීයද?',
-        'questionImage': '',
-        'options': [
-          {'text': '7', 'image': ''},
-          {'text': '8', 'image': ''},
-          {'text': '9', 'image': ''},
-          {'text': '10', 'image': ''},
-        ],
-        'correctAnswer': '8',
-        'correctAnswerIndex': 1,
-        'explanation': 'සූර්යග්‍රහ මණ්ඩලයට නිල වශයෙන් ග්‍රහලෝක 8ක් අයත් වේ.',
-        'explanationImage': '',
-        'exampleAudio': '',
-        'paragraphText': '',
-      },
-      {
-        'id': 'm4',
-        'question': 'පහත රූපයේ දැක්වෙන පුද්ගලයා කවුද?',
-        'questionImage':
-            'https://upload.wikimedia.org/wikipedia/commons/e/e0/Albert_Einstein_1947.jpg',
-        'options': [
-          {'text': 'ටෙස්ලා', 'image': ''},
-          {'text': 'නිව්ටන්', 'image': ''},
-          {'text': 'අයිසැක් නිව්ටන්', 'image': ''},
-          {'text': 'ඇල්බට් අයින්ස්ටයින්', 'image': ''},
-        ],
-        'correctAnswer': 'ඇල්බට් අයින්ස්ටයින්',
-        'correctAnswerIndex': 3,
-        'explanation':
-            'මෙම රූපයේ දැක්වෙන්නේ ප්‍රසිද්ධ විද්‍යාඥයෙකු වන ඇල්බට් අයින්ස්ටයින් ය.',
-        'explanationImage': '',
-        'exampleAudio': '',
-        'paragraphText': '',
-      },
-    ];
+    try {
+      print("Fetching Questions for Mode: ${_isPaperQuizCategory() ? 'Paper Quiz' : 'Level Quiz'}");
+      print("IDs: SubjectID=${widget.subjectId}, LessonID=${widget.categoryId}, LevelID=${widget.levelId}, PaperType=${widget.paperType}");
 
-    // Artificial delay to simulate network for UI testing (optional)
-    await Future.delayed(const Duration(milliseconds: 300));
+      final List<dynamic> result = _isPaperQuizCategory()
+          ? await CommerceService.getSubjectPaperQuestion(
+            subjectId: int.tryParse(widget.subjectId ?? ''),
+            paperId: int.tryParse(widget.levelId ?? ''),
+            paperType: widget.paperType,
+            token: SessionManager.token,
+          )
+          : await CommerceService.getSubjectLessonQuestion(
+            subjectId: int.tryParse(widget.subjectId ?? ''),
+            lessonId: int.tryParse(widget.categoryId ?? ''),
+            levelId: int.tryParse(widget.levelId ?? ''),
+            token: SessionManager.token,
+          );
 
-    if (mounted) {
-      setState(() {
-        _apiQuestions = mapped;
-        _isFetching = false;
-        _hasParagraph = false;
-        selectedAnswers = List<int?>.filled(mapped.length, null);
-        savedStates = List<bool>.filled(mapped.length, false);
-      });
-      _startTimer();
+      print("API Response results count: ${result.length}");
+
+      List<Map<String, dynamic>> mapped =
+          result.map((item) {
+            List<Map<String, dynamic>> options = [];
+            for (int i = 1; i <= 5; i++) {
+              final ansKey = 'ans_0$i';
+              final imgKey = 'ans_0${i}_img';
+              if (item[ansKey] != null && item[ansKey].toString().isNotEmpty) {
+                options.add({
+                  'text': item[ansKey].toString(),
+                  'image': item[imgKey]?.toString() ?? '',
+                });
+              }
+            }
+
+            int correctIdx = -1;
+            final String? currentAns = item['current_ans']?.toString();
+            if (currentAns != null && currentAns.isNotEmpty) {
+              correctIdx = (int.tryParse(currentAns) ?? 1) - 1;
+            }
+
+            return {
+              'id': item['id']?.toString() ?? item['question_id']?.toString() ?? '',
+              'question': item['question'] ?? '',
+              'questionImage': item['question_img'] ?? '',
+              'options': options,
+              'correctAnswerIndex': correctIdx,
+              'explanation': item['example_text'] ?? '',
+              'explanationImage': item['example_img'] ?? '',
+              'exampleAudio': item['example_audio'] ?? '',
+              'paragraphText': item['example_text'] ?? '',
+            };
+          }).toList();
+
+      if (mounted) {
+        setState(() {
+          _apiQuestions = mapped;
+          _isFetching = false;
+          _hasParagraph = false;
+          selectedAnswers = List<int?>.filled(mapped.length, null);
+          savedStates = List<bool>.filled(mapped.length, false);
+        });
+        _startTimer();
+      }
+    } catch (e) {
+      debugPrint("Error fetching questions: $e");
+      if (mounted) {
+        setState(() {
+          _isFetching = false;
+        });
+      }
     }
   }
 
@@ -1046,8 +1038,10 @@ class _QuizScreenState extends State<QuizScreen> {
 
     return Scaffold(
       backgroundColor: Colors.white,
+      // --- UI Header Logic ---
       appBar: _isPaperQuizCategory()
           ? AppBar(
+              // --- Past Paper Header (පැරණි ප්‍රශ්න පත්‍ර Header එක) ---
               backgroundColor: Colors.white,
               elevation: 0,
               automaticallyImplyLeading: false,
@@ -1140,6 +1134,7 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
             )
           : AppBar(
+              // --- Level Quiz Header (සාමාන්‍ය Quiz Header එක) ---
               backgroundColor: Colors.white,
               automaticallyImplyLeading: false,
               leading: IconButton(
@@ -1184,6 +1179,7 @@ class _QuizScreenState extends State<QuizScreen> {
             ),
       body: GestureDetector(
         onHorizontalDragEnd: (details) {
+          // Swipe navigation is ONLY enabled for Past Papers (Paper Quiz)
           if (showParagraphMode || !_isPaperQuizCategory()) return;
           if (details.velocity.pixelsPerSecond.dx > 0)
             _goToPreviousQuestion();
@@ -1457,6 +1453,8 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
       bottomNavigationBar: _isPaperQuizCategory()
           ? SafeArea(
+              // --- Past Paper Bottom Bar (පැරණි ප්‍රශ්න පත්‍ර Bottom Navigation) ---
+              // Includes: Navigation with "Previous" and "Next/Finish" buttons.
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 25,
@@ -1514,6 +1512,8 @@ class _QuizScreenState extends State<QuizScreen> {
               ),
             )
           : SafeArea(
+              // --- Level Quiz Bottom Bar (සාමාන්‍ය Quiz Bottom Navigation) ---
+              // Includes: Optional "Save" button and the primary "Check/Next" button.
               child: Padding(
                 padding: const EdgeInsets.symmetric(
                   horizontal: 35,

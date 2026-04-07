@@ -8,8 +8,14 @@ import 'quize.screen.dart';
 class LevelScreen extends StatefulWidget {
   final String title;
   final String lessonId;
+  final String subjectId;
 
-  const LevelScreen({super.key, required this.title, required this.lessonId});
+  const LevelScreen({
+    super.key,
+    required this.title,
+    required this.lessonId,
+    required this.subjectId,
+  });
 
   @override
   State<LevelScreen> createState() => _LevelScreenState();
@@ -30,6 +36,7 @@ class _LevelScreenState extends State<LevelScreen> {
       final String? token = SessionManager.token;
       final List<dynamic> fetchedLevels =
           await CommerceService.getSubjectLessonLevel(
+            subjectId: int.tryParse(widget.subjectId ?? ''),
             lessonId: int.tryParse(widget.lessonId),
             token: token,
             status: "active",
@@ -115,13 +122,10 @@ class _LevelScreenState extends State<LevelScreen> {
   }
 
   Widget _buildLevelCard(dynamic item, int index) {
-    final String levelName = item["name"] ?? "Level ${index + 1}";
-    final bool isPremium = item["is_premium"] == 1;
+    final String levelName = item["level_name"] ?? "Level ${index + 1}";
+    final bool isPremium = item["is_premium"] == "1" || item["is_premium"] == 1;
 
-    // Assume first level is unlocked if no lock logic from API yet, others locked unless premium?
-    // Using a simple logic for now:
-
-    final bool isLocked = index > 0 && !isPremium;
+    final bool isLocked = index > 0 && !(isPremium);
 
     return InkWell(
       onTap: () {
@@ -134,8 +138,20 @@ class _LevelScreenState extends State<LevelScreen> {
                 categoryTitle: widget.title,
                 questions: const [],
                 data: const [],
-                categoryId: widget.lessonId,
+                categoryId: widget.lessonId, // mapped to lessonId in QuizScreen
                 levelId: item["id"]?.toString() ?? index.toString(),
+                subjectId: widget.subjectId,
+                allLevels: levels
+                    .map(
+                      (l) => {
+                        "level": l["level_name"],
+                        "level_id": l["id"],
+                        "cat_id": widget.lessonId,
+                        "questions": [],
+                      },
+                    )
+                    .toList(),
+                currentLevelIndex: index,
               ),
             ),
           );

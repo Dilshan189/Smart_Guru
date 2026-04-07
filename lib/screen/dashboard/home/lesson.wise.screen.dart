@@ -126,6 +126,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                           builder: (context) => LevelScreen(
                             title: lessonName,
                             lessonId: lesson["id"]?.toString() ?? "",
+                            subjectId: widget.categoryId,
                           ),
                         ),
                       );

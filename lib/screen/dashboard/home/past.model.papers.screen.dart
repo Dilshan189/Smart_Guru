@@ -224,6 +224,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                     return Padding(
                       padding: const EdgeInsets.only(bottom: 12.0),
                       child: _buildPaperCard(
+                        paper: paper,
                         title: paper["title"] ?? paper["name"] ?? "",
                         status: paperStatus,
                         score: paper["score"]?.toString() ?? "00/100",
@@ -406,6 +407,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
   }
 
   Widget _buildPaperCard({
+    required Map<String, dynamic> paper,
     required String title,
     required String status,
     required String score,
@@ -551,7 +553,9 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                                         categoryTitle: "Paper Quiz",
                                         questions: const [],
                                         data: const [],
-                                        levelId: "1",
+                                        levelId: paper["id"]?.toString() ?? "1",
+                                        subjectId: widget.subjectId,
+                                        paperType: widget.paperType,
                                       ),
                                     ),
                                   );
