@@ -77,13 +77,16 @@ class _LevelScreenState extends State<LevelScreen> {
                 ),
               ),
               const SizedBox(width: 20),
-              Text(
-                widget.title,
-                style: const TextStyle(
-                  fontFamily: "FMGanganee",
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Expanded(
+                child: Text(
+                  widget.title,
+                  style: const TextStyle(
+                    fontFamily: "FMGanganee",
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                  overflow: TextOverflow.ellipsis,
                 ),
               ),
             ],
