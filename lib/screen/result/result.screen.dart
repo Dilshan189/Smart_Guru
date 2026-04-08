@@ -116,7 +116,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                 Image.asset(
                   (widget.isBookmarkMode ||
                           widget.isIncorrectMode ||
-                          widget.catrgoryTitle == 'Paper Quiz')
+                          widget.isPaperQuiz)
                       ? 'assets/images/icon.png'
                       : (isFailed
                             ? 'assets/images/😓.png'
@@ -128,7 +128,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                 SvgPicture.asset(
                   (widget.isBookmarkMode || widget.isIncorrectMode)
                       ? 'assets/images/Review Complete! copy.svg'
-                      : (widget.catrgoryTitle == 'Paper Quiz')
+                      : (widget.isPaperQuiz)
                       ? 'assets/images/Paper Completed!.svg'
                       : (isFailed
                             ? 'assets/images/Level Failed! copy.svg'
@@ -149,7 +149,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                     ),
                   ),
                 if (!widget.isBookmarkMode && !widget.isIncorrectMode)
-                  widget.catrgoryTitle == 'Paper Quiz'
+                  widget.isPaperQuiz
                       ? Column(
                           children: [
                             const Text(
@@ -241,7 +241,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                   ),
                 if (!widget.isBookmarkMode &&
                     !widget.isIncorrectMode &&
-                    widget.catrgoryTitle != 'Paper Quiz')
+                    !widget.isPaperQuiz)
                   Text(
                     isFailed
                         ? "You’ve Earned 0 Pts"
@@ -339,9 +339,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                         ),
                       ),
                       child: Text(
-                        widget.catrgoryTitle == 'Paper Quiz'
-                            ? "Review Mistakes"
-                            : "Start Over",
+                        widget.isPaperQuiz ? "Review Mistakes" : "Start Over",
                         style: TextStyle(
                           color: Colors.white,
                           fontSize: width * 0.045,
@@ -393,7 +391,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                               ),
                             )
                           : Text(
-                              widget.catrgoryTitle == 'Paper Quiz'
+                              widget.isPaperQuiz
                                   ? "Back to Papers"
                                   : ((widget.isBookmarkMode ||
                                             widget.isIncorrectMode)

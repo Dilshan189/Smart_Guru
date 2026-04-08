@@ -867,7 +867,7 @@ class _QuizScreenState extends State<QuizScreen> {
           automaticallyImplyLeading: false,
           leading: IconButton(
             onPressed: () => Navigator.pop(context),
-            icon: const Icon(Icons.arrow_back_ios, size: 18),
+            icon: const Icon(Icons.arrow_back_ios, size: 12),
           ),
           title: _questions.isEmpty
               ? null
@@ -952,7 +952,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       ),
                       child: const Icon(
                         Icons.arrow_back_ios_new,
-                        size: 16,
+                        size: 12,
                         color: Colors.white,
                       ),
                     ),
@@ -1074,10 +1074,11 @@ class _QuizScreenState extends State<QuizScreen> {
         onHorizontalDragEnd: (details) {
           // Swipe navigation is ONLY enabled for Past Papers (Paper Quiz)
           if (showParagraphMode || !_isPaperQuizCategory()) return;
-          if (details.velocity.pixelsPerSecond.dx > 0)
+          if (details.velocity.pixelsPerSecond.dx > 0) {
             _goToPreviousQuestion();
-          else if (details.velocity.pixelsPerSecond.dx < 0)
+          } else if (details.velocity.pixelsPerSecond.dx < 0) {
             _goToNextQuestion();
+          }
         },
         child: SingleChildScrollView(
           controller: _scrollController,

@@ -550,7 +550,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                                     MaterialPageRoute(
                                       builder: (context) => QuizScreen(
                                         levelName: title,
-                                        categoryTitle: "Paper Quiz",
+                                        categoryTitle: title,
                                         questions: const [],
                                         data: const [],
                                         levelId: paper["id"]?.toString() ?? "1",
