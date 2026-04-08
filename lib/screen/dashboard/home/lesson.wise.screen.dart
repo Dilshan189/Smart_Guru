@@ -76,8 +76,8 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 35,
+                  height: 35,
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -94,7 +94,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                 widget.subtitle,
                 style: const TextStyle(
                   fontFamily: "FMGanganee",
-                  fontSize: 22,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),

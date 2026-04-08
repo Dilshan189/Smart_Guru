@@ -70,8 +70,8 @@ class _LevelScreenState extends State<LevelScreen> {
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 35,
+                  height: 35,
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,

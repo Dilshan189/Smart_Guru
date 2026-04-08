@@ -55,7 +55,7 @@ class _LessonScreenState extends State<LessonScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+      backgroundColor: Colors.white,
       appBar: AppBar(
         toolbarHeight: 100,
         backgroundColor: AppColors.primary,
@@ -68,8 +68,8 @@ class _LessonScreenState extends State<LessonScreen> {
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 35,
+                  height: 35,
                   decoration: const BoxDecoration(
                     color: Colors.white,
                     shape: BoxShape.circle,
@@ -86,7 +86,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 widget.title,
                 style: const TextStyle(
                   fontFamily: "FMGanganee",
-                  fontSize: 24,
+                  fontSize: 20,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
                 ),
@@ -111,29 +111,29 @@ class _LessonScreenState extends State<LessonScreen> {
                   title = "mdvï wkqj m%Ya​k";
                   subtitle = "mdvï wkqj j¾.SlrKh lrk ,o m%Yak we;=,;a fõ'";
                   leftText = "${subjectData?['total_lessons'] ?? 0} lessons";
-                  rightText = "View";
+                  rightText = "MCQs";
                 } else if (index == 1) {
                   title = "miq.sh úNd. m%Ya​k";
                   subtitle = "miq.sh úNd. m%Yak m;% we;=,;a fõ''";
                   leftText = "${subjectData?['total_pass_papers'] ?? 0} Papers";
-                  rightText = "View";
+                  rightText = "MCQs";
                 } else if (index == 2) {
                   title = "wkqudk m%Yak m​;%";
                   subtitle = "wm úiska ieliq úNd. wkqmdk m%Yak we;=,;a fõ'";
                   leftText =
                       "${subjectData?['total_model_papers'] ?? 0} Papers";
-                  rightText = "View";
+                  rightText = "MCQs";
                 } else if (index == 3) {
                   title = "flá igy​ka";
                   subtitle = "úYh fldgiaj,g wod, flá igyka fuys we;=,;a fõ'";
                   leftText = "${subjectData?['total_short_notes'] ?? 0} Topics";
-                  rightText = "View";
+                  rightText = "MCQs";
                 } else if (index == 4) {
                   title = "ùäfhda mdv​ï";
                   subtitle = "úäfhda mdvï ud,dj ,.§u n,dfmdfrd;a;= jkak";
                   leftText =
                       "${subjectData?['total_video_lessons'] ?? 0} Lessons";
-                  rightText = "View";
+                  rightText = "MCQs";
                   isComingSoon = true;
                 }
 
@@ -197,14 +197,14 @@ class _LessonScreenState extends State<LessonScreen> {
                           padding: const EdgeInsets.all(20),
                           decoration: BoxDecoration(
                             color: Colors.white,
-                            borderRadius: BorderRadius.circular(16),
+                            borderRadius: BorderRadius.circular(12),
                             border: Border.all(
                               color: const Color(0xFFF1F5F9),
                               width: 1,
                             ),
                             boxShadow: [
                               BoxShadow(
-                                color: Colors.black.withOpacity(0.04),
+                                color: Colors.black.withOpacity(0.07),
                                 blurRadius: 10,
                                 offset: const Offset(0, 4),
                               ),
@@ -225,18 +225,19 @@ class _LessonScreenState extends State<LessonScreen> {
                                           title,
                                           style: const TextStyle(
                                             fontFamily: "FMMalithi",
-                                            fontSize: 18,
+                                            fontSize: 15.28,
                                             fontWeight: FontWeight.bold,
-                                            color: Color(0xFF1E293B),
+                                            color: Color(0xFF1C1C1C),
                                           ),
                                         ),
-                                        const SizedBox(height: 6),
+                                        const SizedBox(height: 4),
                                         Text(
                                           subtitle,
                                           style: const TextStyle(
                                             fontFamily: "FMMalithi",
-                                            fontSize: 14,
-                                            color: Color(0xFF94A3B8),
+                                            fontWeight: FontWeight.w400,
+                                            fontSize: 13.1,
+                                            color: Color(0xFFA8ACAF),
                                             height: 1.4,
                                           ),
                                         ),
@@ -285,15 +286,15 @@ class _LessonScreenState extends State<LessonScreen> {
                                       vertical: 6,
                                     ),
                                     decoration: BoxDecoration(
-                                      color: const Color(0xFFF1F5F9),
-                                      borderRadius: BorderRadius.circular(8),
+                                      color: const Color(0xFFF4F4F5),
+                                      borderRadius: BorderRadius.circular(4.37),
                                     ),
                                     child: Text(
                                       rightText,
                                       style: const TextStyle(
                                         fontFamily: "Poppins",
                                         fontSize: 12,
-                                        color: Color(0xFF475569),
+                                        color: Color(0xFF727272),
                                         fontWeight: FontWeight.bold,
                                       ),
                                     ),

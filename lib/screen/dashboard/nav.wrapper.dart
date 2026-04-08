@@ -29,99 +29,99 @@ class _NavigationScreenState extends State<NavigationScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: selectIndex == 0 || selectIndex == 1
-          ? AppBar(
-              centerTitle: false,
-              automaticallyImplyLeading: false,
-              backgroundColor: Colors.white,
-              elevation: 0,
-              title: selectIndex == 0
-                  ? Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            SessionManager.name ?? "User",
-                            style: const TextStyle(
-                              fontFamily: "Inter",
-                              fontWeight: FontWeight.w700,
-                              fontSize: 20,
-                              color: Colors.black,
+    return SafeArea(
+      child: Scaffold(
+        appBar: selectIndex == 0 || selectIndex == 1
+            ? AppBar(
+                centerTitle: false,
+                automaticallyImplyLeading: false,
+                backgroundColor: Colors.white,
+                elevation: 0,
+                title: selectIndex == 0
+                    ? Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              SessionManager.name ?? "User",
+                              style: const TextStyle(
+                                fontFamily: "Inter",
+                                fontWeight: FontWeight.w700,
+                                fontSize: 20,
+                                color: Colors.black,
+                              ),
                             ),
-                          ),
-                          const Text(
-                            "Ready to practice today?",
-                            style: TextStyle(
-                              fontFamily: "Inter",
-                              fontWeight: FontWeight.w400,
-                              fontSize: 11,
-                              color: Colors.grey,
+                            const Text(
+                              "Ready to practice today?",
+                              style: TextStyle(
+                                fontFamily: "Inter",
+                                fontWeight: FontWeight.w400,
+                                fontSize: 11,
+                                color: Colors.grey,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
+                      )
+                    : Padding(
+                        padding: const EdgeInsets.only(left: 10),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: const [
+                            Text(
+                              "Smart Revision",
+                              style: TextStyle(
+                                fontFamily: "Inter",
+                                fontWeight: FontWeight.bold,
+                                fontSize: 20,
+                                color: Colors.black,
+                              ),
+                            ),
+                            Text(
+                              "Review and strengthen your weak areas",
+                              style: TextStyle(
+                                fontFamily: "Inter",
+                                fontWeight: FontWeight.w400,
+                                fontSize: 11,
+                                color: Colors.grey,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                    )
-                  : Padding(
-                      padding: const EdgeInsets.only(left: 10),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: const [
-                          Text(
-                            "Smart Revision",
-                            style: TextStyle(
-                              fontFamily: "Inter",
-                              fontWeight: FontWeight.bold,
-                              fontSize: 20,
-                              color: Colors.black,
-                            ),
-                          ),
-                          Text(
-                            "Review and strengthen your weak areas",
-                            style: TextStyle(
-                              fontFamily: "Inter",
-                              fontWeight: FontWeight.w400,
-                              fontSize: 11,
-                              color: Colors.grey,
-                            ),
-                          ),
-                        ],
+      
+                actions: [
+                  Padding(
+                    padding: const EdgeInsets.only(right: 20),
+                    child: Container(
+                      width: 48,
+                      height: 48,
+                      decoration: const BoxDecoration(
+                        color: Color(0xFFE8EAF6),
+                        shape: BoxShape.circle,
                       ),
-                    ),
-
-              actions: [
-                Padding(
-                  padding: const EdgeInsets.only(right: 20),
-                  child: Container(
-                    width: 48,
-                    height: 48,
-                    decoration: const BoxDecoration(
-                      color: Color(0xFFE8EAF6),
-                      shape: BoxShape.circle,
-                    ),
-                    child: IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
-                        Icons.notification_add_rounded,
-                        color: Color(0xFF3F51B5),
-                        size: 25,
+                      child: IconButton(
+                        onPressed: () {},
+                        icon: const Icon(
+                          Icons.notification_add_rounded,
+                          color: Color(0xFF3F51B5),
+                          size: 25,
+                        ),
                       ),
                     ),
                   ),
-                ),
-              ],
-            )
-          : null,
-      body: IndexedStack(
-        index: selectIndex.clamp(0, _pages.length - 1),
-        children: _pages,
-      ),
-
-      /// Custom Bottom Navigation
-      bottomNavigationBar: SafeArea(
-        child: Container(
-          height: 86,
+                ],
+              )
+            : null,
+        body: IndexedStack(
+          index: selectIndex.clamp(0, _pages.length - 1),
+          children: _pages,
+        ),
+      
+        /// Custom Bottom Navigation
+        bottomNavigationBar: Container(
+          height: 70,
           padding: const EdgeInsets.fromLTRB(26.87, 4.3, 26.87, 4.3),
           decoration: BoxDecoration(
             color: Colors.white,
