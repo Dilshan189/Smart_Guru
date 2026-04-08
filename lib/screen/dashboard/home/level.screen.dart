@@ -79,7 +79,7 @@ class _LevelScreenState extends State<LevelScreen> {
                   child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: Colors.black,
-                    size: 18,
+                    size: 12,
                   ),
                 ),
               ),
@@ -90,7 +90,7 @@ class _LevelScreenState extends State<LevelScreen> {
                   style: const TextStyle(
                     fontFamily: "FMGanganee",
                     fontSize: 16,
-                    fontWeight: FontWeight.bold,
+                    fontWeight: FontWeight.w500,
                     color: Colors.white,
                   ),
                   overflow: TextOverflow.ellipsis,

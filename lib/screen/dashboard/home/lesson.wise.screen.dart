@@ -85,7 +85,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                   child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: Colors.black,
-                    size: 20,
+                    size: 12,
                   ),
                 ),
               ),
@@ -95,7 +95,7 @@ class _LessonWiseScreenState extends State<LessonWiseScreen> {
                 style: const TextStyle(
                   fontFamily: "FMGanganee",
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w500,
                   color: Colors.white,
                 ),
               ),

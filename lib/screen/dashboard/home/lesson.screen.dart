@@ -77,7 +77,7 @@ class _LessonScreenState extends State<LessonScreen> {
                   child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: Colors.black,
-                    size: 20,
+                    size: 12,
                   ),
                 ),
               ),
@@ -87,7 +87,7 @@ class _LessonScreenState extends State<LessonScreen> {
                 style: const TextStyle(
                   fontFamily: "FMGanganee",
                   fontSize: 20,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w400,
                   color: Colors.white,
                 ),
               ),
@@ -163,22 +163,24 @@ class _LessonScreenState extends State<LessonScreen> {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => PastModelPapersScreen(
-                                        title: title,
-                                        subjectId: widget.categoryId,
-                                        paperType: "pass_paper",
-                                      ),
+                                      builder: (context) =>
+                                          PastModelPapersScreen(
+                                            title: title,
+                                            subjectId: widget.categoryId,
+                                            paperType: "pass_paper",
+                                          ),
                                     ),
                                   );
                                 } else if (index == 2) {
                                   Navigator.push(
                                     context,
                                     MaterialPageRoute(
-                                      builder: (context) => PastModelPapersScreen(
-                                        title: title,
-                                        subjectId: widget.categoryId,
-                                        paperType: "model_paper",
-                                      ),
+                                      builder: (context) =>
+                                          PastModelPapersScreen(
+                                            title: title,
+                                            subjectId: widget.categoryId,
+                                            paperType: "model_paper",
+                                          ),
                                     ),
                                   );
                                 } else if (index == 3) {

@@ -102,7 +102,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                   child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: AppColors.secondary,
-                    size: 20,
+                    size: 12,
                   ),
                 ),
               ),
@@ -111,8 +111,8 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                 widget.title,
                 style: const TextStyle(
                   fontFamily: 'FMGanganee',
-                  fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontSize: 20,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.surfaceWhite,
                 ),
               ),

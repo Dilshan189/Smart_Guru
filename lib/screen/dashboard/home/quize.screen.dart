@@ -906,6 +906,10 @@ class _QuizScreenState extends State<QuizScreen> {
       );
     }
 
+    final size = MediaQuery.of(context).size;
+    final width = size.width;
+    final height = size.height;
+
     final Map<String, dynamic> question = _questions[currentIndex];
     final List options = List.from(question['options'] ?? []);
     final String displayParagraph = (widget.pParagraph ?? '').isNotEmpty
@@ -961,10 +965,10 @@ class _QuizScreenState extends State<QuizScreen> {
                       children: [
                         Text(
                           widget.categoryTitle ?? "",
-                          style: const TextStyle(
-                            fontSize: 18,
+                          style: TextStyle(
+                            fontSize: width * 0.045,
                             fontWeight: FontWeight.bold,
-                            color: Color(0xFF1E293B),
+                            color: const Color(0xFF1E293B),
                           ),
                         ),
                         const SizedBox(height: 4),
@@ -1011,10 +1015,10 @@ class _QuizScreenState extends State<QuizScreen> {
                         borderRadius: BorderRadius.circular(20),
                       ),
                     ),
-                    child: const Text(
+                    child: Text(
                       "Submit",
                       style: TextStyle(
-                        fontSize: 14,
+                        fontSize: width * 0.035,
                         fontWeight: FontWeight.w600,
                       ),
                     ),
@@ -1041,9 +1045,9 @@ class _QuizScreenState extends State<QuizScreen> {
                   child: Center(
                     child: Text(
                       '$remainingSeconds Seconds',
-                      style: const TextStyle(
+                      style: TextStyle(
                         color: Colors.white,
-                        fontSize: 12.48,
+                        fontSize: width * 0.03,
                       ),
                     ),
                   ),
@@ -1143,7 +1147,7 @@ class _QuizScreenState extends State<QuizScreen> {
                                         ? Colors.white
                                         : const Color(0xFF64748B),
                                     fontWeight: FontWeight.w600,
-                                    fontSize: 14,
+                                    fontSize: width * 0.035,
                                   ),
                                 ),
                               ),
@@ -1161,19 +1165,19 @@ class _QuizScreenState extends State<QuizScreen> {
                   alignment: Alignment.centerLeft,
                   child: Text(
                     'Question ${currentIndex + 1} of ${_questions.length}',
-                    style: const TextStyle(
-                      fontSize: 14,
+                    style: TextStyle(
+                      fontSize: width * 0.035,
                       fontWeight: FontWeight.w500,
-                      color: Color(0xFF64748B),
+                      color: const Color(0xFF64748B),
                     ),
                   ),
                 ),
               ),
               const SizedBox(height: 10),
               Container(
-                width: 359,
-                height: showParagraphMode ? 509 : 240,
-                padding: const EdgeInsets.all(20),
+                width: width * 0.9,
+                height: showParagraphMode ? height * 0.6 : height * 0.3,
+                padding: EdgeInsets.all(width * 0.05),
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(10),
@@ -1186,20 +1190,20 @@ class _QuizScreenState extends State<QuizScreen> {
                         if ((widget.pQuestion ?? '').isNotEmpty)
                           Text(
                             widget.pQuestion!,
-                            style: const TextStyle(
-                              fontSize: 16,
+                            style: TextStyle(
+                              fontSize: width * 0.04,
                               fontWeight: FontWeight.bold,
                             ),
                           ),
                         const SizedBox(height: 10),
                         Text(
                           displayParagraph,
-                          style: const TextStyle(fontSize: 15),
+                          style: TextStyle(fontSize: width * 0.038),
                         ),
                       ] else ...[
                         Text(
                           question['question'] ?? '',
-                          style: const TextStyle(fontSize: 16),
+                          style: TextStyle(fontSize: width * 0.04),
                         ),
                         const SizedBox(height: 15),
                         if ((question['questionImage'] ?? '')
@@ -1316,9 +1320,9 @@ class _QuizScreenState extends State<QuizScreen> {
                           vertical: 6,
                           horizontal: 35,
                         ),
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 20,
-                          vertical: 15,
+                        padding: EdgeInsets.symmetric(
+                          horizontal: width * 0.05,
+                          vertical: height * 0.015,
                         ),
                         decoration: BoxDecoration(
                           color: bgColor,
@@ -1410,10 +1414,10 @@ class _QuizScreenState extends State<QuizScreen> {
                             borderRadius: BorderRadius.circular(30),
                           ),
                         ),
-                        child: const Text(
+                        child: Text(
                           "Previous",
                           style: TextStyle(
-                            fontSize: 16,
+                            fontSize: width * 0.04,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1442,8 +1446,8 @@ class _QuizScreenState extends State<QuizScreen> {
                         ),
                         child: Text(
                           _getButtonText(),
-                          style: const TextStyle(
-                            fontSize: 16,
+                          style: TextStyle(
+                            fontSize: width * 0.04,
                             fontWeight: FontWeight.w600,
                           ),
                         ),
@@ -1513,9 +1517,9 @@ class _QuizScreenState extends State<QuizScreen> {
                         ),
                         child: Text(
                           _getButtonText(),
-                          style: const TextStyle(
+                          style: TextStyle(
                             color: Colors.white,
-                            fontSize: 18,
+                            fontSize: width * 0.045,
                             fontWeight: FontWeight.w600,
                           ),
                         ),

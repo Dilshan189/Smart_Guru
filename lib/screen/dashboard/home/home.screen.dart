@@ -293,7 +293,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                         Text(
                                           subjectName,
                                           style: const TextStyle(
-                                            fontWeight: FontWeight.bold,
+                                            fontWeight: FontWeight.w500,
                                             fontSize: 16,
                                             fontFamily: "FMGanganee",
                                             color: Color(0xFF1E293B),

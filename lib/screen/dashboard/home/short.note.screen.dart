@@ -67,7 +67,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                   child: const Icon(
                     Icons.arrow_back_ios_new,
                     color: Color(0xFF1E2939),
-                    size: 20,
+                    size: 12,
                   ),
                 ),
               ),
@@ -77,7 +77,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                 style: TextStyle(
                   fontFamily: 'FMGanganee',
                   fontSize: 22,
-                  fontWeight: FontWeight.bold,
+                  fontWeight: FontWeight.w500,
                   color: AppColors.surfaceWhite,
                 ),
               ),
