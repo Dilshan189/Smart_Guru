@@ -114,7 +114,9 @@ class _LevelCompleteState extends State<LevelComplete> {
                   ),
                 SizedBox(height: height * 0.025),
                 Image.asset(
-                  (widget.isBookmarkMode || widget.isIncorrectMode)
+                  (widget.isBookmarkMode ||
+                          widget.isIncorrectMode ||
+                          widget.catrgoryTitle == 'Paper Quiz')
                       ? 'assets/images/icon.png'
                       : (isFailed
                             ? 'assets/images/😓.png'
