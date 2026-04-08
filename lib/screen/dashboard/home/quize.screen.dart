@@ -9,6 +9,8 @@ import 'package:flutter_tts/flutter_tts.dart';
 import '../../result/result.screen.dart';
 import '../../../services/api.service.dart';
 import '../../../services/session.manager.dart';
+import '../../../Databasehelper/database.helper.dart';
+import '../../../models/saved_question.model.dart';
 
 class QuizScreen extends StatefulWidget {
   final String levelName;
@@ -27,6 +29,9 @@ class QuizScreen extends StatefulWidget {
   final int? currentLevelIndex;
   final bool isReviewQuiz;
   final bool? isPaperQuiz;
+  // Use inline comments:
+  final bool isBookmarkMode; // Toggle this for bookmark revision mode
+  final bool isIncorrectMode; // Toggle this for incorrect answers revision mode
 
   const QuizScreen({
     super.key,
@@ -46,6 +51,8 @@ class QuizScreen extends StatefulWidget {
     this.currentLevelIndex,
     this.isReviewQuiz = false,
     this.isPaperQuiz,
+    this.isBookmarkMode = false,
+    this.isIncorrectMode = false,
   });
 
   @override
@@ -183,9 +190,14 @@ class _QuizScreenState extends State<QuizScreen> {
           timeTaken: _stopwatch.elapsed,
           currentLevelIndex: currentLvlIdx,
           allLevels: levelsList,
-          isReviewQuiz: widget.isReviewQuiz,
           isPaperQuiz: _isPaperQuizCategory(),
-          catrgoryTitle: widget.categoryTitle,
+          isBookmarkMode: widget.isBookmarkMode,
+          isIncorrectMode: widget.isIncorrectMode,
+          catrgoryTitle: widget.isBookmarkMode
+              ? "Bookmarked"
+              : widget.isIncorrectMode
+              ? "Incorrect Answers"
+              : widget.categoryTitle,
           categoryId: widget.categoryId,
           rootCategoryId: widget.rootCategoryId,
           levelId: widget.levelId,
@@ -254,6 +266,8 @@ class _QuizScreenState extends State<QuizScreen> {
           selectedAnswer = selectedAnswers[currentIndex];
           isAnswered = selectedAnswer != null;
           showParagraphMode = false;
+          if (currentIndex < savedStates.length)
+            isSaved = savedStates[currentIndex];
         });
         _startTimer();
         _scrollToCurrentNumber();
@@ -270,68 +284,28 @@ class _QuizScreenState extends State<QuizScreen> {
       return;
     }
 
-    // --- 2. Level Quiz (සාමාන්‍ය Quiz) Logic ---
-    // Includes: Immediate answer checking ("Check"), showing explanation, and scoring.
-    final question = _questions[currentIndex];
-    final int correctAnswerIndex = question['correctAnswerIndex'] ?? -1;
-
-    if (!isAnswered) {
-      /// Check pressed
+    // --- 2. Level Quiz Logic ---
+    if (currentIndex < _questions.length - 1) {
+      await _stopAudio();
       setState(() {
-        isAnswered = true;
-        selectedAnswers[currentIndex] = selectedAnswer;
-        if (selectedAnswer == correctAnswerIndex) {
-          score++;
-        }
+        currentIndex++;
+        selectedAnswer = selectedAnswers[currentIndex];
+        isAnswered = selectedAnswer != null;
+        showParagraphMode = false;
+        if (currentIndex < savedStates.length)
+          isSaved = savedStates[currentIndex];
       });
-
-      Future.delayed(const Duration(milliseconds: 500), () {
-        final explanation = question['explanation']?.toString() ?? '';
-        final explanationImage = question['explanationImage']?.toString() ?? '';
-        final exampleAudio = question['exampleAudio']?.toString() ?? '';
-
-        if (explanation.isNotEmpty ||
-            explanationImage.isNotEmpty ||
-            exampleAudio.isNotEmpty) {
-          _scrollController.animateTo(
-            _scrollController.position.maxScrollExtent,
-            duration: const Duration(milliseconds: 500),
-            curve: Curves.easeInOut,
-          );
-        }
+      _startTimer();
+      _scrollToCurrentNumber();
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        _scrollController.animateTo(
+          0,
+          duration: const Duration(milliseconds: 300),
+          curve: Curves.easeInOut,
+        );
       });
-
-      if (selectedAnswer == correctAnswerIndex) {
-        await playSound("correctAnswer");
-      } else {
-        await playSound("wrong");
-        if (await Vibration.hasVibrator()) {
-          Vibration.vibrate(duration: 300);
-        }
-      }
     } else {
-      /// Next pressed
-      if (currentIndex < _questions.length - 1) {
-        await _stopAudio();
-        setState(() {
-          currentIndex++;
-          selectedAnswer = selectedAnswers[currentIndex];
-          isAnswered = selectedAnswer != null;
-          showParagraphMode = false;
-        });
-        _startTimer();
-        _scrollToCurrentNumber();
-        WidgetsBinding.instance.addPostFrameCallback((_) {
-          _scrollController.animateTo(
-            0,
-            duration: const Duration(milliseconds: 300),
-            curve: Curves.easeInOut,
-          );
-        });
-      } else {
-        /// Quiz finished
-        _handleQuizFinish();
-      }
+      _handleQuizFinish();
     }
   }
 
@@ -367,86 +341,15 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (_isPaperQuizCategory()) {
-      return (currentIndex < _questions.length - 1) ? "Next" : "Finish";
+      return "Next";
     }
 
     if (widget.isReviewQuiz) {
-      return "Check";
+      return "Next Question";
     }
 
-    if (!isAnswered) {
-      return "Check";
-    }
-
-    return (currentIndex < _questions.length - 1) ? "Next Question" : "Finish";
+    return "Next Question";
   }
-
-  // String _getSavedKey(int index) {
-  //   final String titleKey = _titleKey();
-  //   final qId = _questions[index]['id']?.toString() ?? index.toString();
-  //   return 'saved_${titleKey}_$qId';
-  // }
-
-  // String _getEssayKey() {
-  //   final String titleKey = _titleKey();
-  //   return 'essay_saved_$titleKey';
-  // }
-
-  // Future<void> _checkEssaySavedState() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final key = _getEssayKey();
-  //   setState(() {
-  //     isEssaySaved = prefs.getBool(key) ?? false;
-  //   });
-  // }
-
-  // Future<void> _toggleSaveForEssay() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final key = _getEssayKey();
-  //   setState(() {
-  //     isEssaySaved = !isEssaySaved;
-  //   });
-  //   await prefs.setBool(key, isEssaySaved);
-  // }
-
-  // Future<void> _loadButtonState() async {
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final String key = _getSavedKey(currentIndex);
-  //   setState(() {
-  //     isSaved = prefs.getBool(key) ?? false;
-  //   });
-  // }
-
-  // Future<void> _loadAllButtonStates() async {
-  //   if (_questions.isEmpty) return;
-
-  //   final prefs = await SharedPreferences.getInstance();
-  //   final String userId = _getUserId();
-
-  //   for (int i = 0; i < _questions.length; i++) {
-  //     final String key = _getSavedKey(i);
-  //     final savedState = prefs.getBool(key) ?? false;
-
-  //     final String titleToUse = _repetitionTitleToUse();
-  //     final String questionText = _questions[i]['question'] ?? '';
-
-  //     // final existingRepetition = await DatabaseHelper.instance
-  //     //     .getRepetitionByTitleAndQuestion(userId, titleToUse, questionText);
-
-  //     // final resolvedSaved = savedState || (existingRepetition != null);
-  //     final resolvedSaved = savedState;
-
-  //     if (i >= 0 && i < savedStates.length) {
-  //       savedStates[i] = resolvedSaved;
-  //     }
-  //   }
-
-  //   setState(() {
-  //     if (currentIndex >= 0 && currentIndex < savedStates.length) {
-  //       isSaved = savedStates[currentIndex];
-  //     }
-  //   });
-  // }
 
   int _firstUnansweredIndex() {
     if (selectedAnswers.isEmpty) return 0;
@@ -454,82 +357,48 @@ class _QuizScreenState extends State<QuizScreen> {
     return idx != -1 ? idx : 0;
   }
 
-  // Future<void> _toggleSaveForCurrentQuestion() async {
-  //   final String userId = _getUserId();
-  //   final prefs = await SharedPreferences.getInstance();
+  Future<void> _loadAllButtonStates() async {
+    if (_questions.isEmpty) return;
+    for (int i = 0; i < _questions.length; i++) {
+      final qId = _questions[i]['id']?.toString() ?? '';
+      if (qId.isNotEmpty) {
+        final isSavedItem = await DatabaseHelper.instance.isQuestionSaved(qId);
+        if (i >= 0 && i < savedStates.length) {
+          savedStates[i] = isSavedItem;
+        }
+      }
+    }
+    if (mounted) {
+      setState(() {
+        if (currentIndex >= 0 && currentIndex < savedStates.length) {
+          isSaved = savedStates[currentIndex];
+        }
+      });
+    }
+  }
 
-  //   if (currentIndex < 0) return;
-  //   if (currentIndex >= savedStates.length) {
-  //     final needed = currentIndex - savedStates.length + 1;
-  //     savedStates.addAll(List<bool>.filled(needed, false));
-  //   }
+  Future<void> _toggleSaveForCurrentQuestion() async {
+    if (currentIndex < 0 || currentIndex >= _questions.length) return;
 
-  //   setState(() {
-  //     savedStates[currentIndex] = !savedStates[currentIndex];
-  //     isSaved = savedStates[currentIndex];
-  //   });
+    final question = _questions[currentIndex];
+    final String qId = question['id']?.toString() ?? '';
+    if (qId.isEmpty) return;
 
-  //   final key = _getSavedKey(currentIndex);
-  //   await prefs.setBool(key, savedStates[currentIndex]);
+    final bool currentlySaved = savedStates[currentIndex];
 
-  //   final question = _questions[currentIndex];
-  //   final String questionText = question['question'] ?? '';
-  //   final String correctAnswer = question['correctAnswer'] ?? '';
-  //   final List options = List.from(question['options'] ?? []);
+    setState(() {
+      savedStates[currentIndex] = !currentlySaved;
+      isSaved = !currentlySaved;
+    });
 
-  //   final Map<String, dynamic> answerData = {
-  //     'options': options,
-  //     'correctAnswer': correctAnswer,
-  //     'explanation': question['explanation'] ?? '',
-  //     'exampleAudio': question['exampleAudio'] ?? '',
-  //     'exampleImage': question['explanationImage'] ?? '',
-  //     'questionImage': question['questionImage'] ?? '',
-  //   };
-  //   final String answerJson = jsonEncode(answerData);
-  //   final String repetitionTitle = _repetitionTitleToUse();
-
-  //   // final existing = await DatabaseHelper.instance
-  //   //     .getRepetitionByTitleAndQuestion(userId, repetitionTitle, questionText);
-
-  //   // if (savedStates[currentIndex]) {
-  //   //   final repetition = Repetition(
-  //   //     id: existing?.id,
-  //   //     userId: userId,
-  //   //     title: repetitionTitle,
-  //   //     category: "Quiz",
-  //   //     question: questionText,
-  //   //     answer: answerJson,
-  //   //     score: score.toString(),
-  //   //     time: DateTime.now().toIso8601String(),
-  //   //     totalCount: _questions.length,
-  //   //     masteredCount: score,
-  //   //   );
-
-  //   //   if (existing != null) {
-  //   //     await DatabaseHelper.instance.updateRepetition(repetition);
-  //   //   } else {
-  //   //     await DatabaseHelper.instance.insertRepetition(repetition);
-  //   //   }
-  //   // } else {
-  //   //   await DatabaseHelper.instance.deleteRepetitionByTitleAndQuestion(
-  //   //     userId,
-  //   //     repetitionTitle,
-  //   //     questionText,
-  //   //   );
-  //   // }
-
-  //   setState(() {});
-  // }
-
-  // Future<void> _insertShowAnswerData() async {
-  //   if (!widget.isReviewQuiz) return;
-  //   // ... database logic commented out ...
-  // }
-
-  // Future<void> _removeFromMasteredList() async {
-  //   if (!widget.isReviewQuiz) return;
-  //   // ... database logic commented out ...
-  // }
+    if (!currentlySaved) {
+      await DatabaseHelper.instance.insertSavedQuestion(
+        SavedQuestionModel.fromMap(question),
+      );
+    } else {
+      await DatabaseHelper.instance.deleteSavedQuestion(qId);
+    }
+  }
 
   Future<void> _showReportDialog() async {
     _timer?.cancel();
@@ -808,6 +677,8 @@ class _QuizScreenState extends State<QuizScreen> {
         selectedAnswer = selectedAnswers[currentIndex];
         isAnswered = selectedAnswer != null;
         showParagraphMode = false;
+        if (currentIndex < savedStates.length)
+          isSaved = savedStates[currentIndex];
       });
       // _loadButtonState();
       _scrollToCurrentNumber();
@@ -822,6 +693,8 @@ class _QuizScreenState extends State<QuizScreen> {
         selectedAnswer = selectedAnswers[currentIndex];
         isAnswered = selectedAnswer != null;
         showParagraphMode = false;
+        if (currentIndex < savedStates.length)
+          isSaved = savedStates[currentIndex];
       });
       // _loadButtonState();
       _scrollToCurrentNumber();
@@ -863,7 +736,7 @@ class _QuizScreenState extends State<QuizScreen> {
       false,
     );
 
-    // _loadAllButtonStates();
+    _loadAllButtonStates();
     _startTimer();
     _stopwatch.start();
 
@@ -944,6 +817,7 @@ class _QuizScreenState extends State<QuizScreen> {
           'explanationImage': item['example_img'] ?? '',
           'exampleAudio': item['example_audio'] ?? '',
           'paragraphText': item['example_text'] ?? '',
+          'raw_item': item,
         };
       }).toList();
 
@@ -955,6 +829,7 @@ class _QuizScreenState extends State<QuizScreen> {
           selectedAnswers = List<int?>.filled(mapped.length, null);
           savedStates = List<bool>.filled(mapped.length, false);
         });
+        _loadAllButtonStates();
         _startTimer();
       }
     } catch (e) {
@@ -1006,7 +881,10 @@ class _QuizScreenState extends State<QuizScreen> {
                   child: Center(
                     child: Text(
                       '$remainingSeconds Seconds',
-                      style: const TextStyle(color: Colors.white, fontSize: 12.48),
+                      style: const TextStyle(
+                        color: Colors.white,
+                        fontSize: 12.48,
+                      ),
                     ),
                   ),
                 ),
@@ -1386,9 +1264,52 @@ class _QuizScreenState extends State<QuizScreen> {
                     }
 
                     return GestureDetector(
-                      onTap: () {
+                      onTap: () async {
                         if (isAnswered) return;
-                        setState(() => selectedAnswer = idx);
+                        if (_isPaperQuizCategory()) {
+                          setState(() => selectedAnswer = idx);
+                          return;
+                        }
+
+                        setState(() {
+                          selectedAnswer = idx;
+                          isAnswered = true;
+                          selectedAnswers[currentIndex] = idx;
+                          if (idx == correctAnswerIndex) {
+                            score++;
+                          }
+                        });
+
+                        Future.delayed(const Duration(milliseconds: 500), () {
+                          final explanation =
+                              question['explanation']?.toString() ?? '';
+                          final explanationImage =
+                              question['explanationImage']?.toString() ?? '';
+                          final exampleAudio =
+                              question['exampleAudio']?.toString() ?? '';
+
+                          if (explanation.isNotEmpty ||
+                              explanationImage.isNotEmpty ||
+                              exampleAudio.isNotEmpty) {
+                            _scrollController.animateTo(
+                              _scrollController.position.maxScrollExtent,
+                              duration: const Duration(milliseconds: 500),
+                              curve: Curves.easeInOut,
+                            );
+                          }
+                        });
+
+                        if (idx == correctAnswerIndex) {
+                          await playSound("correctAnswer");
+                        } else {
+                          await DatabaseHelper.instance.insertIncorrectQuestion(
+                            SavedQuestionModel.fromMap(question),
+                          );
+                          await playSound("wrong");
+                          if (await Vibration.hasVibrator()) {
+                            Vibration.vibrate(duration: 300);
+                          }
+                        }
                       },
                       child: Container(
                         margin: const EdgeInsets.symmetric(
@@ -1501,10 +1422,18 @@ class _QuizScreenState extends State<QuizScreen> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _onCheckOrNext,
+                        onPressed: selectedAnswer != null || showParagraphMode
+                            ? _onCheckOrNext
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: const Color(0xFF2D4990),
+                          disabledBackgroundColor: const Color(
+                            0xFF2D4990,
+                          ).withOpacity(0.5),
                           foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white.withOpacity(
+                            0.5,
+                          ),
                           elevation: 0,
                           minimumSize: const Size(double.infinity, 56),
                           shape: RoundedRectangleBorder(
@@ -1541,14 +1470,12 @@ class _QuizScreenState extends State<QuizScreen> {
                         mainAxisSize: MainAxisSize.min,
                         children: [
                           InkWell(
-                            onTap: () {
-                              // _toggleSaveForCurrentQuestion();
-                            },
+                            onTap: _toggleSaveForCurrentQuestion,
                             child: SvgPicture.asset(
                               "assets/images/save.svg",
                               width: 24,
-                              colorFilter: const ColorFilter.mode(
-                                AppColors.primary,
+                              colorFilter: ColorFilter.mode(
+                                isSaved ? AppColors.primary : Colors.white54,
                                 BlendMode.srcIn,
                               ),
                             ),
@@ -1567,9 +1494,17 @@ class _QuizScreenState extends State<QuizScreen> {
                     const SizedBox(width: 25),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: _onCheckOrNext,
+                        onPressed: selectedAnswer != null || showParagraphMode
+                            ? _onCheckOrNext
+                            : null,
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.primary,
+                          disabledBackgroundColor: AppColors.primary
+                              .withOpacity(0.5),
+                          foregroundColor: Colors.white,
+                          disabledForegroundColor: Colors.white.withOpacity(
+                            0.5,
+                          ),
                           minimumSize: const Size(double.infinity, 56),
                           elevation: 0,
                           shape: RoundedRectangleBorder(

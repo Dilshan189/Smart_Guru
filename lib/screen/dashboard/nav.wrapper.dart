@@ -16,13 +16,14 @@ class NavigationScreen extends StatefulWidget {
 class _NavigationScreenState extends State<NavigationScreen> {
   int selectIndex = 0;
   late final List<Widget> _pages;
+  final GlobalKey<ReviseScreenState> _reviseKey = GlobalKey<ReviseScreenState>();
 
   @override
   void initState() {
     super.initState();
     _pages = [
       const HomeScreen(),
-      const ReviseScreen(),
+      ReviseScreen(key: _reviseKey),
       const ProfileHomeScreen(),
     ];
   }
@@ -158,6 +159,9 @@ class _NavigationScreenState extends State<NavigationScreen> {
         setState(() {
           selectIndex = index;
         });
+        if (index == 1) {
+          _reviseKey.currentState?.loadData();
+        }
       },
       child: Column(
         mainAxisSize: MainAxisSize.min,

@@ -1,37 +1,32 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_svg/svg.dart';
 import 'package:smart_guru/screen/dashboard/revise/flashcard/flash.screen.dart';
 import 'package:smart_guru/utils/theam.dart';
+import '../../home/quize.screen.dart';
+import '../../../../models/saved_question.model.dart';
 
 class FlashCardScreen extends StatefulWidget {
-  const FlashCardScreen({super.key});
+  final List<SavedQuestionModel>? questions;
+  final String? title;
+  final bool isBookmark;
+  final bool isIncorrect;
+  final bool isFlashcard;
+
+  const FlashCardScreen({
+    super.key,
+    this.questions,
+    this.title,
+    this.isBookmark = false,
+    this.isIncorrect = false,
+    this.isFlashcard = false,
+  });
 
   @override
   State<FlashCardScreen> createState() => _FlashCardScreenState();
 }
 
 class _FlashCardScreenState extends State<FlashCardScreen> {
-  final List<Map<String, dynamic>> flashcards = [
-    {
-      "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
-      "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "bad",
-    },
-    {
-      "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
-      "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "neutral",
-    },
-    {
-      "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
-      "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "good",
-    },
-    {
-      "question": "1975 ලෝක කුසලාන අවසන් මහා තරගයේදී 'තරගයේ වීරයා' කවුද?",
-      "answer": "ක්ලයිව් ලොයිඩ්",
-      "status": "neutral",
-    },
-  ];
+  bool _isAnswerVisible = true;
 
   @override
   Widget build(BuildContext context) {
@@ -69,10 +64,10 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               ),
               const SizedBox(width: 20),
               // Main Title
-              const Expanded(
+              Expanded(
                 child: Text(
-                  "Flashcards",
-                  style: TextStyle(
+                  widget.title ?? "Flashcards",
+                  style: const TextStyle(
                     fontSize: 20,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
@@ -82,9 +77,13 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               ),
               // Trailing Eye Icon
               IconButton(
-                onPressed: () {},
-                icon: const Icon(
-                  Icons.visibility,
+                onPressed: () {
+                  setState(() {
+                    _isAnswerVisible = !_isAnswerVisible;
+                  });
+                },
+                icon: Icon(
+                  _isAnswerVisible ? Icons.visibility : Icons.visibility_off,
                   color: Colors.white,
                   size: 22,
                 ),
@@ -99,13 +98,21 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
           Expanded(
             child: ListView.builder(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              itemCount: flashcards.length,
+              itemCount: widget.questions?.length ?? 0,
               itemBuilder: (context, index) {
-                final card = flashcards[index];
+                final card = widget.questions![index];
+                String answerText = "";
+                if (card.options.isNotEmpty &&
+                    card.correctAnswerIndex != null) {
+                  int checkIdx = card.correctAnswerIndex!;
+                  if (checkIdx >= 0 && checkIdx < card.options.length) {
+                    answerText = card.options[checkIdx]['text'] ?? "";
+                  }
+                }
                 return _buildFlashcardItem(
-                  question: card["question"],
-                  answer: card["answer"],
-                  status: card["status"],
+                  card: card,
+                  answer: answerText,
+                  status: widget.title == "Incorrect Answers" ? "bad" : "good",
                 );
               },
             ),
@@ -119,10 +126,105 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
   // Dynamic Card Builder
   Widget _buildFlashcardItem({
-    required String question,
+    required SavedQuestionModel card,
     required String answer,
     required String status,
   }) {
+    if (widget.isBookmark || widget.isIncorrect) {
+      return Container(
+        margin: const EdgeInsets.only(bottom: 16),
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 20),
+        decoration: BoxDecoration(
+          color: Colors.white,
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(color: const Color(0xFFEAECF0), width: 1),
+          boxShadow: const [
+            BoxShadow(
+              color: Color(0x0A000000),
+              blurRadius: 3,
+              spreadRadius: 0,
+              offset: Offset(0, 1),
+            ),
+          ],
+        ),
+        child: Row(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Color(0xFFF1F5F9),
+                shape: BoxShape.circle,
+              ),
+              child: SvgPicture.asset(
+                "assets/images/brain.svg",
+                width: 26,
+                height: 26,
+              ),
+            ),
+            const SizedBox(width: 16),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    card.question.isNotEmpty
+                        ? card.question
+                        : "Identify Missing Objects?",
+                    style: const TextStyle(
+                      fontSize: 14,
+                      fontWeight: FontWeight.bold,
+                      color: Color(0xFF1D2939),
+                      fontFamily: "Inter",
+                      height: 1.4,
+                    ),
+                  ),
+                  if (card.questionImage.isNotEmpty) ...[
+                    const SizedBox(height: 12),
+                    Image.network(
+                      "https://commerce.ideacipher.com/upload/images/${card.questionImage}",
+                      fit: BoxFit.contain,
+                    ),
+                  ],
+                  if (card.options.isEmpty) ...[
+                    const SizedBox(height: 12),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                        horizontal: 12,
+                        vertical: 6,
+                      ),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFFE5EEFF),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: const Text(
+                        "Essay Question",
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.w600,
+                          color: Color(0xFF3B61E4),
+                        ),
+                      ),
+                    ),
+                  ] else if (_isAnswerVisible) ...[
+                    const SizedBox(height: 12),
+                    Text(
+                      answer,
+                      style: const TextStyle(
+                        fontSize: 12,
+                        color: Color(0xFF98A2B3),
+                        fontFamily: "Inter",
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+            ),
+          ],
+        ),
+      );
+    }
+
     Color iconBgColor;
     Color iconColor;
     IconData iconData;
@@ -176,7 +278,9 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Text(
-                  question,
+                  card.question.isNotEmpty
+                      ? card.question
+                      : "Identify Missing Objects?",
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
@@ -185,15 +289,17 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                     height: 1.4,
                   ),
                 ),
-                const SizedBox(height: 8),
-                Text(
-                  answer,
-                  style: const TextStyle(
-                    fontSize: 12,
-                    color: Color(0xFF98A2B3),
-                    fontFamily: "Inter",
+                if (_isAnswerVisible) ...[
+                  const SizedBox(height: 8),
+                  Text(
+                    answer,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Color(0xFF98A2B3),
+                      fontFamily: "Inter",
+                    ),
                   ),
-                ),
+                ],
               ],
             ),
           ),
@@ -206,7 +312,36 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
   Widget _buildBottomButton() {
     return GestureDetector(
       onTap: () {
-        _showRevisionPopup(context);
+        if (widget.isFlashcard) {
+          _showRevisionPopup(context);
+        } else {
+          final mappedQuestions = widget.questions?.map((e) => {
+            'id': e.id,
+            'question': e.question,
+            'questionImage': e.questionImage,
+            'options': e.options,
+            'correctAnswerIndex': e.correctAnswerIndex,
+            'explanation': e.explanation,
+            'explanationImage': e.explanationImage,
+            'exampleAudio': e.exampleAudio,
+            'paragraphText': e.paragraphText,
+            'raw_item': e.rawItem,
+          }).toList() ?? [];
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => QuizScreen(
+                levelName: widget.title ?? "Revision",
+                categoryTitle: widget.title ?? "Revision",
+                data: const [],
+                questions: mappedQuestions,
+                isBookmarkMode: widget.isBookmark,
+                isIncorrectMode: widget.isIncorrect,
+              ),
+            ),
+          );
+        }
       },
       child: Container(
         width: double.infinity,

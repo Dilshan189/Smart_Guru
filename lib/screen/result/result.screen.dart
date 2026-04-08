@@ -1,12 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/flutter_svg.dart';
 import 'package:smart_guru/utils/theam.dart';
-// import 'package:iqapp/Screen/BottomNavigationBar/home.screen.dart';
-//import 'package:provider/provider.dart';
-//import 'package:shared_preferences/shared_preferences.dart';
-
-//import '../../providers/user.provider.dart';
-//import '../../services/api.service.dart';
 
 class LevelComplete extends StatefulWidget {
   final int correctAnswers;
@@ -14,8 +8,9 @@ class LevelComplete extends StatefulWidget {
   final Duration timeTaken;
   final int currentLevelIndex;
   final List<Map<String, dynamic>> allLevels;
-  final bool isReviewQuiz;
   final bool isPaperQuiz;
+  final bool isBookmarkMode;
+  final bool isIncorrectMode;
   final String? catrgoryTitle;
   final String? categoryId;
   final String? rootCategoryId;
@@ -29,7 +24,8 @@ class LevelComplete extends StatefulWidget {
     required this.currentLevelIndex,
     required this.isPaperQuiz,
     required this.allLevels,
-    this.isReviewQuiz = false,
+    this.isBookmarkMode = false,
+    this.isIncorrectMode = false,
     this.catrgoryTitle,
     this.categoryId,
     this.rootCategoryId,
@@ -58,96 +54,7 @@ class _LevelCompleteState extends State<LevelComplete> {
     points = (scorePercent / 10).round();
     isFailed = widget.incorrectAnswers > widget.correctAnswers;
 
-    if (!widget.isReviewQuiz) {
-      // _saveProgress();
-    }
-  }
-
-  Future<void> _saveProgress() async {
-    // final prefs = await SharedPreferences.getInstance();
-    // final userProvider = Provider.of<UserProvider>(context, listen: false);
-    // final String userId = userProvider.userId?.toString() ?? "guest";
-
-    // final total = widget.correctAnswers + widget.incorrectAnswers;
-    // if (total == 0) return;
-
-    // final double percentage = (widget.correctAnswers / total) * 100;
-    // final progress = "${percentage.toStringAsFixed(0)}%";
-    // final key =
-    //     "level_progress_${userId}_${widget.categoryId}_${widget.levelId}";
-    // await prefs.setString(key, progress);
-
-    // // Update Overall Statistics
-    // userProvider.updateStatistics(
-    //   correct: widget.correctAnswers,
-    //   wrong: widget.incorrectAnswers,
-    //   timeSeconds: widget.timeTaken.inSeconds,
-    //   categoryId: widget.rootCategoryId,
-    // );
-  }
-
-  /// Api fetch in getUserPoints
-  Future<void> addUserPoints() async {
-    // try {
-    //   setState(() {
-    //     isLoading = true;
-    //   });
-
-    //   final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    //   final response = await CommerceService.getUserPoints(
-    //     userId: userProvider.userId.toString(),
-    //     token: userProvider.token ?? "",
-    //     point: points.toString(),
-    //     type: "1",
-    //   );
-
-    //   if (response["status"] == "S100") {
-    //     final data = response["data"];
-    //     setState(() {
-    //       currentUserPoints = data["current_points"].toString();
-    //     });
-
-    //     /// Update UserProvider with new points
-    //     userProvider.saveUser({"points": data["current_points"].toString()});
-
-    //     /// Fetch updated profile to get new rank
-    //     await _updateProfile();
-    //   }
-    // } catch (e) {
-    //   debugPrint("Error adding points: $e");
-    // } finally {
-    //   if (mounted) {
-    //     setState(() {
-    //       isLoading = false;
-    //     });
-    //   }
-    // }
-  }
-
-  /// Update profile to get new rank
-  Future<void> _updateProfile() async {
-    // try {
-    //   final userProvider = Provider.of<UserProvider>(context, listen: false);
-
-    //   final profileResponse = await CommerceService.getProfile(
-    //     userId: userProvider.userId.toString(),
-    //     token: userProvider.token ?? "",
-    //   );
-
-    //   if (profileResponse["success"] == true) {
-    //     final profileData = profileResponse["data"];
-
-    //     // Update UserProvider with fresh profile data including rank
-    //     userProvider.saveUser({
-    //       "rank": profileData["rank"]?.toString(),
-    //       "points": profileData["points"]?.toString(),
-    //       "name": profileData["name"],
-    //     });
-    //   }
-    // } catch (e) {
-    //   debugPrint("Profile update error: $e");
-    // }
+    if (!widget.isBookmarkMode && !widget.isIncorrectMode) {}
   }
 
   String formatDuration(Duration d) {
@@ -187,7 +94,7 @@ class _LevelCompleteState extends State<LevelComplete> {
             child: Column(
               children: [
                 SizedBox(height: height * 0.025),
-                if (!widget.isReviewQuiz)
+                if (!widget.isBookmarkMode && !widget.isIncorrectMode)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.end,
                     children: [
@@ -207,21 +114,29 @@ class _LevelCompleteState extends State<LevelComplete> {
                   ),
                 SizedBox(height: height * 0.025),
                 Image.asset(
-                  isFailed ? 'assets/images/😓.png' : 'assets/images/icon.png',
+                  (widget.isBookmarkMode || widget.isIncorrectMode)
+                      ? 'assets/images/icon.png'
+                      : (isFailed
+                            ? 'assets/images/😓.png'
+                            : 'assets/images/icon.png'),
                   height: height * 0.13,
                 ),
                 SizedBox(height: height * 0.025),
+
                 SvgPicture.asset(
-                  (widget.isReviewQuiz || widget.catrgoryTitle == 'Paper Quiz')
+                  (widget.isBookmarkMode || widget.isIncorrectMode)
+                      ? 'assets/images/Review Complete! copy.svg'
+                      : (widget.catrgoryTitle == 'Paper Quiz')
                       ? 'assets/images/Paper Completed!.svg'
                       : (isFailed
                             ? 'assets/images/Level Failed! copy.svg'
                             : 'assets/images/Level Completed! copy.svg'),
+
                   height: 40,
                   width: width * 0.1,
                 ),
                 SizedBox(height: height * 0.02),
-                if (widget.isReviewQuiz)
+                if (widget.isBookmarkMode || widget.isIncorrectMode)
                   const Text(
                     "You’ve reinforced your memory today.",
                     style: TextStyle(
@@ -231,7 +146,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                       color: Color(0xFF30373D),
                     ),
                   ),
-                if (!widget.isReviewQuiz)
+                if (!widget.isBookmarkMode && !widget.isIncorrectMode)
                   widget.catrgoryTitle == 'Paper Quiz'
                       ? Column(
                           children: [
@@ -284,8 +199,10 @@ class _LevelCompleteState extends State<LevelComplete> {
                                     "You’ve scored ${scorePercent.toStringAsFixed(0)}% ",
                               ),
                               TextSpan(
-                                text: widget.isReviewQuiz
-                                    ? "in this Review"
+                                text:
+                                    widget.isBookmarkMode ||
+                                        widget.isIncorrectMode
+                                    ? "in this Revision"
                                     : "in this Level",
                                 style: TextStyle(
                                   fontSize: width * 0.038,
@@ -297,13 +214,13 @@ class _LevelCompleteState extends State<LevelComplete> {
                           ),
                         ),
                 SizedBox(height: height * 0.02),
-                if (widget.isReviewQuiz)
+                if (widget.isBookmarkMode || widget.isIncorrectMode)
                   RichText(
                     textAlign: TextAlign.center,
                     text: TextSpan(
                       style: const TextStyle(
                         fontSize: 12,
-                        color: Color(0xFFFF6901),
+                        color: AppColors.primary,
                         fontWeight: FontWeight.w600,
                         fontFamily: 'Poppins',
                       ),
@@ -313,14 +230,15 @@ class _LevelCompleteState extends State<LevelComplete> {
                           text: _getAverageTime(),
                           style: const TextStyle(
                             fontSize: 20,
-                            color: Color(0xFFFF6901),
+                            color: AppColors.primary,
                             fontWeight: FontWeight.w800,
                           ),
                         ),
                       ],
                     ),
                   ),
-                if (!widget.isReviewQuiz &&
+                if (!widget.isBookmarkMode &&
+                    !widget.isIncorrectMode &&
                     widget.catrgoryTitle != 'Paper Quiz')
                   Text(
                     isFailed
@@ -358,7 +276,9 @@ class _LevelCompleteState extends State<LevelComplete> {
                             "assets/images/Group 633350.svg",
                             height: height * 0.03,
                           ),
-                          widget.isReviewQuiz ? "Mastered" : "Correct Answers",
+                          (widget.isBookmarkMode || widget.isIncorrectMode)
+                              ? "Mastered"
+                              : "Correct Answers",
                           widget.correctAnswers,
                         ),
                         SizedBox(height: height * 0.015),
@@ -367,7 +287,7 @@ class _LevelCompleteState extends State<LevelComplete> {
                             "assets/images/Group 633349.svg",
                             height: height * 0.03,
                           ),
-                          widget.isReviewQuiz
+                          (widget.isBookmarkMode || widget.isIncorrectMode)
                               ? "To review "
                               : "Incorrect Answers",
                           widget.incorrectAnswers,
@@ -391,7 +311,8 @@ class _LevelCompleteState extends State<LevelComplete> {
                     ElevatedButton(
                       onPressed:
                           isFailed ||
-                              widget.isReviewQuiz ||
+                              widget.isBookmarkMode ||
+                              widget.isIncorrectMode ||
                               ((widget.currentLevelIndex + 1) >=
                                   widget.allLevels.length)
                           ? () {
@@ -399,11 +320,15 @@ class _LevelCompleteState extends State<LevelComplete> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isFailed && !widget.isReviewQuiz
+                        backgroundColor:
+                            isFailed &&
+                                (!widget.isBookmarkMode &&
+                                    !widget.isIncorrectMode)
                             ? AppColors.primary
                             : ((widget.currentLevelIndex + 1) >=
                                           widget.allLevels.length &&
-                                      !widget.isReviewQuiz
+                                      (!widget.isBookmarkMode &&
+                                          !widget.isIncorrectMode)
                                   ? AppColors.primary
                                   : Colors.grey.shade400),
                         minimumSize: Size(width * 0.85, height * 0.065),
@@ -426,15 +351,16 @@ class _LevelCompleteState extends State<LevelComplete> {
                     SizedBox(height: height * 0.01),
                     ElevatedButton(
                       onPressed:
-                          (!isFailed || widget.isReviewQuiz) && !isLoading
+                          ((!isFailed ||
+                                  widget.isBookmarkMode ||
+                                  widget.isIncorrectMode) &&
+                              !isLoading)
                           ? () async {
-                              // if (!widget.isReviewQuiz && !isFailed) {
-                              //   await addUserPoints();
-                              // }
                               if (mounted) {
                                 Navigator.pop(
                                   context,
-                                  widget.isReviewQuiz
+                                  (widget.isBookmarkMode ||
+                                          widget.isIncorrectMode)
                                       ? 'review_complete'
                                       : 'next_level',
                                 );
@@ -442,7 +368,10 @@ class _LevelCompleteState extends State<LevelComplete> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: !isFailed || widget.isReviewQuiz
+                        backgroundColor:
+                            (!isFailed ||
+                                widget.isBookmarkMode ||
+                                widget.isIncorrectMode)
                             ? AppColors.primary
                             : Colors.grey.shade400,
                         minimumSize: Size(width * 0.85, height * 0.065),
@@ -464,7 +393,8 @@ class _LevelCompleteState extends State<LevelComplete> {
                           : Text(
                               widget.catrgoryTitle == 'Paper Quiz'
                                   ? "Back to Papers"
-                                  : (widget.isReviewQuiz
+                                  : ((widget.isBookmarkMode ||
+                                            widget.isIncorrectMode)
                                         ? "Back to Home"
                                         : ((widget.currentLevelIndex + 1) >=
                                                   widget.allLevels.length
@@ -501,7 +431,7 @@ class _LevelCompleteState extends State<LevelComplete> {
               label,
               style: TextStyle(
                 fontSize: width * 0.04,
-                fontWeight: widget.isReviewQuiz
+                fontWeight: widget.isBookmarkMode || widget.isIncorrectMode
                     ? FontWeight.w400
                     : FontWeight.w600,
                 fontFamily: 'Poppins',

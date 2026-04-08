@@ -1,17 +1,42 @@
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/dashboard/revise/flashcard/flash.card.screen.dart';
+import '../../../Databasehelper/database.helper.dart';
+import '../../../models/saved_question.model.dart';
 
 class ReviseScreen extends StatefulWidget {
   const ReviseScreen({super.key});
 
   @override
-  State<ReviseScreen> createState() => _ReviseScreenState();
+  State<ReviseScreen> createState() => ReviseScreenState();
 }
 
-class _ReviseScreenState extends State<ReviseScreen> {
+class ReviseScreenState extends State<ReviseScreen> {
   double _questionsPerDay = 10;
   bool _dailyReminder = true;
+  int _bookmarkedCount = 0;
+  int _incorrectCount = 0;
+  List<SavedQuestionModel> _bookmarkedQuestions = [];
+  List<SavedQuestionModel> _incorrectQuestions = [];
+
+  @override
+  void initState() {
+    super.initState();
+    loadData();
+  }
+
+  Future<void> loadData() async {
+    final bq = await DatabaseHelper.instance.getAllSavedQuestions();
+    final iq = await DatabaseHelper.instance.getAllIncorrectQuestions();
+    if(mounted) {
+      setState(() {
+         _bookmarkedQuestions = bq;
+         _incorrectQuestions = iq;
+         _bookmarkedCount = bq.length;
+         _incorrectCount = iq.length;
+      });
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -31,7 +56,17 @@ class _ReviseScreenState extends State<ReviseScreen> {
                     iconBgColor: const Color(0xFFE5EEFF),
                     iconColor: const Color(0xFF3B61E4),
                     title: "Bookmarked",
-                    subtitle: "24 Questions",
+                    subtitle: "$_bookmarkedCount Questions",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FlashCardScreen(
+                           questions: _bookmarkedQuestions,
+                           title: "Bookmarked",
+                           isBookmark: true,
+                        )),
+                      );
+                    }
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -41,7 +76,17 @@ class _ReviseScreenState extends State<ReviseScreen> {
                     iconBgColor: const Color(0xFFFFEBEB),
                     iconColor: const Color(0xFFE63946),
                     title: "Incorrect\nAnswers",
-                    subtitle: "18 Questions",
+                    subtitle: "$_incorrectCount Questions",
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(builder: (context) => FlashCardScreen(
+                           questions: _incorrectQuestions,
+                           title: "Incorrect Answers",
+                           isIncorrect: true,
+                        )),
+                      );
+                    }
                   ),
                 ),
               ],
@@ -65,7 +110,11 @@ class _ReviseScreenState extends State<ReviseScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => FlashCardScreen()),
+                  MaterialPageRoute(builder: (context) => FlashCardScreen(
+                    questions: [..._bookmarkedQuestions, ..._incorrectQuestions],
+                    title: "All Flashcards",
+                    isFlashcard: true,
+                  )),
                 );
               },
               child: Container(
@@ -111,8 +160,8 @@ class _ReviseScreenState extends State<ReviseScreen> {
                         Expanded(
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
-                            children: const [
-                              Text(
+                            children: [
+                              const Text(
                                 "wd¾Ól úoHdj",
                                 style: TextStyle(
                                   fontSize: 18,
@@ -121,10 +170,10 @@ class _ReviseScreenState extends State<ReviseScreen> {
                                   color: Color(0xFF1D2939),
                                 ),
                               ),
-                              SizedBox(height: 4),
+                              const SizedBox(height: 4),
                               Text(
-                                "1240 Flashcards",
-                                style: TextStyle(
+                                "${_bookmarkedCount + _incorrectCount} Flashcards",
+                                style: const TextStyle(
                                   fontSize: 14,
                                   color: Color(0xFF667085),
                                   fontFamily: "Inter",
@@ -362,14 +411,10 @@ class _ReviseScreenState extends State<ReviseScreen> {
     required Color iconColor,
     required String title,
     required String subtitle,
+    required VoidCallback onTap,
   }) {
     return InkWell(
-      onTap: () {
-        Navigator.push(
-          context,
-          MaterialPageRoute(builder: (context) => FlashCardScreen()),
-        );
-      },
+      onTap: onTap,
       child: Container(
         width: 157.5,
         height: 162,
