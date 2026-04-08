@@ -246,8 +246,8 @@ class _LessonScreenState extends State<LessonScreen> {
                                   ),
                                   const SizedBox(width: 15),
                                   Container(
-                                    width: 45,
-                                    height: 45,
+                                    width: 50.22,
+                                    height: 50.22,
                                     decoration: BoxDecoration(
                                       color: isComingSoon
                                           ? const Color(0xFF64748B) // Grayish

@@ -58,8 +58,8 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
               GestureDetector(
                 onTap: () => Navigator.pop(context),
                 child: Container(
-                  width: 48,
-                  height: 48,
+                  width: 35,
+                  height: 35,
                   decoration: const BoxDecoration(
                     color: AppColors.surfaceWhite,
                     shape: BoxShape.circle,
