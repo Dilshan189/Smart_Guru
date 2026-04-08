@@ -1335,7 +1335,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 30),
+              const SizedBox(height: 50),
               if (!showParagraphMode)
                 Column(
                   children: options.asMap().entries.map((entry) {
@@ -1467,9 +1467,11 @@ class _QuizScreenState extends State<QuizScreen> {
               // --- Past Paper Bottom Bar (පැරණි ප්‍රශ්න පත්‍ර Bottom Navigation) ---
               // Includes: Navigation with "Previous" and "Next/Finish" buttons.
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 25,
-                  vertical: 15,
+                padding: const EdgeInsets.only(
+                  left: 25,
+                  right: 25,
+                  top: 15,
+                  bottom: 3,
                 ),
                 child: Row(
                   children: [
@@ -1526,9 +1528,11 @@ class _QuizScreenState extends State<QuizScreen> {
               // --- Level Quiz Bottom Bar (සාමාන්‍ය Quiz Bottom Navigation) ---
               // Includes: Optional "Save" button and the primary "Check/Next" button.
               child: Padding(
-                padding: const EdgeInsets.symmetric(
-                  horizontal: 35,
-                  vertical: 20,
+                padding: const EdgeInsets.only(
+                  left: 35,
+                  right: 35,
+                  top: 20,
+                  bottom: 5,
                 ),
                 child: Row(
                   children: [

@@ -89,7 +89,7 @@ class _LevelScreenState extends State<LevelScreen> {
                   widget.title,
                   style: const TextStyle(
                     fontFamily: "FMGanganee",
-                    fontSize: 18,
+                    fontSize: 16,
                     fontWeight: FontWeight.bold,
                     color: Colors.white,
                   ),
