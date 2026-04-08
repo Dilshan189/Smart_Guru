@@ -468,7 +468,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                           color: isPremium
                               ? AppColors.secondaryText
                               : AppColors.primaryText,
-                          fontFamily: 'FMMalithi',
+                          fontFamily: 'Inter',
                         ),
                       ),
                       const SizedBox(height: 6),
