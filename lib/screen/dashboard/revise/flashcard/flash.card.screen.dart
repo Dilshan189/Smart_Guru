@@ -205,9 +205,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                     card.question.isNotEmpty
                         ? card.question
                         : "Identify Missing Objects?",
+                    maxLines: 2,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,
+                      overflow: TextOverflow.ellipsis,
                       color: Color(0xFF1D2939),
                       fontFamily: "Inter",
                       height: 1.4,
@@ -315,9 +317,11 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                   card.question.isNotEmpty
                       ? card.question
                       : "Identify Missing Objects?",
+                  maxLines: 2,
                   style: const TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
+                    overflow: TextOverflow.ellipsis,
                     color: Color(0xFF1D2939),
                     fontFamily: "Inter",
                     height: 1.4,
