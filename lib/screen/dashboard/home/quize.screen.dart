@@ -147,6 +147,29 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   /// normal question timer
+  Future<void> _saveAsIncorrect(dynamic q) async {
+    try {
+      final model = SavedQuestionModel(
+        id:
+            q['id']?.toString() ??
+            q['question_id']?.toString() ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
+        question: q['question']?.toString() ?? "",
+        questionImage: q['questionImage']?.toString() ?? "",
+        options: q['options'] ?? [],
+        correctAnswerIndex: q['correctAnswerIndex'] ?? 0,
+        explanation: q['explanation']?.toString() ?? "",
+        explanationImage: q['explanationImage']?.toString() ?? "",
+        exampleAudio: q['exampleAudio']?.toString() ?? "",
+        paragraphText: q['paragraphText']?.toString() ?? "",
+        rawItem: q as Map<String, dynamic>,
+      );
+      await DatabaseHelper.instance.insertIncorrectQuestion(model);
+    } catch (e) {
+      debugPrint("Error saving incorrect question: $e");
+    }
+  }
+
   void _startTimer({bool reset = true}) {
     _timer?.cancel();
     if (reset) {
@@ -198,22 +221,36 @@ class _QuizScreenState extends State<QuizScreen> {
       final prefs = await SharedPreferences.getInstance();
       final completed = prefs.getStringList("completed_papers") ?? [];
       final paperId = widget.levelId?.toString();
-      if (paperId != null) {
+      if (paperId != null && !completed.contains(paperId)) {
         completed.add(paperId);
         await prefs.setStringList("completed_papers", completed);
 
         // Save Score and Time Taken
         final int correct = _calculatePaperQuizScore();
         final int total = _questions.length;
-        final String scoreStr = "$correct/$total";
+        String scoreStr = "$correct/$total";
+        
+        if (total > 0) {
+          final double percentage = (correct / total) * 100;
+          scoreStr = "$correct/$total (${percentage.toStringAsFixed(0)}/100)";
+        }
 
         final int elapsedSecs = _stopwatch.elapsed.inSeconds;
         final int mins = elapsedSecs ~/ 60;
         final int secs = elapsedSecs % 60;
         final String timeStr = "${mins}m ${secs}s";
 
-        await prefs.setString("completed_${paperId}_score", scoreStr);
         await prefs.setString("completed_${paperId}_time", timeStr);
+
+        // Save all incorrect questions to the global Revise/Incorrect section
+        for (int i = 0; i < _questions.length; i++) {
+          final q = _questions[i];
+          final selected = selectedAnswers[i];
+          final correct = q['correctAnswerIndex'];
+          if (selected != correct) {
+            await _saveAsIncorrect(q);
+          }
+        }
       }
     }
     _timer?.cancel();
@@ -347,8 +384,9 @@ class _QuizScreenState extends State<QuizScreen> {
         selectedAnswer = selectedAnswers[currentIndex];
         isAnswered = selectedAnswer != null;
         showParagraphMode = false;
-        if (currentIndex < savedStates.length)
+        if (currentIndex < savedStates.length) {
           isSaved = savedStates[currentIndex];
+        }
       });
       _startTimer();
       _scrollToCurrentNumber();
@@ -772,8 +810,9 @@ class _QuizScreenState extends State<QuizScreen> {
         selectedAnswer = selectedAnswers[currentIndex];
         isAnswered = selectedAnswer != null;
         showParagraphMode = false;
-        if (currentIndex < savedStates.length)
+        if (currentIndex < savedStates.length) {
           isSaved = savedStates[currentIndex];
+        }
       });
       // _loadButtonState();
       _scrollToCurrentNumber();
@@ -788,8 +827,9 @@ class _QuizScreenState extends State<QuizScreen> {
         selectedAnswer = selectedAnswers[currentIndex];
         isAnswered = selectedAnswer != null;
         showParagraphMode = false;
-        if (currentIndex < savedStates.length)
+        if (currentIndex < savedStates.length) {
           isSaved = savedStates[currentIndex];
+        }
       });
       // _loadButtonState();
       _scrollToCurrentNumber();
@@ -1370,6 +1410,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                 ),
               ),
+
               const SizedBox(height: 50),
               if (!showParagraphMode)
                 Column(
@@ -1440,6 +1481,8 @@ class _QuizScreenState extends State<QuizScreen> {
                           selectedAnswers[currentIndex] = idx;
                           if (idx == correctAnswerIndex) {
                             score++;
+                          } else {
+                            _saveAsIncorrect(question);
                           }
                         });
 
@@ -1465,9 +1508,6 @@ class _QuizScreenState extends State<QuizScreen> {
                         if (idx == correctAnswerIndex) {
                           await playSound("correctAnswer");
                         } else {
-                          await DatabaseHelper.instance.insertIncorrectQuestion(
-                            SavedQuestionModel.fromMap(question),
-                          );
                           await playSound("wrong");
                           if (await Vibration.hasVibrator()) {
                             Vibration.vibrate(duration: 300);
@@ -1546,6 +1586,7 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         ),
       ),
+
       bottomNavigationBar: _isPaperQuizCategory()
           ? SafeArea(
               // --- Past Paper Bottom Bar (පැරණි ප්‍රශ්න පත්‍ර Bottom Navigation) ---

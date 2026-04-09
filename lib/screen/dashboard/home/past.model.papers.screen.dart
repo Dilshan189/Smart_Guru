@@ -499,9 +499,9 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
     String? timeSpent,
   }) {
     final bool isCompleted = status == "Completed";
-    final String buttonText = status == "Not Started"
+    final String buttonText = status == "Completed"
         ? "Start Exam"
-        : "Start Exam";
+        : (status == "In Progress" ? "Resume" : "Start Exam");
 
     return Container(
       decoration: BoxDecoration(
