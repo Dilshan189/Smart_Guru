@@ -1680,7 +1680,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 ),
                 child: Row(
                   children: [
-                    if (!showParagraphMode)
+                    if (!showParagraphMode && !widget.isIncorrectMode)
                       Column(
                         mainAxisSize: MainAxisSize.min,
                         children: [
