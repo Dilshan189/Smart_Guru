@@ -356,16 +356,19 @@ class _LevelCompleteState extends State<LevelComplete> {
                       onPressed:
                           ((!isFailed ||
                                   widget.isBookmarkMode ||
-                                  widget.isIncorrectMode) &&
+                                  widget.isIncorrectMode ||
+                                  widget.isPaperQuiz) &&
                               !isLoading)
                           ? () async {
                               if (mounted) {
                                 Navigator.pop(
                                   context,
-                                  (widget.isBookmarkMode ||
-                                          widget.isIncorrectMode)
-                                      ? 'review_complete'
-                                      : 'next_level',
+                                  widget.isPaperQuiz
+                                      ? 'restart'
+                                      : ((widget.isBookmarkMode ||
+                                                widget.isIncorrectMode)
+                                            ? 'review_complete'
+                                            : 'next_level'),
                                 );
                               }
                             }
