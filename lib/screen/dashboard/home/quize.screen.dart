@@ -332,7 +332,9 @@ class _QuizScreenState extends State<QuizScreen> {
           );
         });
       } else {
-        _handleQuizFinish();
+        if (!_isReviewMode) {
+          _handleQuizFinish();
+        }
       }
       return;
     }
@@ -1582,7 +1584,10 @@ class _QuizScreenState extends State<QuizScreen> {
                     const SizedBox(width: 15),
                     Expanded(
                       child: ElevatedButton(
-                        onPressed: selectedAnswer != null || showParagraphMode
+                        onPressed:
+                            selectedAnswer != null ||
+                                showParagraphMode ||
+                                _isReviewMode
                             ? _onCheckOrNext
                             : null,
                         style: ElevatedButton.styleFrom(
