@@ -194,6 +194,27 @@ class _QuizScreenState extends State<QuizScreen> {
   Future<void> _handleQuizFinish() async {
     if (_isPaperQuizCategory()) {
       await _clearProgress();
+      // Track completion locally
+      final prefs = await SharedPreferences.getInstance();
+      final completed = prefs.getStringList("completed_papers") ?? [];
+      final paperId = widget.levelId?.toString();
+      if (paperId != null) {
+        completed.add(paperId);
+        await prefs.setStringList("completed_papers", completed);
+
+        // Save Score and Time Taken
+        final int correct = _calculatePaperQuizScore();
+        final int total = _questions.length;
+        final String scoreStr = "$correct/$total";
+
+        final int elapsedSecs = _stopwatch.elapsed.inSeconds;
+        final int mins = elapsedSecs ~/ 60;
+        final int secs = elapsedSecs % 60;
+        final String timeStr = "${mins}m ${secs}s";
+
+        await prefs.setString("completed_${paperId}_score", scoreStr);
+        await prefs.setString("completed_${paperId}_time", timeStr);
+      }
     }
     _timer?.cancel();
     _stopwatch.stop();

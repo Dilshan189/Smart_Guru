@@ -28,6 +28,9 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
   List<dynamic> _papers = [];
   bool _isLoading = true;
   List<Map<String, dynamic>> _resumeExams = [];
+  Set<String> _completedPaperIds = {};
+  Map<String, String> _completedScores = {};
+  Map<String, String> _completedTimes = {};
 
   @override
   void initState() {
@@ -43,7 +46,8 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
   Future<void> _loadResumeData() async {
     final prefs = await SharedPreferences.getInstance();
     final keys = prefs.getKeys();
-    final List<Map<String, dynamic>> loadedResume = [];
+    final loadedResume = <Map<String, dynamic>>[];
+    final completedPapers = prefs.getStringList("completed_papers") ?? [];
 
     // Filter keys for current subject and paper type
     // Key format: resume_paper_{levelId}_{subjectId}_{paperType}_index
@@ -51,8 +55,12 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
 
     for (String key in keys) {
       if (key.startsWith("resume_paper_") && key.endsWith(suffix)) {
-        final levelId = key.substring("resume_paper_".length, key.length - suffix.length);
-        final baseKey = "resume_paper_${levelId}_${widget.subjectId}_${widget.paperType}";
+        final levelId = key.substring(
+          "resume_paper_".length,
+          key.length - suffix.length,
+        );
+        final baseKey =
+            "resume_paper_${levelId}_${widget.subjectId}_${widget.paperType}";
 
         final index = prefs.getInt("${baseKey}_index") ?? 0;
         final time = prefs.getInt("${baseKey}_time") ?? 10800;
@@ -77,8 +85,19 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
       }
     }
 
+    final Map<String, String> loadedScores = {};
+    final Map<String, String> loadedTimes = {};
+
+    for (String id in completedPapers) {
+      loadedScores[id] = prefs.getString("completed_${id}_score") ?? "0/0";
+      loadedTimes[id] = prefs.getString("completed_${id}_time") ?? "0m 0s";
+    }
+
     setState(() {
       _resumeExams = loadedResume;
+      _completedPaperIds = completedPapers.toSet();
+      _completedScores = loadedScores;
+      _completedTimes = loadedTimes;
     });
   }
 
@@ -221,11 +240,15 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                   ...List.generate(_papers.length, (index) {
                     final paper = _papers[index];
                     final bool isPremium = paper["is_premium"] == 1;
+                    final String paperIdStr = paper["id"]?.toString() ?? "";
                     String paperStatus;
                     if (isPremium) {
                       paperStatus = "Premium Access Required";
-                    } else if (paper["is_completed"] == 1) {
+                    } else if (paper["is_completed"] == 1 ||
+                        _completedPaperIds.contains(paperIdStr)) {
                       paperStatus = "Completed";
+                    } else if (_resumeExams.any((r) => r["id"] == paperIdStr)) {
+                      paperStatus = "In Progress";
                     } else if (paper["is_started"] == 1 ||
                         (paper["progress"] != null && paper["progress"] > 0)) {
                       paperStatus = "In Progress";
@@ -261,12 +284,19 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                         paper: paper,
                         title: paper["title"] ?? paper["name"] ?? "",
                         status: paperStatus,
-                        score: paper["score"]?.toString() ?? "00/100",
+                        score: paperStatus == "Completed"
+                            ? (_completedScores[paperIdStr] ??
+                                  paper["score"]?.toString() ??
+                                  "00/100")
+                            : (paper["score"]?.toString() ?? "00/100"),
                         isPremium: isPremium,
                         imageColor: imageColor,
                         iconColor: iconColor,
                         icon: icon,
-                        timeSpent: paper["time_spent"]?.toString(),
+                        timeSpent: paperStatus == "Completed"
+                            ? (_completedTimes[paperIdStr] ??
+                                  paper["time_spent"]?.toString())
+                            : paper["time_spent"]?.toString(),
                       ),
                     );
                   }),
@@ -444,7 +474,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
     }
   }
 
-  Color _getStatusTextColor(String status) {
+  Color getStatusTextColor(String status) {
     switch (status) {
       case "Completed":
         return const Color(0xFF16A34A);
@@ -540,7 +570,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                             style: TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
-                              color: _getStatusTextColor(status),
+                              color: getStatusTextColor(status),
                               fontFamily: 'Inter',
                             ),
                           ),
