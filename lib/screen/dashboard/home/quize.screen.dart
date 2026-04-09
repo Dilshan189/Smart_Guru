@@ -423,7 +423,6 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<void> _showReportDialog() async {
-    _timer?.cancel();
     String? reportError;
 
     await showDialog(
@@ -607,6 +606,7 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _modalBottomSheetMenu(BuildContext context) {
+    _timer?.cancel();
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
@@ -691,7 +691,11 @@ class _QuizScreenState extends State<QuizScreen> {
           ),
         );
       },
-    );
+    ).then((_) {
+      if (mounted) {
+        _startTimer(reset: false);
+      }
+    });
   }
 
   Future<void> _saveProgress() async {
@@ -883,7 +887,7 @@ class _QuizScreenState extends State<QuizScreen> {
           savedStates = List<bool>.filled(mapped.length, false);
         });
         _loadAllButtonStates();
-        _startTimer();
+        _startTimer(reset: widget.initialIndex == null);
       }
     } catch (e) {
       debugPrint("Error fetching questions: $e");
