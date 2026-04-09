@@ -460,6 +460,7 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<void> _showReportDialog() async {
+    _timer?.cancel();
     String? reportError;
 
     await showDialog(
