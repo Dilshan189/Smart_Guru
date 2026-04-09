@@ -318,7 +318,10 @@ class _LevelCompleteState extends State<LevelComplete> {
                               ((widget.currentLevelIndex + 1) >=
                                   widget.allLevels.length)
                           ? () {
-                              Navigator.pop(context, 'restart');
+                              Navigator.pop(
+                                context,
+                                widget.isPaperQuiz ? 'review' : 'restart',
+                              );
                             }
                           : null,
                       style: ElevatedButton.styleFrom(

@@ -71,6 +71,7 @@ class _QuizScreenState extends State<QuizScreen> {
   bool isAnswered = false;
   int score = 0;
   int remainingSeconds = 30;
+  bool _isReviewMode = false;
 
   bool isSaved = false;
   bool isEssaySaved = false;
@@ -228,7 +229,15 @@ class _QuizScreenState extends State<QuizScreen> {
       ),
     );
 
-    if (result == 'restart') {
+    if (result == 'review') {
+      setState(() {
+        _isReviewMode = true;
+        currentIndex = 0;
+        selectedAnswer = selectedAnswers[0];
+        isAnswered = selectedAnswer != null;
+      });
+      _scrollToCurrentNumber();
+    } else if (result == 'restart') {
       _restartQuiz();
     } else if (result == 'next_level') {
       if ((currentLvlIdx + 1) < levelsList.length) {
@@ -364,6 +373,7 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (_isPaperQuizCategory()) {
+      if (_isReviewMode) return "Next";
       if (currentIndex == _questions.length - 1) {
         return "Submit";
       }
@@ -900,7 +910,8 @@ class _QuizScreenState extends State<QuizScreen> {
         // Restore saved answers if this is a resume session
         if (widget.initialIndex != null) {
           final prefs = await SharedPreferences.getInstance();
-          final key = "resume_paper_${widget.levelId}_${widget.subjectId}_${widget.paperType}";
+          final key =
+              "resume_paper_${widget.levelId}_${widget.subjectId}_${widget.paperType}";
           final String? answersStr = prefs.getString("${key}_answers");
           if (answersStr != null) {
             try {
@@ -1061,19 +1072,27 @@ class _QuizScreenState extends State<QuizScreen> {
                           ),
                           decoration: BoxDecoration(
                             color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(6),
+                            borderRadius: BorderRadius.circular(20),
                           ),
                           child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              const Icon(
-                                Icons.timer_outlined,
-                                size: 14,
-                                color: Color(0xFF64748B),
-                              ),
+                              _isReviewMode
+                                  ? const Icon(
+                                      Icons.emoji_events_outlined,
+                                      size: 14,
+                                      color: Color(0xFF64748B),
+                                    )
+                                  : const Icon(
+                                      Icons.timer_outlined,
+                                      size: 14,
+                                      color: Color(0xFF64748B),
+                                    ),
                               const SizedBox(width: 4),
                               Text(
-                                formatTime(remainingSeconds),
+                                _isReviewMode
+                                    ? "ලකුණු (${_calculatePaperQuizScore()}/${_questions.length})"
+                                    : formatTime(remainingSeconds),
                                 style: const TextStyle(
                                   color: Color(0xFF64748B),
                                   fontSize: 13,
@@ -1086,25 +1105,26 @@ class _QuizScreenState extends State<QuizScreen> {
                       ],
                     ),
                   ),
-                  ElevatedButton(
-                    onPressed: _handleQuizFinish,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF1E293B),
-                      foregroundColor: Colors.white,
-                      elevation: 0,
-                      minimumSize: const Size(80, 42),
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(20),
+                  if (!_isReviewMode)
+                    ElevatedButton(
+                      onPressed: _handleQuizFinish,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF1E293B),
+                        foregroundColor: Colors.white,
+                        elevation: 0,
+                        minimumSize: const Size(80, 42),
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(20),
+                        ),
+                      ),
+                      child: Text(
+                        "Submit",
+                        style: TextStyle(
+                          fontSize: width * 0.035,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ),
-                    child: Text(
-                      "Submit",
-                      style: TextStyle(
-                        fontSize: width * 0.035,
-                        fontWeight: FontWeight.w600,
-                      ),
-                    ),
-                  ),
                 ],
               ),
             )
@@ -1211,24 +1231,43 @@ class _QuizScreenState extends State<QuizScreen> {
                               margin: const EdgeInsets.only(left: 10),
                               decoration: BoxDecoration(
                                 color: isCurrent
-                                    ? const Color(0xFF2D4990)
-                                    : (isAnsweredQ
-                                          ? const Color(0xFF1E293B)
-                                          : Colors.white),
+                                    ? AppColors.primary
+                                    : (_isReviewMode
+                                          ? (selectedAnswers[idx] ==
+                                                    _questions[idx]['correctAnswerIndex']
+                                                ? const Color(0xFFECFDF5)
+                                                : const Color(0xFFFEF2F2))
+                                          : (isAnsweredQ
+                                                ? const Color(0xFF1E293B)
+                                                : Colors.white)),
                                 shape: BoxShape.circle,
                                 border: Border.all(
-                                  color: isCurrent || isAnsweredQ
+                                  color: isCurrent
                                       ? Colors.transparent
-                                      : const Color(0xFFCBD5E1),
+                                      : (_isReviewMode
+                                            ? (selectedAnswers[idx] ==
+                                                      _questions[idx]['correctAnswerIndex']
+                                                  ? const Color(0xFF10B981)
+                                                  : const Color(0xFFEF4444))
+                                            : (isAnsweredQ
+                                                  ? Colors.transparent
+                                                  : const Color(0xFFCBD5E1))),
                                 ),
                               ),
                               child: Center(
                                 child: Text(
                                   '$num',
                                   style: TextStyle(
-                                    color: isCurrent || isAnsweredQ
+                                    color: isCurrent
                                         ? Colors.white
-                                        : const Color(0xFF64748B),
+                                        : (_isReviewMode
+                                              ? (selectedAnswers[idx] ==
+                                                        _questions[idx]['correctAnswerIndex']
+                                                    ? const Color(0xFF10B981)
+                                                    : const Color(0xFFEF4444))
+                                              : (isAnsweredQ
+                                                    ? Colors.white
+                                                    : const Color(0xFF64748B))),
                                     fontWeight: FontWeight.w600,
                                     fontSize: width * 0.035,
                                   ),
@@ -1322,7 +1361,8 @@ class _QuizScreenState extends State<QuizScreen> {
                       ),
                     );
 
-                    if (isAnswered && !_isPaperQuizCategory()) {
+                    if (_isReviewMode ||
+                        (isAnswered && !_isPaperQuizCategory())) {
                       if (isCorrect) {
                         borderColor = const Color(0xFFD1FAE5);
                         bgColor = const Color(0xFFECFDF5);
@@ -1352,7 +1392,9 @@ class _QuizScreenState extends State<QuizScreen> {
 
                     return GestureDetector(
                       onTap: () async {
-                        if (isAnswered && !_isPaperQuizCategory()) return;
+                        if (_isReviewMode ||
+                            (isAnswered && !_isPaperQuizCategory()))
+                          return;
                         if (_isPaperQuizCategory()) {
                           setState(() {
                             selectedAnswer = idx;
@@ -1516,13 +1558,17 @@ class _QuizScreenState extends State<QuizScreen> {
                             ? _onCheckOrNext
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: currentIndex == _questions.length - 1
+                          backgroundColor:
+                              currentIndex == _questions.length - 1 &&
+                                  !_isReviewMode
                               ? Colors.black
                               : const Color(0xFF2D4990),
-                          disabledBackgroundColor: (currentIndex == _questions.length - 1
-                                  ? Colors.black
-                                  : const Color(0xFF2D4990))
-                              .withOpacity(0.5),
+                          disabledBackgroundColor:
+                              (currentIndex == _questions.length - 1 &&
+                                          !_isReviewMode
+                                      ? Colors.black
+                                      : const Color(0xFF2D4990))
+                                  .withOpacity(0.5),
                           foregroundColor: Colors.white,
                           disabledForegroundColor: Colors.white.withOpacity(
                             0.5,
