@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:convert';
 import 'package:flutter/material.dart';
 import 'package:flutter_svg/svg.dart';
 import 'package:smart_guru/utils/theam.dart';
@@ -709,6 +710,11 @@ class _QuizScreenState extends State<QuizScreen> {
     await prefs.setInt("${key}_time", remainingSeconds);
     await prefs.setInt("${key}_total", _questions.length);
     await prefs.setString("${key}_title", widget.levelName);
+
+    // Save selected answers as JSON string
+    final String answersStr = jsonEncode(selectedAnswers);
+    await prefs.setString("${key}_answers", answersStr);
+
     debugPrint("Progress saved: Index $currentIndex, Time $remainingSeconds");
   }
 
@@ -720,6 +726,7 @@ class _QuizScreenState extends State<QuizScreen> {
     await prefs.remove("${key}_time");
     await prefs.remove("${key}_total");
     await prefs.remove("${key}_title");
+    await prefs.remove("${key}_answers");
   }
 
   Future<void> _goToPreviousQuestion() async {
@@ -889,6 +896,27 @@ class _QuizScreenState extends State<QuizScreen> {
           selectedAnswers = List<int?>.filled(mapped.length, null);
           savedStates = List<bool>.filled(mapped.length, false);
         });
+
+        // Restore saved answers if this is a resume session
+        if (widget.initialIndex != null) {
+          final prefs = await SharedPreferences.getInstance();
+          final key = "resume_paper_${widget.levelId}_${widget.subjectId}_${widget.paperType}";
+          final String? answersStr = prefs.getString("${key}_answers");
+          if (answersStr != null) {
+            try {
+              final List<dynamic> decoded = jsonDecode(answersStr);
+              setState(() {
+                selectedAnswers = decoded.map((e) => e as int?).toList();
+                // Update current selection if it was already answered
+                selectedAnswer = selectedAnswers[currentIndex];
+                isAnswered = selectedAnswer != null;
+              });
+            } catch (e) {
+              debugPrint("Error restoring answers: $e");
+            }
+          }
+        }
+
         _loadAllButtonStates();
         _startTimer(reset: widget.initialIndex == null);
       }
@@ -1294,7 +1322,7 @@ class _QuizScreenState extends State<QuizScreen> {
                       ),
                     );
 
-                    if (isAnswered) {
+                    if (isAnswered && !_isPaperQuizCategory()) {
                       if (isCorrect) {
                         borderColor = const Color(0xFFD1FAE5);
                         bgColor = const Color(0xFFECFDF5);
@@ -1324,9 +1352,12 @@ class _QuizScreenState extends State<QuizScreen> {
 
                     return GestureDetector(
                       onTap: () async {
-                        if (isAnswered) return;
+                        if (isAnswered && !_isPaperQuizCategory()) return;
                         if (_isPaperQuizCategory()) {
-                          setState(() => selectedAnswer = idx);
+                          setState(() {
+                            selectedAnswer = idx;
+                            selectedAnswers[currentIndex] = idx;
+                          });
                           return;
                         }
 

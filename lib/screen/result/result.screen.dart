@@ -368,13 +368,24 @@ class _LevelCompleteState extends State<LevelComplete> {
                             }
                           : null,
                       style: ElevatedButton.styleFrom(
-                        backgroundColor:
-                            (!isFailed ||
-                                widget.isBookmarkMode ||
-                                widget.isIncorrectMode)
-                            ? AppColors.primary
-                            : Colors.grey.shade400,
+                        backgroundColor: widget.isPaperQuiz
+                            ? Colors.white
+                            : ((!isFailed ||
+                                      widget.isBookmarkMode ||
+                                      widget.isIncorrectMode)
+                                  ? AppColors.primary
+                                  : Colors.grey.shade400),
+                        foregroundColor: widget.isPaperQuiz
+                            ? const Color(0xFF1E293B)
+                            : Colors.white,
+                        side: widget.isPaperQuiz
+                            ? const BorderSide(
+                                color: Color(0xFFCBD5E1),
+                                width: 1,
+                              )
+                            : BorderSide.none,
                         minimumSize: Size(width * 0.85, height * 0.065),
+                        elevation: 0,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(width * 0.1),
                         ),
@@ -401,7 +412,9 @@ class _LevelCompleteState extends State<LevelComplete> {
                                               ? "Back to Levels"
                                               : "Next Level")),
                               style: TextStyle(
-                                color: Colors.white,
+                                color: widget.isPaperQuiz
+                                    ? const Color(0xFF1E293B)
+                                    : Colors.white,
                                 fontSize: width * 0.045,
                                 fontFamily: 'Poppins',
                                 fontWeight: FontWeight.w500,
