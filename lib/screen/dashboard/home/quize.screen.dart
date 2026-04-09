@@ -363,6 +363,9 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     if (_isPaperQuizCategory()) {
+      if (currentIndex == _questions.length - 1) {
+        return "Submit";
+      }
       return "Next";
     }
 
@@ -1482,10 +1485,13 @@ class _QuizScreenState extends State<QuizScreen> {
                             ? _onCheckOrNext
                             : null,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF2D4990),
-                          disabledBackgroundColor: const Color(
-                            0xFF2D4990,
-                          ).withOpacity(0.5),
+                          backgroundColor: currentIndex == _questions.length - 1
+                              ? Colors.black
+                              : const Color(0xFF2D4990),
+                          disabledBackgroundColor: (currentIndex == _questions.length - 1
+                                  ? Colors.black
+                                  : const Color(0xFF2D4990))
+                              .withOpacity(0.5),
                           foregroundColor: Colors.white,
                           disabledForegroundColor: Colors.white.withOpacity(
                             0.5,
