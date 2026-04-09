@@ -355,7 +355,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                       fontSize: 17,
                       fontWeight: FontWeight.bold,
                       color: AppColors.primaryText,
-                      fontFamily: 'FMGanganee',
+                      fontFamily: 'Inter',
                     ),
                   ),
                   const SizedBox(height: 3),
