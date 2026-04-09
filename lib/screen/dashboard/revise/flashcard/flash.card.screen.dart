@@ -96,26 +96,60 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         children: [
           // Flashcards Scrollable Target List
           Expanded(
-            child: ListView.builder(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 24),
-              itemCount: widget.questions?.length ?? 0,
-              itemBuilder: (context, index) {
-                final card = widget.questions![index];
-                String answerText = "";
-                if (card.options.isNotEmpty &&
-                    card.correctAnswerIndex != null) {
-                  int checkIdx = card.correctAnswerIndex!;
-                  if (checkIdx >= 0 && checkIdx < card.options.length) {
-                    answerText = card.options[checkIdx]['text'] ?? "";
-                  }
-                }
-                return _buildFlashcardItem(
-                  card: card,
-                  answer: answerText,
-                  status: widget.title == "Incorrect Answers" ? "bad" : "good",
-                );
-              },
-            ),
+            child: (widget.questions == null || widget.questions!.isEmpty)
+                ? Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Container(
+                          padding: const EdgeInsets.all(24),
+                          decoration: const BoxDecoration(
+                            color: Color(0xFFF1F5F9),
+                            shape: BoxShape.circle,
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        Text(
+                          widget.isIncorrect
+                              ? "No Incorrect Questions"
+                              : widget.isBookmark
+                              ? "No Bookmarks Questions"
+                              : "No Flashcards Questions",
+                          style: const TextStyle(
+                            fontSize: 16,
+                            fontWeight: FontWeight.w400,
+                            color: Color.fromARGB(255, 156, 156, 156),
+                            fontFamily: "Poppins",
+                          ),
+                        ),
+                      ],
+                    ),
+                  )
+                : ListView.builder(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 24,
+                    ),
+                    itemCount: widget.questions!.length,
+                    itemBuilder: (context, index) {
+                      final card = widget.questions![index];
+                      String answerText = "";
+                      if (card.options.isNotEmpty &&
+                          card.correctAnswerIndex != null) {
+                        int checkIdx = card.correctAnswerIndex!;
+                        if (checkIdx >= 0 && checkIdx < card.options.length) {
+                          answerText = card.options[checkIdx]['text'] ?? "";
+                        }
+                      }
+                      return _buildFlashcardItem(
+                        card: card,
+                        answer: answerText,
+                        status: widget.title == "Incorrect Answers"
+                            ? "bad"
+                            : "good",
+                      );
+                    },
+                  ),
           ),
           // Fixed Bottom Button
           _buildBottomButton(),
@@ -310,42 +344,54 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
 
   // Helper for bottom anchor button
   Widget _buildBottomButton() {
-    return GestureDetector(
-      onTap: () {
-        if (widget.isFlashcard) {
-          _showRevisionPopup(context);
-        } else {
-          final mappedQuestions = widget.questions?.map((e) => {
-            'id': e.id,
-            'question': e.question,
-            'questionImage': e.questionImage,
-            'options': e.options,
-            'correctAnswerIndex': e.correctAnswerIndex,
-            'explanation': e.explanation,
-            'explanationImage': e.explanationImage,
-            'exampleAudio': e.exampleAudio,
-            'paragraphText': e.paragraphText,
-            'raw_item': e.rawItem,
-          }).toList() ?? [];
+    final bool isEmpty = widget.questions == null || widget.questions!.isEmpty;
 
-          Navigator.push(
-            context,
-            MaterialPageRoute(
-              builder: (context) => QuizScreen(
-                levelName: widget.title ?? "Revision",
-                categoryTitle: widget.title ?? "Revision",
-                data: const [],
-                questions: mappedQuestions,
-                isBookmarkMode: widget.isBookmark,
-                isIncorrectMode: widget.isIncorrect,
-              ),
-            ),
-          );
-        }
-      },
+    return GestureDetector(
+      onTap: isEmpty
+          ? null
+          : () {
+              if (widget.isFlashcard) {
+                _showRevisionPopup(context);
+              } else {
+                final mappedQuestions =
+                    widget.questions
+                        ?.map(
+                          (e) => {
+                            'id': e.id,
+                            'question': e.question,
+                            'questionImage': e.questionImage,
+                            'options': e.options,
+                            'correctAnswerIndex': e.correctAnswerIndex,
+                            'explanation': e.explanation,
+                            'explanationImage': e.explanationImage,
+                            'exampleAudio': e.exampleAudio,
+                            'paragraphText': e.paragraphText,
+                            'raw_item': e.rawItem,
+                          },
+                        )
+                        .toList() ??
+                    [];
+
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => QuizScreen(
+                      levelName: widget.title ?? "Revision",
+                      categoryTitle: widget.title ?? "Revision",
+                      data: const [],
+                      questions: mappedQuestions,
+                      isBookmarkMode: widget.isBookmark,
+                      isIncorrectMode: widget.isIncorrect,
+                    ),
+                  ),
+                );
+              }
+            },
       child: Container(
         width: double.infinity,
-        color: const Color(0xFF2E43A8),
+        color: isEmpty
+            ? const Color(0xFF2E43A8).withOpacity(0.4)
+            : const Color(0xFF2E43A8),
         padding: EdgeInsets.only(
           top: 20,
           bottom: MediaQuery.of(context).padding.bottom == 0
@@ -354,10 +400,10 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
         ),
         child: Row(
           mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
+          children: [
             Text(
-              "START REVISION",
-              style: TextStyle(
+              isEmpty ? "START REVISION" : "START REVISION",
+              style: const TextStyle(
                 color: Colors.white,
                 fontSize: 16,
                 fontWeight: FontWeight.bold,
@@ -365,8 +411,10 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                 letterSpacing: 1.0,
               ),
             ),
-            SizedBox(width: 6),
-            Icon(Icons.chevron_right, color: Colors.white, size: 22),
+            if (!isEmpty) ...[
+              const SizedBox(width: 6),
+              const Icon(Icons.chevron_right, color: Colors.white, size: 22),
+            ],
           ],
         ),
       ),
