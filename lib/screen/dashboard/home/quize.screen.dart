@@ -229,7 +229,7 @@ class _QuizScreenState extends State<QuizScreen> {
         final int correct = _calculatePaperQuizScore();
         final int total = _questions.length;
         String scoreStr = "$correct/$total";
-        
+
         if (total > 0) {
           final double percentage = (correct / total) * 100;
           scoreStr = "$correct/$total (${percentage.toStringAsFixed(0)}/100)";
@@ -1162,7 +1162,7 @@ class _QuizScreenState extends State<QuizScreen> {
                               const SizedBox(width: 4),
                               Text(
                                 _isReviewMode
-                                    ? "ලකුණු (${_calculatePaperQuizScore()}/${_questions.length})"
+                                    ? "ලකුණු (${_calculatePaperQuizScore()}/100)"
                                     : formatTime(remainingSeconds),
                                 style: const TextStyle(
                                   color: Color(0xFF64748B),
