@@ -713,6 +713,7 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<void> _saveProgress() async {
+    if (_isReviewMode) return; // Do not save progress during review
     final prefs = await SharedPreferences.getInstance();
     final key =
         "resume_paper_${widget.levelId}_${widget.subjectId}_${widget.paperType}";
@@ -1035,7 +1036,13 @@ class _QuizScreenState extends State<QuizScreen> {
               title: Row(
                 children: [
                   InkWell(
-                    onTap: () => _modalBottomSheetMenu(context),
+                    onTap: () {
+                      if (_isReviewMode) {
+                        Navigator.pop(context);
+                      } else {
+                        _modalBottomSheetMenu(context);
+                      }
+                    },
                     child: Container(
                       width: 44,
                       height: 44,
