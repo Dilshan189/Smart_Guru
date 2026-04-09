@@ -1706,7 +1706,7 @@ class _QuizScreenState extends State<QuizScreen> {
                           ),
                         ],
                       ),
-                    const SizedBox(width: 25),
+                    if (!widget.isIncorrectMode) const SizedBox(width: 25),
                     Expanded(
                       child: ElevatedButton(
                         onPressed: selectedAnswer != null || showParagraphMode

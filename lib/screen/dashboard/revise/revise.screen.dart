@@ -28,12 +28,12 @@ class ReviseScreenState extends State<ReviseScreen> {
   Future<void> loadData() async {
     final bq = await DatabaseHelper.instance.getAllSavedQuestions();
     final iq = await DatabaseHelper.instance.getAllIncorrectQuestions();
-    if(mounted) {
+    if (mounted) {
       setState(() {
-         _bookmarkedQuestions = bq;
-         _incorrectQuestions = iq;
-         _bookmarkedCount = bq.length;
-         _incorrectCount = iq.length;
+        _bookmarkedQuestions = bq;
+        _incorrectQuestions = iq;
+        _bookmarkedCount = bq.length;
+        _incorrectCount = iq.length;
       });
     }
   }
@@ -60,13 +60,15 @@ class ReviseScreenState extends State<ReviseScreen> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => FlashCardScreen(
-                           questions: _bookmarkedQuestions,
-                           title: "Bookmarked",
-                           isBookmark: true,
-                        )),
+                        MaterialPageRoute(
+                          builder: (context) => FlashCardScreen(
+                            questions: _bookmarkedQuestions,
+                            title: "Bookmarked",
+                            isBookmark: true,
+                          ),
+                        ),
                       );
-                    }
+                    },
                   ),
                 ),
                 const SizedBox(width: 16),
@@ -80,13 +82,15 @@ class ReviseScreenState extends State<ReviseScreen> {
                     onTap: () {
                       Navigator.push(
                         context,
-                        MaterialPageRoute(builder: (context) => FlashCardScreen(
-                           questions: _incorrectQuestions,
-                           title: "Incorrect Answers",
-                           isIncorrect: true,
-                        )),
+                        MaterialPageRoute(
+                          builder: (context) => FlashCardScreen(
+                            questions: _incorrectQuestions,
+                            title: "Incorrect Answers",
+                            isIncorrect: true,
+                          ),
+                        ),
                       );
-                    }
+                    },
                   ),
                 ),
               ],
@@ -110,11 +114,16 @@ class ReviseScreenState extends State<ReviseScreen> {
               onTap: () {
                 Navigator.push(
                   context,
-                  MaterialPageRoute(builder: (context) => FlashCardScreen(
-                    questions: [..._bookmarkedQuestions, ..._incorrectQuestions],
-                    title: "All Flashcards",
-                    isFlashcard: true,
-                  )),
+                  MaterialPageRoute(
+                    builder: (context) => FlashCardScreen(
+                      questions: [
+                        ..._bookmarkedQuestions,
+                        ..._incorrectQuestions,
+                      ],
+                      title: "All Flashcards",
+                      isFlashcard: true,
+                    ),
+                  ),
                 );
               },
               child: Container(
