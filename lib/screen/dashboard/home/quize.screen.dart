@@ -232,7 +232,7 @@ class _QuizScreenState extends State<QuizScreen> {
 
         if (total > 0) {
           final double percentage = (correct / total) * 100;
-          scoreStr = "$correct/$total (${percentage.toStringAsFixed(0)}/100)";
+          scoreStr = "${percentage.toStringAsFixed(0)}/100";
         }
 
         final int elapsedSecs = _stopwatch.elapsed.inSeconds;
@@ -240,6 +240,7 @@ class _QuizScreenState extends State<QuizScreen> {
         final int secs = elapsedSecs % 60;
         final String timeStr = "${mins}m ${secs}s";
 
+        await prefs.setString("completed_${paperId}_score", scoreStr);
         await prefs.setString("completed_${paperId}_time", timeStr);
 
         // Save all incorrect questions to the global Revise/Incorrect section
