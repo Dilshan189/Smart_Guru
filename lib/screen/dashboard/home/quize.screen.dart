@@ -11,6 +11,7 @@ import '../../../services/api.service.dart';
 import '../../../services/session.manager.dart';
 import '../../../Databasehelper/database.helper.dart';
 import '../../../models/saved_question.model.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class QuizScreen extends StatefulWidget {
   final String levelName;
@@ -32,6 +33,8 @@ class QuizScreen extends StatefulWidget {
   // Use inline comments:
   final bool isBookmarkMode; // Toggle this for bookmark revision mode
   final bool isIncorrectMode; // Toggle this for incorrect answers revision mode
+  final int? initialIndex;
+  final int? initialTime;
 
   const QuizScreen({
     super.key,
@@ -53,6 +56,8 @@ class QuizScreen extends StatefulWidget {
     this.isPaperQuiz,
     this.isBookmarkMode = false,
     this.isIncorrectMode = false,
+    this.initialIndex,
+    this.initialTime,
   });
 
   @override
@@ -108,6 +113,19 @@ class _QuizScreenState extends State<QuizScreen> {
     return widget.paperType != null;
   }
 
+  String formatTime(int seconds) {
+    if (seconds >= 3600) {
+      final hours = (seconds ~/ 3600).toString().padLeft(2, '0');
+      final mins = ((seconds % 3600) ~/ 60).toString().padLeft(2, '0');
+      final secs = (seconds % 60).toString().padLeft(2, '0');
+      return "$hours:$mins:$secs";
+    } else {
+      final mins = (seconds ~/ 60).toString().padLeft(1, '0');
+      final secs = (seconds % 60).toString().padLeft(2, '0');
+      return "$mins:$secs";
+    }
+  }
+
   int _calculatePaperQuizScore() {
     int s = 0;
     for (int i = 0; i < _questions.length; i++) {
@@ -126,10 +144,11 @@ class _QuizScreenState extends State<QuizScreen> {
     return false;
   }
 
+  /// normal question timer
   void _startTimer({bool reset = true}) {
     _timer?.cancel();
     if (reset) {
-      remainingSeconds = 30;
+      remainingSeconds = _isPaperQuizCategory() ? 10800 : 30;
     }
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -171,6 +190,9 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   Future<void> _handleQuizFinish() async {
+    if (_isPaperQuizCategory()) {
+      await _clearProgress();
+    }
     _timer?.cancel();
     _stopwatch.stop();
 
@@ -269,7 +291,7 @@ class _QuizScreenState extends State<QuizScreen> {
           if (currentIndex < savedStates.length)
             isSaved = savedStates[currentIndex];
         });
-        _startTimer();
+        _startTimer(reset: false);
         _scrollToCurrentNumber();
         WidgetsBinding.instance.addPostFrameCallback((_) {
           _scrollController.animateTo(
@@ -631,7 +653,10 @@ class _QuizScreenState extends State<QuizScreen> {
                         borderRadius: BorderRadius.circular(15),
                       ),
                     ),
-                    onPressed: () {
+                    onPressed: () async {
+                      if (_isPaperQuizCategory()) {
+                        await _saveProgress();
+                      }
                       Navigator.pop(context);
                       Navigator.pop(context);
                     },
@@ -667,6 +692,27 @@ class _QuizScreenState extends State<QuizScreen> {
         );
       },
     );
+  }
+
+  Future<void> _saveProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key =
+        "resume_paper_${widget.levelId}_${widget.subjectId}_${widget.paperType}";
+    await prefs.setInt("${key}_index", currentIndex);
+    await prefs.setInt("${key}_time", remainingSeconds);
+    await prefs.setInt("${key}_total", _questions.length);
+    await prefs.setString("${key}_title", widget.levelName);
+    debugPrint("Progress saved: Index $currentIndex, Time $remainingSeconds");
+  }
+
+  Future<void> _clearProgress() async {
+    final prefs = await SharedPreferences.getInstance();
+    final key =
+        "resume_paper_${widget.levelId}_${widget.subjectId}_${widget.paperType}";
+    await prefs.remove("${key}_index");
+    await prefs.remove("${key}_time");
+    await prefs.remove("${key}_total");
+    await prefs.remove("${key}_title");
   }
 
   Future<void> _goToPreviousQuestion() async {
@@ -737,7 +783,14 @@ class _QuizScreenState extends State<QuizScreen> {
     );
 
     _loadAllButtonStates();
-    _startTimer();
+    if (widget.initialIndex != null) {
+      currentIndex = widget.initialIndex!;
+      remainingSeconds =
+          widget.initialTime ?? (widget.paperType != null ? 10800 : 30);
+      _startTimer(reset: false);
+    } else {
+      _startTimer();
+    }
     _stopwatch.start();
 
     flutterTts.setLanguage("en-US");
@@ -880,7 +933,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      '$remainingSeconds Seconds',
+                      formatTime(remainingSeconds),
                       style: const TextStyle(
                         color: Colors.white,
                         fontSize: 12.48,
@@ -922,12 +975,6 @@ class _QuizScreenState extends State<QuizScreen> {
       _questions.length,
       (index) => index + 1,
     );
-
-    String formatTime(int seconds) {
-      final mins = (seconds ~/ 60).toString().padLeft(1, '0');
-      final secs = (seconds % 60).toString().padLeft(2, '0');
-      return "$mins:$secs";
-    }
 
     return Scaffold(
       backgroundColor: Colors.white,
@@ -1044,7 +1091,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                   child: Center(
                     child: Text(
-                      '$remainingSeconds Seconds',
+                      formatTime(remainingSeconds),
                       style: TextStyle(
                         color: Colors.white,
                         fontSize: width * 0.03,

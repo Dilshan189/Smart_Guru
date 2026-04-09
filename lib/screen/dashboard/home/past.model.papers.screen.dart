@@ -4,6 +4,7 @@ import 'package:smart_guru/utils/theam.dart';
 import 'package:smart_guru/services/api.service.dart';
 import 'package:smart_guru/services/session.manager.dart';
 import 'quize.screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class PastModelPapersScreen extends StatefulWidget {
   final String title;
@@ -26,28 +27,59 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
   int _currentResumePage = 0;
   List<dynamic> _papers = [];
   bool _isLoading = true;
-
-  final List<Map<String, dynamic>> _resumeExams = [
-    {
-      "title": "2024 ප්‍රශ්න පත්‍රය",
-      "questions": "8/40 Question",
-      "progress": 0.65,
-      "percent": "65%",
-      "time": "Time Spent : 35 min",
-    },
-    {
-      "title": "2023 ප්‍රශ්න පත්‍රය",
-      "questions": "20/40 Question",
-      "progress": 0.50,
-      "percent": "50%",
-      "time": "Time Spent : 60 min",
-    },
-  ];
+  List<Map<String, dynamic>> _resumeExams = [];
 
   @override
   void initState() {
     super.initState();
-    _fetchPapers();
+    _loadData();
+  }
+
+  Future<void> _loadData() async {
+    await _fetchPapers();
+    await _loadResumeData();
+  }
+
+  Future<void> _loadResumeData() async {
+    final prefs = await SharedPreferences.getInstance();
+    final keys = prefs.getKeys();
+    final List<Map<String, dynamic>> loadedResume = [];
+
+    // Filter keys for current subject and paper type
+    // Key format: resume_paper_{levelId}_{subjectId}_{paperType}_index
+    final suffix = "_${widget.subjectId}_${widget.paperType}_index";
+
+    for (String key in keys) {
+      if (key.startsWith("resume_paper_") && key.endsWith(suffix)) {
+        final levelId = key.substring("resume_paper_".length, key.length - suffix.length);
+        final baseKey = "resume_paper_${levelId}_${widget.subjectId}_${widget.paperType}";
+
+        final index = prefs.getInt("${baseKey}_index") ?? 0;
+        final time = prefs.getInt("${baseKey}_time") ?? 10800;
+        final total = prefs.getInt("${baseKey}_total") ?? 1;
+        final title = prefs.getString("${baseKey}_title") ?? "Unknown";
+
+        final timeSpentSec = 10800 - time;
+        final timeSpentMin = (timeSpentSec / 60).floor();
+        final progress = (index + 1) / total;
+        final percent = "${(progress * 100).toInt()}%";
+
+        loadedResume.add({
+          "id": levelId,
+          "title": title,
+          "questions": "${index + 1}/$total Question",
+          "progress": progress,
+          "percent": percent,
+          "time": "Time Spent : $timeSpentMin min",
+          "savedIndex": index,
+          "savedTime": time,
+        });
+      }
+    }
+
+    setState(() {
+      _resumeExams = loadedResume;
+    });
   }
 
   Future<void> _fetchPapers() async {
@@ -127,51 +159,53 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    "Resume Exam",
-                    style: TextStyle(
-                      fontSize: 16,
-                      fontWeight: FontWeight.w600,
-                      color: AppColors.bodyText,
-                      fontFamily: 'Inter',
+                  if (_resumeExams.isNotEmpty) ...[
+                    const Text(
+                      "Resume Exam",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.w600,
+                        color: AppColors.bodyText,
+                        fontFamily: 'Inter',
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  SizedBox(
-                    height: 150,
-                    width: double.infinity,
-                    child: PageView.builder(
-                      controller: _resumePageController,
-                      itemCount: _resumeExams.length,
-                      onPageChanged: (index) {
-                        setState(() => _currentResumePage = index);
-                      },
-                      itemBuilder: (context, index) {
-                        final exam = _resumeExams[index];
-                        return _buildResumeCard(exam);
-                      },
+                    const SizedBox(height: 12),
+                    SizedBox(
+                      height: 150,
+                      width: double.infinity,
+                      child: PageView.builder(
+                        controller: _resumePageController,
+                        itemCount: _resumeExams.length,
+                        onPageChanged: (index) {
+                          setState(() => _currentResumePage = index);
+                        },
+                        itemBuilder: (context, index) {
+                          final exam = _resumeExams[index];
+                          return _buildResumeCard(exam);
+                        },
+                      ),
                     ),
-                  ),
-                  const SizedBox(height: 12),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: List.generate(_resumeExams.length, (index) {
-                      final isActive = index == _currentResumePage;
-                      return AnimatedContainer(
-                        duration: const Duration(milliseconds: 250),
-                        margin: const EdgeInsets.symmetric(horizontal: 3),
-                        width: isActive ? 16 : 6,
-                        height: 6,
-                        decoration: BoxDecoration(
-                          color: isActive
-                              ? AppColors.primary
-                              : AppColors.secondaryText,
-                          borderRadius: BorderRadius.circular(3),
-                        ),
-                      );
-                    }),
-                  ),
-                  const SizedBox(height: 16),
+                    const SizedBox(height: 12),
+                    Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: List.generate(_resumeExams.length, (index) {
+                        final isActive = index == _currentResumePage;
+                        return AnimatedContainer(
+                          duration: const Duration(milliseconds: 250),
+                          margin: const EdgeInsets.symmetric(horizontal: 3),
+                          width: isActive ? 16 : 6,
+                          height: 6,
+                          decoration: BoxDecoration(
+                            color: isActive
+                                ? AppColors.primary
+                                : AppColors.secondaryText,
+                            borderRadius: BorderRadius.circular(3),
+                          ),
+                        );
+                      }),
+                    ),
+                    const SizedBox(height: 16),
+                  ],
                   const Text(
                     "Available Papers",
                     style: TextStyle(
@@ -352,7 +386,24 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                     width: double.infinity,
                     height: 32,
                     child: ElevatedButton(
-                      onPressed: () {},
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => QuizScreen(
+                              levelName: exam["title"],
+                              categoryTitle: exam["title"],
+                              questions: const [],
+                              data: const [],
+                              levelId: exam["id"],
+                              subjectId: widget.subjectId,
+                              paperType: widget.paperType,
+                              initialIndex: exam["savedIndex"],
+                              initialTime: exam["savedTime"],
+                            ),
+                          ),
+                        ).then((_) => _loadResumeData());
+                      },
                       style: ElevatedButton.styleFrom(
                         backgroundColor: AppColors.primary,
                         foregroundColor: AppColors.surfaceWhite,
@@ -558,7 +609,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
                                         paperType: widget.paperType,
                                       ),
                                     ),
-                                  );
+                                  ).then((_) => _loadResumeData());
                                 },
                                 style: ElevatedButton.styleFrom(
                                   backgroundColor: AppColors.primary,
