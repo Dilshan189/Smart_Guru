@@ -1208,25 +1208,27 @@ class _QuizScreenState extends State<QuizScreen> {
                 onPressed: () => _modalBottomSheetMenu(context),
                 icon: const Icon(Icons.arrow_back_ios, size: 18),
               ),
-              title: Center(
-                child: Container(
-                  width: 112.44,
-                  height: 31.2,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Center(
-                    child: Text(
-                      formatTime(remainingSeconds),
-                      style: TextStyle(
-                        color: Colors.white,
-                        fontSize: width * 0.03,
+              title: (widget.isBookmarkMode || widget.isIncorrectMode)
+                  ? null
+                  : Center(
+                      child: Container(
+                        width: 112.44,
+                        height: 31.2,
+                        decoration: BoxDecoration(
+                          color: AppColors.primary,
+                          borderRadius: BorderRadius.circular(25),
+                        ),
+                        child: Center(
+                          child: Text(
+                            formatTime(remainingSeconds),
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontSize: width * 0.03,
+                            ),
+                          ),
+                        ),
                       ),
                     ),
-                  ),
-                ),
-              ),
               actions: [
                 InkWell(
                   onTap: () => _showReportDialog(),
