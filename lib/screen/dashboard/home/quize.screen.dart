@@ -171,6 +171,8 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _startTimer({bool reset = true}) {
+    // Timer functionality removed as per user request
+    /*
     _timer?.cancel();
     if (reset) {
       remainingSeconds = _isPaperQuizCategory() ? 10800 : 30;
@@ -187,6 +189,7 @@ class _QuizScreenState extends State<QuizScreen> {
         });
       }
     });
+    */
   }
 
   void _restartQuiz() {
@@ -695,7 +698,7 @@ class _QuizScreenState extends State<QuizScreen> {
         return Padding(
           padding: MediaQuery.of(context).viewInsets,
           child: Container(
-            height: 553,
+            height: 350,
             width: double.infinity,
             decoration: const BoxDecoration(
               color: Colors.white,
@@ -1034,25 +1037,7 @@ class _QuizScreenState extends State<QuizScreen> {
             onPressed: () => Navigator.pop(context),
             icon: const Icon(Icons.arrow_back_ios, size: 12),
           ),
-          title: _questions.isEmpty
-              ? null
-              : Container(
-                  width: 112.44,
-                  height: 31.2,
-                  decoration: BoxDecoration(
-                    color: AppColors.primary,
-                    borderRadius: BorderRadius.circular(25),
-                  ),
-                  child: Center(
-                    child: Text(
-                      formatTime(remainingSeconds),
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontSize: 12.48,
-                      ),
-                    ),
-                  ),
-                ),
+          title: null,
         ),
         body: Center(
           child: _isFetching
@@ -1137,43 +1122,36 @@ class _QuizScreenState extends State<QuizScreen> {
                           ),
                         ),
                         const SizedBox(height: 4),
-                        Container(
-                          padding: const EdgeInsets.symmetric(
-                            horizontal: 10,
-                            vertical: 4,
-                          ),
-                          decoration: BoxDecoration(
-                            color: const Color(0xFFF1F5F9),
-                            borderRadius: BorderRadius.circular(20),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              _isReviewMode
-                                  ? const Icon(
-                                      Icons.emoji_events_outlined,
-                                      size: 14,
-                                      color: Color(0xFF64748B),
-                                    )
-                                  : const Icon(
-                                      Icons.timer_outlined,
-                                      size: 14,
-                                      color: Color(0xFF64748B),
-                                    ),
-                              const SizedBox(width: 4),
-                              Text(
-                                _isReviewMode
-                                    ? "ලකුණු (${_calculatePaperQuizScore()}/100)"
-                                    : formatTime(remainingSeconds),
-                                style: const TextStyle(
+                        if (_isReviewMode)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.emoji_events_outlined,
+                                  size: 14,
                                   color: Color(0xFF64748B),
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.w600,
                                 ),
-                              ),
-                            ],
+                                const SizedBox(width: 4),
+                                Text(
+                                  "ලකුණු (${_calculatePaperQuizScore()}/100)",
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
-                        ),
                       ],
                     ),
                   ),
@@ -1208,27 +1186,7 @@ class _QuizScreenState extends State<QuizScreen> {
                 onPressed: () => _modalBottomSheetMenu(context),
                 icon: const Icon(Icons.arrow_back_ios, size: 18),
               ),
-              title: (widget.isBookmarkMode || widget.isIncorrectMode)
-                  ? null
-                  : Center(
-                      child: Container(
-                        width: 112.44,
-                        height: 31.2,
-                        decoration: BoxDecoration(
-                          color: AppColors.primary,
-                          borderRadius: BorderRadius.circular(25),
-                        ),
-                        child: Center(
-                          child: Text(
-                            formatTime(remainingSeconds),
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontSize: width * 0.03,
-                            ),
-                          ),
-                        ),
-                      ),
-                    ),
+              title: null,
               actions: [
                 InkWell(
                   onTap: () => _showReportDialog(),
@@ -1692,7 +1650,7 @@ class _QuizScreenState extends State<QuizScreen> {
                               "assets/images/save.svg",
                               width: 24,
                               colorFilter: ColorFilter.mode(
-                                isSaved ? AppColors.primary : Colors.white54,
+                                isSaved ? AppColors.primary : Color(0xFFE4EBF1),
                                 BlendMode.srcIn,
                               ),
                             ),
