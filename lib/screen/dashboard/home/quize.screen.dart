@@ -171,11 +171,11 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   void _startTimer({bool reset = true}) {
-    // Timer functionality removed as per user request
-    /*
+    if (!_isPaperQuizCategory()) return; // Timer only for Paper Quizzes
+
     _timer?.cancel();
     if (reset) {
-      remainingSeconds = _isPaperQuizCategory() ? 10800 : 30;
+      remainingSeconds = 10800; // 3 hours for paper quiz
     }
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
@@ -189,7 +189,6 @@ class _QuizScreenState extends State<QuizScreen> {
         });
       }
     });
-    */
   }
 
   void _restartQuiz() {
@@ -963,6 +962,7 @@ class _QuizScreenState extends State<QuizScreen> {
           'explanationImage': item['example_img'] ?? '',
           'exampleAudio': item['example_audio'] ?? '',
           'paragraphText': item['example_text'] ?? '',
+          'dateTime': item['datetime'] ?? '',
           'raw_item': item,
         };
       }).toList();
@@ -1121,6 +1121,7 @@ class _QuizScreenState extends State<QuizScreen> {
                             color: const Color(0xFF1E293B),
                           ),
                         ),
+
                         const SizedBox(height: 4),
                         if (_isReviewMode)
                           Container(
@@ -1143,6 +1144,36 @@ class _QuizScreenState extends State<QuizScreen> {
                                 const SizedBox(width: 4),
                                 Text(
                                   "ලකුණු (${_calculatePaperQuizScore()}/100)",
+                                  style: const TextStyle(
+                                    color: Color(0xFF64748B),
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          )
+                        else
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 10,
+                              vertical: 4,
+                            ),
+                            decoration: BoxDecoration(
+                              color: const Color(0xFFF1F5F9),
+                              borderRadius: BorderRadius.circular(20),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                const Icon(
+                                  Icons.timer_outlined,
+                                  size: 14,
+                                  color: Color(0xFF64748B),
+                                ),
+                                const SizedBox(width: 4),
+                                Text(
+                                  formatTime(remainingSeconds),
                                   style: const TextStyle(
                                     color: Color(0xFF64748B),
                                     fontSize: 13,
