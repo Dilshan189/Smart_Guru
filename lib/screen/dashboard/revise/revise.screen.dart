@@ -2,7 +2,7 @@ import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/dashboard/revise/flashcard/flash.card.screen.dart';
 import '../../../Databasehelper/database.helper.dart';
-import '../../../models/saved_question.model.dart';
+import '../../../models/saved.question.model.dart';
 import '../../../models/quiz.history.model.dart';
 
 class ReviseScreen extends StatefulWidget {

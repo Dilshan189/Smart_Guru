@@ -3,7 +3,7 @@ import 'package:flutter_svg/svg.dart';
 import 'package:smart_guru/screen/dashboard/revise/flashcard/flash.screen.dart';
 import 'package:smart_guru/utils/theam.dart';
 import '../../home/quize.screen.dart';
-import '../../../../models/saved_question.model.dart';
+import '../../../../models/saved.question.model.dart';
 
 class FlashCardScreen extends StatefulWidget {
   final List<SavedQuestionModel>? questions;

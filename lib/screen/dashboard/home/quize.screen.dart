@@ -11,7 +11,7 @@ import '../../result/result.screen.dart';
 import '../../../services/api.service.dart';
 import '../../../services/session.manager.dart';
 import '../../../Databasehelper/database.helper.dart';
-import '../../../models/saved_question.model.dart';
+import '../../../models/saved.question.model.dart';
 import '../../../models/quiz.history.model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 

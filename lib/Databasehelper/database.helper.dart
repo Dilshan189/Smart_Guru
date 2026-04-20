@@ -1,7 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:sqflite/sqflite.dart';
 import 'package:path/path.dart';
-import '../models/saved_question.model.dart';
+import '../models/saved.question.model.dart';
 import '../models/quiz.history.model.dart';
 
 class DatabaseHelper {

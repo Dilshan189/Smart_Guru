@@ -43,7 +43,7 @@ class _LevelScreenState extends State<LevelScreen> {
           );
 
       setState(() {
-        levels = fetchedLevels;
+        levels = fetchedLevels.reversed.toList();
         _isLoading = false;
       });
     } catch (e) {
