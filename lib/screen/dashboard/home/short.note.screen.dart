@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:smart_guru/screen/dashboard/home/pdf.viewer.screen.dart';
 import 'package:smart_guru/utils/theam.dart';
-import 'package:url_launcher/url_launcher.dart';
 import 'package:smart_guru/services/api.service.dart';
 import 'package:smart_guru/services/session.manager.dart';
+
 
 class ShortNoteScreen extends StatefulWidget {
   final String subjectId;
@@ -31,7 +32,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
         status: "active",
       );
       setState(() {
-        _notes = results;
+        _notes = results.reversed.toList();
         _isLoading = false;
       });
     } catch (e) {
@@ -104,7 +105,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                     tag: note["tag"] ?? "General",
                     subTag:
                         note["subject_name"] ?? note["category_name"] ?? "ECON",
-                    thumbnailColor: _getThumbnailColor(index),
+                    thumbnailColor: const Color(0xFFF1F5F9), // Light grey background
                     coverImage: note["cover_image"],
                     pdfFile: note["pdf_file"],
                   ),
@@ -114,15 +115,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
     );
   }
 
-  Color _getThumbnailColor(int index) {
-    final colors = [
-      const Color(0xFF717986),
-      const Color(0xFFF07D3E),
-      const Color(0xFF2E3E9C),
-      const Color(0xFF2E77F6),
-    ];
-    return colors[index % colors.length];
-  }
+
 
   Widget _buildNoteCard({
     required String title,
@@ -139,29 +132,18 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
       behavior: HitTestBehavior.opaque,
       onTap: () async {
         if (pdfFile != null && pdfFile.isNotEmpty) {
-          try {
-            final pdfUrl = "https://commerce.ideacipher.com/$pdfFile";
-            final viewerUrl = Uri.parse(
-              "https://docs.google.com/gview?embedded=true&url=${Uri.encodeComponent(pdfUrl)}",
-            );
-            debugPrint("Opening PDF via viewer: $viewerUrl");
-            final launched = await launchUrl(
-              viewerUrl,
-              mode: LaunchMode.inAppBrowserView,
-            );
-            if (!launched && mounted) {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(content: Text("Could not open PDF.")),
-              );
-            }
-          } catch (e) {
-            debugPrint("PDF launch error: $e");
-            if (mounted) {
-              ScaffoldMessenger.of(
-                context,
-              ).showSnackBar(SnackBar(content: Text("Error: $e")));
-            }
-          }
+          final String cleanedPath =
+              pdfFile.startsWith('/') ? pdfFile.substring(1) : pdfFile;
+          final pdfUrl = "https://commerce.ideacipher.com/$cleanedPath";
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => PdfViewerScreen(
+                url: pdfUrl,
+                title: title,
+              ),
+            ),
+          );
         } else {
           debugPrint("pdfFile is null or empty");
         }
@@ -206,7 +188,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                   Text(
                     tag,
                     style: const TextStyle(
-                      color: Colors.white,
+                      color: Color(0xFF1E293B), // Dark text
                       fontSize: 13,
                       fontWeight: FontWeight.bold,
                       fontFamily: 'Inter',
@@ -217,7 +199,7 @@ class _ShortNoteScreenState extends State<ShortNoteScreen> {
                   Text(
                     subTag,
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.7),
+                      color: const Color(0xFF1E293B).withOpacity(0.5), // Subtle dark text
                       fontSize: 7,
                       fontWeight: FontWeight.w500,
                       fontFamily: 'Inter',

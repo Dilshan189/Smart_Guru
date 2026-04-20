@@ -111,7 +111,7 @@ class _PastModelPapersScreenState extends State<PastModelPapersScreen> {
         status: "active",
       );
       setState(() {
-        _papers = results;
+        _papers = results.reversed.toList();
         _isLoading = false;
       });
     } catch (e) {
