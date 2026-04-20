@@ -22,24 +22,9 @@ class DatabaseHelper {
 
     return await openDatabase(
       path,
-      version: 3,
+      version: 1,
       onCreate: _createDB,
-      onUpgrade: _onUpgrade,
     );
-  }
-
-  Future _onUpgrade(Database db, int oldVersion, int newVersion) async {
-    if (oldVersion < 2) {
-      await _createQuizHistoryTable(db);
-    }
-    if (oldVersion < 3) {
-      // Add timestamp column if upgrading to v3
-      try {
-        await db.execute("ALTER TABLE quiz_history ADD COLUMN timestamp TEXT");
-      } catch (e) {
-        debugPrint("Timestamp column update failed or already exists: $e");
-      }
-    }
   }
 
   Future _createDB(Database db, int version) async {
@@ -154,28 +139,6 @@ CREATE TABLE quiz_history (
       debugPrint("Quiz History Saved: ${questionModel.id}");
     } catch (e) {
       debugPrint("Error inserting quiz history: $e");
-      final db = await instance.database;
-      if (e.toString().contains("no such table")) {
-        await _createQuizHistoryTable(db);
-        await db.insert(
-          'quiz_history',
-          questionModel.toMap(),
-          conflictAlgorithm: ConflictAlgorithm.replace,
-        );
-      } else if (e.toString().contains("timestamp")) {
-        try {
-          await db.execute(
-            "ALTER TABLE quiz_history ADD COLUMN timestamp TEXT",
-          );
-          await db.insert(
-            'quiz_history',
-            questionModel.toMap(),
-            conflictAlgorithm: ConflictAlgorithm.replace,
-          );
-        } catch (e2) {
-          debugPrint("Fallback column addition failed: $e2");
-        }
-      }
     }
   }
 
