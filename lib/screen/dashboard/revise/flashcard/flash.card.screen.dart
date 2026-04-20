@@ -205,7 +205,7 @@ class _FlashCardScreenState extends State<FlashCardScreen> {
                     card.question.isNotEmpty
                         ? card.question
                         : "Identify Missing Objects?",
-                    maxLines: 2,
+                     maxLines: 2,
                     style: const TextStyle(
                       fontSize: 14,
                       fontWeight: FontWeight.bold,

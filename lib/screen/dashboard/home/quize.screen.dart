@@ -12,6 +12,7 @@ import '../../../services/api.service.dart';
 import '../../../services/session.manager.dart';
 import '../../../Databasehelper/database.helper.dart';
 import '../../../models/saved_question.model.dart';
+import '../../../models/quiz.history.model.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 class QuizScreen extends StatefulWidget {
@@ -147,11 +148,35 @@ class _QuizScreenState extends State<QuizScreen> {
   }
 
   /// normal question timer
+  Future<void> _saveToHistory(dynamic q, bool isCorrect) async {
+    try {
+      final model = QuizHistoryModel(
+        id: q['id']?.toString() ??
+            q['question_id']?.toString() ??
+            DateTime.now().millisecondsSinceEpoch.toString(),
+        question: q['question']?.toString() ?? "",
+        questionImage: q['questionImage']?.toString() ?? "",
+        options: q['options'] ?? [],
+        correctAnswerIndex: q['correctAnswerIndex'] ?? 0,
+        explanation: q['explanation']?.toString() ?? "",
+        explanationImage: q['explanationImage']?.toString() ?? "",
+        exampleAudio: q['exampleAudio']?.toString() ?? "",
+        paragraphText: q['paragraphText']?.toString() ?? "",
+        rawItem: q as Map<String, dynamic>,
+        categoryName: widget.categoryTitle,
+        isCorrect: isCorrect,
+        timestamp: DateTime.now().toIso8601String(),
+      );
+      await DatabaseHelper.instance.insertQuizHistory(model);
+    } catch (e) {
+      debugPrint("Error saving to history: $e");
+    }
+  }
+
   Future<void> _saveAsIncorrect(dynamic q) async {
     try {
       final model = SavedQuestionModel(
-        id:
-            q['id']?.toString() ??
+        id: q['id']?.toString() ??
             q['question_id']?.toString() ??
             DateTime.now().millisecondsSinceEpoch.toString(),
         question: q['question']?.toString() ?? "",
@@ -245,14 +270,36 @@ class _QuizScreenState extends State<QuizScreen> {
         await prefs.setString("completed_${paperId}_score", scoreStr);
         await prefs.setString("completed_${paperId}_time", timeStr);
 
-        // Save all incorrect questions to the global Revise/Incorrect section
+        // Save all questions to history, and incorrect to incorrect table
         for (int i = 0; i < _questions.length; i++) {
           final q = _questions[i];
           final selected = selectedAnswers[i];
-          final correct = q['correctAnswerIndex'];
-          if (selected != correct) {
+          final correctIdx = q['correctAnswerIndex'];
+          final isCorrect = selected == correctIdx;
+
+          // Always save to history
+          await _saveToHistory(q, isCorrect);
+
+          // Save to incorrect table if wrong
+          if (!isCorrect) {
             await _saveAsIncorrect(q);
           }
+        }
+      }
+    } else {
+      // For level quizzes, save current progress/history if needed
+      // Currently, level quizzes use 'score' and 'isAnswered' differently.
+      // If we want consistency, we can loop through questions here too.
+      for (int i = 0; i < _questions.length; i++) {
+        final q = _questions[i];
+        final selected = i < selectedAnswers.length ? selectedAnswers[i] : null;
+        final correctIdx = q['correctAnswerIndex'];
+        final isCorrect = selected == correctIdx;
+
+        await _saveToHistory(q, isCorrect);
+
+        if (!isCorrect && selected != null) {
+          await _saveAsIncorrect(q);
         }
       }
     }
@@ -345,6 +392,16 @@ class _QuizScreenState extends State<QuizScreen> {
       return;
     }
 
+    // Save progress immediately for the current question
+    if (selectedAnswer != null) {
+      final q = _questions[currentIndex];
+      final isCorrect = selectedAnswer == q['correctAnswerIndex'];
+      await _saveToHistory(q, isCorrect);
+      if (!isCorrect) {
+        await _saveAsIncorrect(q);
+      }
+    }
+
     // --- 1. Past Paper (පැරණි ප්‍රශ්න පත්‍ර) Logic ---
     // Includes: No immediate answer checking, immediate "Next" navigation.
     if (_isPaperQuizCategory()) {
@@ -380,6 +437,10 @@ class _QuizScreenState extends State<QuizScreen> {
     }
 
     // --- 2. Level Quiz Logic ---
+    setState(() {
+      selectedAnswers[currentIndex] = selectedAnswer;
+    });
+
     if (currentIndex < _questions.length - 1) {
       await _stopAudio();
       setState(() {
@@ -1213,9 +1274,13 @@ class _QuizScreenState extends State<QuizScreen> {
               // --- Level Quiz Header (සාමාන්‍ය Quiz Header එක) ---
               backgroundColor: Colors.white,
               automaticallyImplyLeading: false,
-              leading: IconButton(
-                onPressed: () => _modalBottomSheetMenu(context),
-                icon: const Icon(Icons.arrow_back_ios, size: 18),
+              leading: Padding(
+                padding: EdgeInsetsGeometry.only(left: 25),
+                child: IconButton(
+                  onPressed: () => _modalBottomSheetMenu(context),
+                  icon: const Icon(Icons.arrow_back_ios, size: 20,
+                  ),
+                ),
               ),
               title: null,
               actions: [
@@ -1343,13 +1408,12 @@ class _QuizScreenState extends State<QuizScreen> {
                     ),
                   ),
                 ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 10),
               Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 25),
-                child: Align(
-                  alignment: Alignment.centerLeft,
+                child: Center(
                   child: Text(
-                    'Question ${currentIndex + 1} of ${_questions.length}',
+                    ' ${currentIndex + 1} of ${_questions.length}',
                     style: TextStyle(
                       fontSize: width * 0.035,
                       fontWeight: FontWeight.w500,
@@ -1358,7 +1422,7 @@ class _QuizScreenState extends State<QuizScreen> {
                   ),
                 ),
               ),
-              const SizedBox(height: 10),
+              const SizedBox(height: 5),
               Container(
                 width: width * 0.9,
                 height: showParagraphMode ? height * 0.6 : height * 0.3,

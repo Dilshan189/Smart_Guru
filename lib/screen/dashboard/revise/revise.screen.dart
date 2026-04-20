@@ -3,6 +3,7 @@ import 'package:flutter/material.dart';
 import 'package:smart_guru/screen/dashboard/revise/flashcard/flash.card.screen.dart';
 import '../../../Databasehelper/database.helper.dart';
 import '../../../models/saved_question.model.dart';
+import '../../../models/quiz.history.model.dart';
 
 class ReviseScreen extends StatefulWidget {
   const ReviseScreen({super.key});
@@ -18,6 +19,7 @@ class ReviseScreenState extends State<ReviseScreen> {
   int _incorrectCount = 0;
   List<SavedQuestionModel> _bookmarkedQuestions = [];
   List<SavedQuestionModel> _incorrectQuestions = [];
+  Map<String, List<QuizHistoryModel>> _groupedQuestions = {};
 
   @override
   void initState() {
@@ -28,12 +30,25 @@ class ReviseScreenState extends State<ReviseScreen> {
   Future<void> loadData() async {
     final bq = await DatabaseHelper.instance.getAllSavedQuestions();
     final iq = await DatabaseHelper.instance.getAllIncorrectQuestions();
+    final hq = await DatabaseHelper.instance.getAllQuizHistory();
+    debugPrint("Total History Questions Loaded: ${hq.length}");
+
+    final Map<String, List<QuizHistoryModel>> groups = {};
+    for (var q in hq) {
+      final String cat = (q.categoryName != null && q.categoryName!.trim().isNotEmpty)
+          ? q.categoryName!
+          : "General Revision";
+      if (!groups.containsKey(cat)) groups[cat] = [];
+      groups[cat]!.add(q);
+    }
+
     if (mounted) {
       setState(() {
         _bookmarkedQuestions = bq;
         _incorrectQuestions = iq;
         _bookmarkedCount = bq.length;
         _incorrectCount = iq.length;
+        _groupedQuestions = groups;
       });
     }
   }
@@ -109,128 +124,43 @@ class ReviseScreenState extends State<ReviseScreen> {
             ),
             const SizedBox(height: 16),
 
-            // Flashcard List Item
-            InkWell(
-              onTap: () {
-                Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (context) => FlashCardScreen(
-                      questions: [
-                        ..._bookmarkedQuestions,
-                        ..._incorrectQuestions,
-                      ],
-                      title: "All Flashcards",
-                      isFlashcard: true,
-                    ),
-                  ),
-                );
-              },
-              child: Container(
-                height: 120,
-                padding: const EdgeInsets.all(16),
+            // Flashcard List Items (Dynamic)
+            if (_groupedQuestions.isEmpty)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.all(24),
                 decoration: BoxDecoration(
-                  color: Colors.white,
+                  color: const Color(0xFFF8F9FA),
                   borderRadius: BorderRadius.circular(16),
                   border: Border.all(color: const Color(0xFFEAECF0)),
-                  boxShadow: const [
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 2,
-                      spreadRadius: -1,
-                      offset: Offset(0, 1),
-                    ),
-                    BoxShadow(
-                      color: Color(0x1A000000),
-                      blurRadius: 3,
-                      spreadRadius: 0,
-                      offset: Offset(0, 1),
-                    ),
-                  ],
                 ),
                 child: Column(
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 52,
-                          height: 52,
-                          decoration: BoxDecoration(
-                            color: const Color(0xFF2E43A8),
-                            borderRadius: BorderRadius.circular(14),
-                          ),
-                          child: const Icon(
-                            Icons.trending_up,
-                            color: Colors.white,
-                            size: 28,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              const Text(
-                                "wd¾Ól úoHdj",
-                                style: TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  fontFamily: "FMGanganee",
-                                  color: Color(0xFF1D2939),
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                "${_bookmarkedCount + _incorrectCount} Flashcards",
-                                style: const TextStyle(
-                                  fontSize: 14,
-                                  color: Color(0xFF667085),
-                                  fontFamily: "Inter",
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: Color(0xFF98A2B3),
-                        ),
-                      ],
+                    Icon(Icons.style_outlined, color: Colors.grey.shade400, size: 40),
+                    const SizedBox(height: 12),
+                    const Text(
+                      "No flashcards yet",
+                      style: TextStyle(
+                        fontSize: 16,
+                        fontWeight: FontWeight.bold,
+                        color: Color(0xFF667085),
+                      ),
                     ),
-                    SizedBox(height: 10),
-                    Row(
-                      children: [
-                        const Icon(
-                          Icons.access_time,
-                          size: 15,
-                          color: Color(0xFF98A2B3),
-                        ),
-                        const SizedBox(width: 6),
-                        RichText(
-                          text: const TextSpan(
-                            text: "Last reviewed: ",
-                            style: TextStyle(
-                              fontSize: 13,
-                              color: Color(0xFF98A2B3),
-                              fontFamily: "Poppins",
-                            ),
-                            children: [
-                              TextSpan(
-                                text: "2 days ago",
-                                style: TextStyle(
-                                  fontWeight: FontWeight.bold,
-                                  color: Color(0xFF2E43A8),
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
+                    const SizedBox(height: 4),
+                    const Text(
+                      "Your quiz questions will appear here",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF98A2B3),
+                      ),
                     ),
                   ],
                 ),
-              ),
-            ),
+              )
+            else
+              ..._groupedQuestions.entries.map((entry) {
+                return _buildFlashcardCategoryItem(entry.key, entry.value);
+              }).toList(),
             const SizedBox(height: 24),
 
             // Settings Card
@@ -409,6 +339,143 @@ class ReviseScreenState extends State<ReviseScreen> {
             ),
             const SizedBox(height: 40),
           ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildFlashcardCategoryItem(String title, List<QuizHistoryModel> questions) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 12),
+      child: InkWell(
+        onTap: () {
+          // Convert QuizHistoryModel to SavedQuestionModel for FlashCardScreen compatibility
+          final convertedQuestions = questions.map((q) => SavedQuestionModel(
+            id: q.id,
+            question: q.question,
+            questionImage: q.questionImage,
+            options: q.options,
+            correctAnswerIndex: q.correctAnswerIndex,
+            explanation: q.explanation,
+            explanationImage: q.explanationImage,
+            exampleAudio: q.exampleAudio,
+            paragraphText: q.paragraphText,
+            rawItem: q.rawItem,
+          )).toList();
+
+          Navigator.push(
+            context,
+            MaterialPageRoute(
+              builder: (context) => FlashCardScreen(
+                questions: convertedQuestions,
+                title: title,
+                isFlashcard: true,
+              ),
+            ),
+          );
+        },
+        child: Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: Colors.white,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: const Color(0xFFEAECF0)),
+            boxShadow: const [
+              BoxShadow(
+                color: Color(0x1A000000),
+                blurRadius: 2,
+                spreadRadius: -1,
+                offset: Offset(0, 1),
+              ),
+              BoxShadow(
+                color: Color(0x1A000000),
+                blurRadius: 3,
+                spreadRadius: 0,
+                offset: Offset(0, 1),
+              ),
+            ],
+          ),
+          child: Column(
+            children: [
+              Row(
+                children: [
+                  Container(
+                    width: 52,
+                    height: 52,
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF2E43A8),
+                      borderRadius: BorderRadius.circular(14),
+                    ),
+                    child: const Icon(
+                      Icons.trending_up,
+                      color: Colors.white,
+                      size: 28,
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          title,
+                          style: const TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF1D2939),
+                            fontFamily: "Poppins",
+                          ),
+                        ),
+                        const SizedBox(height: 4),
+                        Text(
+                          "${questions.length} Flashcards",
+                          style: const TextStyle(
+                            fontSize: 14,
+                            color: Color(0xFF667085),
+                            fontFamily: "Inter",
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  const Icon(
+                    Icons.chevron_right,
+                    color: Color(0xFF98A2B3),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  const Icon(
+                    Icons.access_time,
+                    size: 15,
+                    color: Color(0xFF98A2B3),
+                  ),
+                  const SizedBox(width: 6),
+                  RichText(
+                    text: const TextSpan(
+                      text: "Last reviewed: ",
+                      style: TextStyle(
+                        fontSize: 13,
+                        color: Color(0xFF98A2B3),
+                        fontFamily: "Poppins",
+                      ),
+                      children: [
+                        TextSpan(
+                          text: "Active",
+                          style: TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: Color(0xFF00C853),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
         ),
       ),
     );
