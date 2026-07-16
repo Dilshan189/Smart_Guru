@@ -3,6 +3,8 @@ import 'package:flutter_svg/flutter_svg.dart';
 import 'package:carousel_slider/carousel_slider.dart';
 import 'package:smooth_page_indicator/smooth_page_indicator.dart';
 import 'package:smart_guru/screen/dashboard/home/lesson.screen.dart';
+import 'package:smart_guru/services/api.service.dart';
+import 'package:smart_guru/services/session.manager.dart';
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -12,7 +14,7 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomeScreenState extends State<HomeScreen> {
-  List<dynamic> words = [];
+  List<dynamic> subjects = [];
   bool _isLoading = true;
   int _activePage = 0;
   final CarouselSliderController _carouselController =
@@ -21,37 +23,29 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    _fetchSubjects();
+  }
 
-    _isLoading = false;
-    words = [
-      {
-        "id": "2",
-        "name": "wd¾Ól úoHdj",
-        "mcqs": "1240 MCQs",
-        "progress": 0.65,
-        "status": "1",
-        "icon": Icons.trending_up,
-        "iconBg": const Color(0xFF2E43A8),
-      },
-      {
-        "id": "2",
-        "name": ".sKqïlrKh",
-        "mcqs": "980 MCQs",
-        "progress": 0.0,
-        "status": "0",
-        "icon": Icons.calculate_outlined,
-        "iconBg": const Color(0xFF8F9BB3),
-      },
-      {
-        "id": "3",
-        "name": "jHdmdr wOHk​h",
-        "mcqs": "1150 MCQs",
-        "progress": 0.0,
-        "status": "0",
-        "icon": Icons.business_center_outlined,
-        "iconBg": const Color(0xFF8F9BB3),
-      },
-    ];
+  Future<void> _fetchSubjects() async {
+    try {
+      final fetchedSubjects = await CommerceService.getSubject(
+        status: 'active',
+        token: SessionManager.token,
+      );
+
+      if (!mounted) return;
+      setState(() {
+        subjects = fetchedSubjects;
+        _isLoading = false;
+      });
+    } catch (e) {
+      debugPrint("Error fetching subjects: $e");
+      if (!mounted) return;
+      setState(() {
+        subjects = [];
+        _isLoading = false;
+      });
+    }
   }
 
   @override
@@ -220,175 +214,206 @@ class _HomeScreenState extends State<HomeScreen> {
               ],
             ),
           ),
-          SliverList(
-            key: const ValueKey('quiz_list_section'),
-            delegate: SliverChildBuilderDelegate((context, index) {
-              final Map<String, dynamic> subject = words[index];
-              final String subjectName = subject['name'] ?? "";
-              final String subjectId = subject['id']?.toString() ?? "";
-              final bool isComingSoon = subject["status"] == "0";
-              final double progress = subject['progress'] ?? 0.0;
-              final String mcqs = subject['mcqs'] ?? "0 MCQs";
+          if (subjects.isEmpty)
+            const SliverToBoxAdapter(
+              child: Padding(
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 28),
+                child: Center(
+                  child: Text(
+                    "No subjects available",
+                    style: TextStyle(
+                      color: Colors.grey,
+                      fontSize: 14,
+                      fontFamily: "Poppins",
+                    ),
+                  ),
+                ),
+              ),
+            )
+          else
+            SliverList(
+              key: const ValueKey('quiz_list_section'),
+              delegate: SliverChildBuilderDelegate((context, index) {
+                final Map<String, dynamic> subject = Map<String, dynamic>.from(
+                  subjects[index] as Map,
+                );
+                final String subjectName = subject['name'] ?? "";
+                final String subjectId = subject['id']?.toString() ?? "";
+                final bool isComingSoon = subject["status"] != "active";
+                final double progress =
+                    double.tryParse(subject['progress']?.toString() ?? "") ??
+                    0.0;
+                final String totalLessons =
+                    subject['total_lessons']?.toString() ?? "0";
 
-              final Color iconBg = subject['iconBg'] ?? const Color(0xFF1A237E);
-              final IconData iconData = subject['icon'] ?? Icons.book_outlined;
+                final Color iconBg =
+                    subject['iconBg'] ?? const Color(0xFF1A237E);
+                final IconData iconData =
+                    subject['icon'] ?? Icons.book_outlined;
 
-              return Padding(
-                padding: const EdgeInsets.only(bottom: 20, left: 20, right: 20),
-                child: Stack(
-                  clipBehavior: Clip.none,
-                  children: [
-                    InkWell(
-                      onTap: isComingSoon
-                          ? null
-                          : () {
-                              Navigator.push(
-                                context,
-                                MaterialPageRoute(
-                                  builder: (context) => LessonScreen(
-                                    title: subjectName,
-                                    categoryId: subjectId,
-                                  ),
-                                ),
-                              );
-                            },
-                      borderRadius: BorderRadius.circular(24),
-                      child: Container(
-                        height: 145,
-                        decoration: BoxDecoration(
-                          color: Colors.white,
-                          borderRadius: BorderRadius.circular(24),
-                          border: Border.all(color: const Color(0xFFEEEEEE)),
-                          boxShadow: [
-                            BoxShadow(
-                              color: Colors.black.withOpacity(0.02),
-                              blurRadius: 10,
-                              offset: const Offset(0, 4),
-                            ),
-                          ],
-                        ),
-                        child: Padding(
-                          padding: const EdgeInsets.all(20.0),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    width: 50,
-                                    height: 50,
-                                    decoration: BoxDecoration(
-                                      color: iconBg,
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.all(10),
-                                    child: Icon(iconData, color: Colors.white),
-                                  ),
-                                  const SizedBox(width: 16),
-                                  Expanded(
-                                    child: Column(
-                                      crossAxisAlignment:
-                                          CrossAxisAlignment.start,
-                                      children: [
-                                        Text(
-                                          subjectName,
-                                          style: const TextStyle(
-                                            fontWeight: FontWeight.w500,
-                                            fontSize: 16,
-                                            fontFamily: "FMGanganee",
-                                            color: Color(0xFF1E293B),
-                                          ),
-                                        ),
-                                        const SizedBox(height: 4),
-                                        Text(
-                                          mcqs,
-                                          style: const TextStyle(
-                                            color: Colors.grey,
-                                            fontSize: 13,
-                                            fontFamily: "Poppins",
-                                          ),
-                                        ),
-                                      ],
+                return Padding(
+                  padding: const EdgeInsets.only(
+                    bottom: 20,
+                    left: 20,
+                    right: 20,
+                  ),
+                  child: Stack(
+                    clipBehavior: Clip.none,
+                    children: [
+                      InkWell(
+                        onTap: isComingSoon
+                            ? null
+                            : () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => LessonScreen(
+                                      title: subjectName,
+                                      categoryId: subjectId,
                                     ),
                                   ),
-                                  if (!isComingSoon)
-                                    const Icon(
-                                      Icons.arrow_forward_ios,
-                                      size: 16,
-                                      color: Colors.grey,
-                                    ),
-                                ],
+                                );
+                              },
+                        borderRadius: BorderRadius.circular(24),
+                        child: Container(
+                          height: 145,
+                          decoration: BoxDecoration(
+                            color: Colors.white,
+                            borderRadius: BorderRadius.circular(24),
+                            border: Border.all(color: const Color(0xFFEEEEEE)),
+                            boxShadow: [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.02),
+                                blurRadius: 10,
+                                offset: const Offset(0, 4),
                               ),
-                              const SizedBox(height: 20),
-                              Row(
-                                children: [
-                                  const Text(
-                                    "Progress",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      color: Colors.grey,
-                                      fontFamily: "Poppins",
+                            ],
+                          ),
+                          child: Padding(
+                            padding: const EdgeInsets.all(20.0),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      width: 50,
+                                      height: 50,
+                                      decoration: BoxDecoration(
+                                        color: iconBg,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      padding: const EdgeInsets.all(10),
+                                      child: Icon(
+                                        iconData,
+                                        color: Colors.white,
+                                      ),
                                     ),
-                                  ),
-                                  const Spacer(),
-                                  Text(
-                                    "${(progress * 100).toInt()}%",
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: isComingSoon
+                                    const SizedBox(width: 16),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment:
+                                            CrossAxisAlignment.start,
+                                        children: [
+                                          Text(
+                                            subjectName,
+                                            style: const TextStyle(
+                                              fontWeight: FontWeight.w500,
+                                              fontSize: 16,
+                                              fontFamily: "Poppins",
+                                              color: Color(0xFF1E293B),
+                                            ),
+                                          ),
+                                          const SizedBox(height: 4),
+                                          Text(
+                                            "$totalLessons lessons",
+                                            style: const TextStyle(
+                                              color: Colors.grey,
+                                              fontSize: 13,
+                                              fontFamily: "Poppins",
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                    if (!isComingSoon)
+                                      const Icon(
+                                        Icons.arrow_forward_ios,
+                                        size: 16,
+                                        color: Colors.grey,
+                                      ),
+                                  ],
+                                ),
+                                const SizedBox(height: 20),
+                                Row(
+                                  children: [
+                                    const Text(
+                                      "Progress",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        color: Colors.grey,
+                                        fontFamily: "Poppins",
+                                      ),
+                                    ),
+                                    const Spacer(),
+                                    Text(
+                                      "${(progress * 100).toInt()}%",
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: isComingSoon
+                                            ? const Color.fromARGB(
+                                                255,
+                                                129,
+                                                130,
+                                                131,
+                                              )
+                                            : const Color(0xFF1A237E),
+                                        fontFamily: "Poppins",
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                const SizedBox(height: 8),
+                                ClipRRect(
+                                  borderRadius: BorderRadius.circular(10),
+                                  child: LinearProgressIndicator(
+                                    value: progress,
+                                    backgroundColor: isComingSoon
+                                        ? const Color(0xFFE5E7EB)
+                                        : const Color(0xFFEEEEEE),
+                                    valueColor: AlwaysStoppedAnimation<Color>(
+                                      isComingSoon
                                           ? const Color.fromARGB(
                                               255,
                                               129,
                                               130,
                                               131,
                                             )
-                                          : const Color(0xFF1A237E),
-                                      fontFamily: "Poppins",
+                                          : const Color(0xFF2962FF),
                                     ),
+                                    minHeight: 8,
                                   ),
-                                ],
-                              ),
-                              const SizedBox(height: 8),
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(10),
-                                child: LinearProgressIndicator(
-                                  value: progress,
-                                  backgroundColor: isComingSoon
-                                      ? const Color(0xFFE5E7EB)
-                                      : const Color(0xFFEEEEEE),
-                                  valueColor: AlwaysStoppedAnimation<Color>(
-                                    isComingSoon
-                                        ? const Color.fromARGB(
-                                            255,
-                                            129,
-                                            130,
-                                            131,
-                                          )
-                                        : const Color(0xFF2962FF),
-                                  ),
-                                  minHeight: 8,
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
                         ),
                       ),
-                    ),
-                    if (isComingSoon)
-                      Positioned(
-                        top: -9,
-                        right: -9,
-                        child: SvgPicture.asset(
-                          'assets/images/comingSoonLabel.svg',
-                          width: 80,
+                      if (isComingSoon)
+                        Positioned(
+                          top: -9,
+                          right: -9,
+                          child: SvgPicture.asset(
+                            'assets/images/comingSoonLabel.svg',
+                            width: 80,
+                          ),
                         ),
-                      ),
-                  ],
-                ),
-              );
-            }, childCount: words.length),
-          ),
+                    ],
+                  ),
+                );
+              }, childCount: subjects.length),
+            ),
         ],
       ),
     );

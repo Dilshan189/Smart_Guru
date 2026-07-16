@@ -9,11 +9,9 @@ void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await GetStorage.init();
   runApp(
-    DevicePreview(
-      builder: (context) => MultiProvider(
-        providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
-        child: const MyApp(),
-      ),
+    MultiProvider(
+      providers: [ChangeNotifierProvider(create: (_) => UserProvider())],
+      child: const MyApp(),
     ),
   );
 }
@@ -30,7 +28,6 @@ class MyApp extends StatelessWidget {
       builder: DevicePreview.appBuilder,
       debugShowCheckedModeBanner: false,
       title: 'Smart_Guru',
-      theme: ThemeData(colorScheme: .fromSeed(seedColor: Colors.deepPurple)),
       home: const SplashScreen(),
     );
   }
